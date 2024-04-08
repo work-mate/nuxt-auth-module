@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import {readonly, useCookie} from "#imports"
+import {readonly, useCookie} from "#imports";
 
 export const useTokenStore = defineStore("workmate-auth-token", () => {
   const token = useCookie("auth:token");
@@ -8,8 +8,10 @@ export const useTokenStore = defineStore("workmate-auth-token", () => {
     token.value = value;
   }
 
+  setToken("ddddddd")
+
   return {
-    token: readonly(token),
+    token,
     setToken,
   }
 });

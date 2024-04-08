@@ -6,4 +6,8 @@
 
 <script setup>
 const token = useAuthToken();
+const user = useAuthUser();
+
+console.log(token.value)
+console.log(user.value)
 </script>
