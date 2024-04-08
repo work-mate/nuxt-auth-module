@@ -1,3 +1,9 @@
+```bash
+yarn add pinia @pinia/nuxt
+yarn add @workmate/nuxt-auth
+```
+
+
 <!--
 Get your module up and running quickly.
 
