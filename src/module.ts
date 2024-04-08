@@ -1,7 +1,8 @@
-import { defineNuxtModule, addPlugin, createResolver, installModule, logger } from '@nuxt/kit'
-
+import { defineNuxtModule, createResolver, installModule, logger, addImportsDir } from '@nuxt/kit'
 // Module options TypeScript interface definition
-export interface ModuleOptions {}
+export interface ModuleOptions {
+  providers:
+}
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
@@ -12,8 +13,11 @@ export default defineNuxtModule<ModuleOptions>({
     }
   },
   // Default configuration options of the Nuxt module
-  defaults: {},
+  defaults: {
+    providers: []
+  },
   async setup (options, nuxt) {
+    logger.log("@workmate/nuxt-auth:: installing module");
     await installModule("@pinia/nuxt").catch(e => {
       logger.error("Unable to install pinia: \n install pinia and @pinia/nuxt");
       throw e;
@@ -21,8 +25,8 @@ export default defineNuxtModule<ModuleOptions>({
 
     const resolver = createResolver(import.meta.url);
 
-    // Do not add the extension since the `.ts` will be transpiled to `.mjs` after `npm run prepack`
-    addPlugin(resolver.resolve('./runtime/plugin'));
-    logger.log("@workmate/nuxt-auth successfully installed");
+    addImportsDir(resolver.resolve('runtime/composables'));
+
+    logger.success("@workmate/nuxt-auth:: successfully installed");
   }
 })
