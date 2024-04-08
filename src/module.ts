@@ -1,7 +1,8 @@
-import { defineNuxtModule, createResolver, installModule, logger, addImportsDir } from '@nuxt/kit'
+import { defineNuxtModule, createResolver, logger, addImportsDir, installModule } from '@nuxt/kit'
+import type { AuthProvider } from './runtime/models';
 // Module options TypeScript interface definition
 export interface ModuleOptions {
-  providers:
+  providers: Array<AuthProvider>,
 }
 
 export default defineNuxtModule<ModuleOptions>({

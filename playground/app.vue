@@ -5,5 +5,5 @@
 </template>
 
 <script setup>
-
+const token = useAuthToken();
 </script>
