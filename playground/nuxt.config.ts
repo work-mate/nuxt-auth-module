@@ -5,7 +5,9 @@ export default defineNuxtConfig({
   auth: {
     secretKey: "some-secret-key",
     providers: {
-      local: LocalAuthProvider.create({}),
+      local: LocalAuthProvider.create({
+        secret: "This is another secret"
+      }),
     }
   },
   devtools: { enabled: true }

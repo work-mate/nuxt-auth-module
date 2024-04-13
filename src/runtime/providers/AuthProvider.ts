@@ -1,13 +1,13 @@
 import { logger } from "@nuxt/kit";
-import { SupportedAuthProvider, type AuthLoginData } from "../models";
+import { SupportedAuthProvider, type AuthLoginData, type AuthProviderInterface } from "../models";
 import type { LocalAuthProvider } from "./LocalAuthProvider";
 
 export type AuthProviderContructorOptions = {
-  providers: Record<string, AuthProvider>;
+  providers: Record<string, AuthProviderInterface>;
   defaultProviderKey?: string;
 };
 export class AuthProvider {
-  private providers: Record<string, AuthProvider>;
+  private providers: Record<string, AuthProviderInterface>;
   private defaultProviderKey: string;
 
   constructor({ providers, defaultProviderKey }: AuthProviderContructorOptions) {
@@ -22,7 +22,7 @@ export class AuthProvider {
     }
   }
 
-  public provider(providerKey: string): AuthProvider {
+  public provider(providerKey: string): AuthProviderInterface {
     const p = this.providers[providerKey];
 
     if (!p) {
@@ -38,7 +38,7 @@ export class AuthProvider {
     return this.provider(SupportedAuthProvider.LOCAL) as unknown as LocalAuthProvider;
   }// end method local
 
-  private defaultProvider(): AuthProvider {
+  private defaultProvider(): AuthProviderInterface {
     let p = this.providers[this.defaultProviderKey];
 
     if(!p) {

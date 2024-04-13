@@ -4,9 +4,11 @@ import {
   logger,
   addImportsDir,
   installModule,
+  addTypeTemplate,
 } from "@nuxt/kit";
 import type { AuthProviderInterface } from "./runtime/models";
 import defu from "defu";
+import { AuthProvider } from "./runtime/providers/AuthProvider";
 export { LocalAuthProvider } from "./runtime/providers/LocalAuthProvider";
 
 // Module options TypeScript interface definition
@@ -30,14 +32,17 @@ export default defineNuxtModule<ModuleOptions>({
   async setup(options, nuxt) {
     logger.log("@workmate/nuxt-auth:: installing module");
 
-    nuxt.options.runtimeConfig.auth = defu(nuxt.options.runtimeConfig?.auth || {}, options);
+    const $runner = new AuthProvider({
+      providers: options.providers,
+      defaultProviderKey: "local",
+    });
 
-    // const { setOptions } = useOptionsStore();
-    // setOptions(options);
-    // console.log("options")
-    // console.log(options)
 
-    console.log(options)
+    nuxt.options.runtimeConfig = defu(nuxt.options.runtimeConfig, {
+      auth: {
+        $runner,
+      }
+    });
 
     await installModule("@pinia/nuxt").catch((e) => {
       logger.error("Unable to install pinia: \n install pinia and @pinia/nuxt");
@@ -51,3 +56,13 @@ export default defineNuxtModule<ModuleOptions>({
     logger.success("@workmate/nuxt-auth:: successfully installed");
   },
 });
+
+declare module '@nuxt/schema' {
+  interface RuntimeConfig {
+    // Add your custom properties here
+    auth: {
+      $runner: AuthProvider,
+    }
+  }
+}
+

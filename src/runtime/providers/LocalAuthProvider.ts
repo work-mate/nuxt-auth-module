@@ -6,6 +6,7 @@ export interface LocalAuthLoginData extends AuthLoginData {
 }
 
 export type LocalAuthInitializerOptions = {
+  secret: string,
   endpoints?: {
     signIn?: { path?: string, method?: string },
     signOut?: { path?: string, method?: string } | false,
