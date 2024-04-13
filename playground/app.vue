@@ -5,9 +5,9 @@
 </template>
 
 <script setup>
-const token = useAuthToken();
-const user = useAuthUser();
+const {
+  token, user, options
+} = useAuth();
 
-console.log(token.value)
-console.log(user.value)
+console.log(options);
 </script>

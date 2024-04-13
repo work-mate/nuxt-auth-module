@@ -28,7 +28,8 @@
     "test:watch": "vitest watch"
   },
   "dependencies": {
-    "@nuxt/kit": "^3.11.2"
+    "@nuxt/kit": "^3.11.2",
+    "defu": "^6.1.4"
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
@@ -44,5 +45,7 @@
     "pinia": "^2.1.7",
     "vitest": "^1.4.0"
   },
-  "resolutions": { "string-width": "4.2.3" }
+  "resolutions": {
+    "string-width": "4.2.3"
+  }
 }

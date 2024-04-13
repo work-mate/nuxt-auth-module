@@ -1,5 +1,7 @@
 export default defineNuxtConfig({
   modules: ['../src/module'],
-  auth: {},
+  auth: {
+    secretKey: "some-secret-key",
+  },
   devtools: { enabled: true }
 })
