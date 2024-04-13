@@ -1,5 +1,6 @@
 import { logger } from "@nuxt/kit";
-import type { AuthLoginData } from "../models";
+import { SupportedAuthProvider, type AuthLoginData } from "../models";
+import type { LocalAuthProvider } from "./LocalAuthProvider";
 
 export type AuthProviderContructorOptions = {
   providers: Record<string, AuthProvider>;
@@ -33,6 +34,10 @@ export class AuthProvider {
     return p;
   }// end method provider
 
+  public local(): LocalAuthProvider {
+    return this.provider(SupportedAuthProvider.LOCAL) as unknown as LocalAuthProvider;
+  }// end method local
+
   private defaultProvider(): AuthProvider {
     let p = this.providers[this.defaultProviderKey];
 
@@ -45,21 +50,21 @@ export class AuthProvider {
     return p;
   }// end method defaultProvider
 
-  public login(authData?: AuthLoginData): Promise<any> {
-    return this.defaultProvider().login(authData);
-  }
+  // public login(authData?: AuthLoginData): Promise<any> {
+  //   return this.defaultProvider().login(authData);
+  // }
 
-  isLoggedIn(): boolean {
-    return this.defaultProvider().isLoggedIn();
-  }
+  // isLoggedIn(): boolean {
+  //   return this.defaultProvider().isLoggedIn();
+  // }
 
-  getUserData(): Promise<unknown | null> {
-    return this.defaultProvider().getUserData();
-  }
-  fetchUserData(): Promise<void> {
-    return this.defaultProvider().fetchUserData();
-  }
-  logout(): Promise<void> {
-    return this.defaultProvider().logout();
-  }
+  // getUserData(): Promise<unknown | null> {
+  //   return this.defaultProvider().getUserData();
+  // }
+  // fetchUserData(): Promise<void> {
+  //   return this.defaultProvider().fetchUserData();
+  // }
+  // logout(): Promise<void> {
+  //   return this.defaultProvider().logout();
+  // }
 }//end class AuthProvider
