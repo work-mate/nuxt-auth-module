@@ -5,12 +5,13 @@ import {
   addImportsDir,
   installModule,
 } from "@nuxt/kit";
-import type { AuthProvider } from "./runtime/models";
+import type { AuthProviderInterface } from "./runtime/models";
 import defu from "defu";
+export { LocalAuthProvider } from "./runtime/providers/LocalAuthProvider";
 
 // Module options TypeScript interface definition
 export interface ModuleOptions {
-  providers: Record<string, AuthProvider>;
+  providers: Record<string, AuthProviderInterface>;
   secretKey?: string;
 }
 

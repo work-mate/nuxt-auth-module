@@ -4,7 +4,7 @@ export enum SupportedAuthProvider {
 
 export interface AuthLoginData {}
 
-export interface AuthProvider {
+export interface AuthProviderInterface {
   name: string;
   login(authData?: AuthLoginData): Promise<unknown>;
   isLoggedIn(): boolean;

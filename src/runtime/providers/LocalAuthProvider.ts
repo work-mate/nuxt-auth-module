@@ -1,11 +1,27 @@
-import type { AuthLoginData, AuthProvider } from "../models";
+import type { AuthLoginData, AuthProviderInterface } from "../models";
 
 export interface LocalAuthLoginData extends AuthLoginData {
   principal: string;
   password: string;
 }
 
-export class LocalAuthProvider implements AuthProvider {
+export type LocalAuthInitializerOptions = {
+  endpoints?: {
+    signIn?: { path?: string, method?: string },
+    signOut?: { path?: string, method?: string } | false,
+    signUp?: { path?: string, method?: string },
+    getSession?: { path?: string, method?: string },
+  },
+  token?: {
+    signInResponseTokenPointer?: string,
+    type?: string,
+    cookieName?: string,
+    headerName?: string,
+    maxAgeInSeconds?: number,
+  }
+}
+
+export class LocalAuthProvider implements AuthProviderInterface {
   name: string = "local";
 
   login(authData: LocalAuthLoginData): Promise<unknown> {
@@ -26,5 +42,9 @@ export class LocalAuthProvider implements AuthProvider {
 
   logout(): Promise<void> {
     throw new Error("Method not implemented.");
+  }
+
+  static create(options: LocalAuthInitializerOptions): LocalAuthProvider {
+    return new LocalAuthProvider();
   }
 }
