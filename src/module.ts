@@ -9,11 +9,12 @@ import {
 } from "@nuxt/kit";
 import type { AuthProviderInterface } from "./runtime/models";
 import defu from "defu";
+export { LocalAuthProvider } from "./runtime/providers/LocalAuthProvider";
 
 
 export interface ModuleOptions {
   providers: Record<string, AuthProviderInterface>;
-  secretKey?: string;
+  defaultProvider?: string;
 }
 
 
@@ -27,6 +28,7 @@ export default defineNuxtModule<ModuleOptions>({
   },
   defaults: {
     providers: {},
+    defaultProvider: "local",
   },
   async setup(options, nuxt) {
     logger.log("@workmate/nuxt-auth:: installing module");
