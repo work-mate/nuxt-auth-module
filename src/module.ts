@@ -5,17 +5,17 @@ import {
   addImportsDir,
   installModule,
   addTypeTemplate,
+  addPlugin,
 } from "@nuxt/kit";
 import type { AuthProviderInterface } from "./runtime/models";
 import defu from "defu";
-import { AuthProvider } from "./runtime/providers/AuthProvider";
-export { LocalAuthProvider } from "./runtime/providers/LocalAuthProvider";
 
-// Module options TypeScript interface definition
+
 export interface ModuleOptions {
   providers: Record<string, AuthProviderInterface>;
   secretKey?: string;
 }
+
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
@@ -25,33 +25,22 @@ export default defineNuxtModule<ModuleOptions>({
       nuxt: "^3.0.0",
     },
   },
-  // Default configuration options of the Nuxt module
   defaults: {
     providers: {},
   },
   async setup(options, nuxt) {
     logger.log("@workmate/nuxt-auth:: installing module");
+    const resolver = createResolver(import.meta.url);
 
-    const $runner = new AuthProvider({
-      providers: options.providers,
-      defaultProviderKey: "local",
-    });
-
-
-    nuxt.options.runtimeConfig = defu(nuxt.options.runtimeConfig, {
-      auth: {
-        $runner,
-      }
-    });
+    nuxt.options.runtimeConfig.auth = defu(nuxt.options.runtimeConfig.auth, options);
 
     await installModule("@pinia/nuxt").catch((e) => {
       logger.error("Unable to install pinia: \n install pinia and @pinia/nuxt");
       throw e;
     });
 
-    const resolver = createResolver(import.meta.url);
-
     addImportsDir(resolver.resolve("runtime/composables"));
+    addPlugin(resolver.resolve("./runtime/plugin"));
 
     logger.success("@workmate/nuxt-auth:: successfully installed");
   },
@@ -59,10 +48,7 @@ export default defineNuxtModule<ModuleOptions>({
 
 declare module '@nuxt/schema' {
   interface RuntimeConfig {
-    // Add your custom properties here
-    auth: {
-      $runner: AuthProvider,
-    }
+    auth: ModuleOptions,
   }
 }
 

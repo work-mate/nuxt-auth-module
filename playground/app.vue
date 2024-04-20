@@ -5,9 +5,9 @@
 </template>
 
 <script setup>
-const {
-  token, user, options
-} = useAuth();
+// const {
+//   token, user, options
+// } = useAuth();
 
-console.log(options);
+// console.log(options);
 </script>
