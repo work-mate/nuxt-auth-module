@@ -13,12 +13,14 @@ import defu from "defu";
 export { LocalAuthProvider } from "./runtime/providers/LocalAuthProvider";
 export { AuthProvider } from "./runtime/providers/AuthProvider";
 
-
 export interface ModuleOptions {
   providers: Record<string, AuthProviderInterface>;
   defaultProvider?: string;
+  cookiesNames: {
+    accessToken: string;
+    refreshToken: string;
+  };
 }
-
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
@@ -31,12 +33,19 @@ export default defineNuxtModule<ModuleOptions>({
   defaults: {
     providers: {},
     defaultProvider: "local",
+    cookiesNames: {
+      accessToken: "auth:token",
+      refreshToken: "auth:refreshToken",
+    }
   },
   async setup(options, nuxt) {
     logger.log("@workmate/nuxt-auth:: installing module");
     const resolver = createResolver(import.meta.url);
 
-    nuxt.options.runtimeConfig.auth = defu(nuxt.options.runtimeConfig.auth, options);
+    nuxt.options.runtimeConfig.auth = defu(
+      nuxt.options.runtimeConfig.auth,
+      options
+    );
 
     await installModule("@pinia/nuxt").catch((e) => {
       logger.error("Unable to install pinia: \n install pinia and @pinia/nuxt");
@@ -48,16 +57,15 @@ export default defineNuxtModule<ModuleOptions>({
 
     addServerHandler({
       middleware: true,
-      handler: resolver.resolve('./runtime/server/middleware/auth'),
-    })
+      handler: resolver.resolve("./runtime/server/middleware/auth"),
+    });
 
     logger.success("@workmate/nuxt-auth:: successfully installed");
   },
 });
 
-declare module '@nuxt/schema' {
+declare module "@nuxt/schema" {
   interface RuntimeConfig {
-    auth: ModuleOptions,
+    auth: ModuleOptions;
   }
 }
-

@@ -5,9 +5,18 @@ export type AuthProviderContructorOptions = {
   providers: Record<string, AuthProviderInterface>;
   defaultProviderKey?: string;
 };
+
+export type AccessTokens = {
+  accessToken: string,
+  refreshToken?: string
+}
 export class AuthProvider {
   private providers: Record<string, AuthProviderInterface>;
   private defaultProviderKey: string;
+  private tokens: AccessTokens = {
+    accessToken: "",
+    refreshToken: "",
+  };
 
   constructor({ providers, defaultProviderKey }: AuthProviderContructorOptions) {
     this.providers = providers;
@@ -47,9 +56,12 @@ export class AuthProvider {
     return p;
   }// end method defaultProvider
 
+  setAuthTokens(tokens: AccessTokens){
+    this.tokens = tokens;
+  }//end setAuthCookies
 
-  public getMessage() {
-    return `This is the message`;
+  getMessage(): string {
+    return `Tokens: ${JSON.stringify(this.tokens)}`
   }
 
   // public login(authData?: AuthLoginData): Promise<any> {
