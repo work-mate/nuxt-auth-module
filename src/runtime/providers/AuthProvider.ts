@@ -1,4 +1,3 @@
-import { logger } from "@nuxt/kit";
 import { SupportedAuthProvider, type AuthLoginData, type AuthProviderInterface } from "../models";
 import type { LocalAuthProvider } from "./LocalAuthProvider";
 
@@ -27,7 +26,6 @@ export class AuthProvider {
 
     if (!p) {
       const message = `AuthProvider:: Cannot find provider with the key "${providerKey}"`;
-      logger.error(message);
       throw new Error(message);
     }
 
@@ -43,12 +41,16 @@ export class AuthProvider {
 
     if(!p) {
       const message = `AuthProvider:: You must set up at least one provider`;
-      logger.error(message);
       throw new Error(message);
     }
 
     return p;
   }// end method defaultProvider
+
+
+  public getMessage() {
+    return `This is the message`;
+  }
 
   // public login(authData?: AuthLoginData): Promise<any> {
   //   return this.defaultProvider().login(authData);

@@ -12,3 +12,8 @@ export interface AuthProviderInterface {
   fetchUserData?(): Promise<void>;
   logout(): Promise<void>;
 }
+
+export type AuthUser = { name: string; profilePicture: string };
+export type AuthState =
+  | { loggedIn: true; user: AuthUser }
+  | { loggedIn: false; user: null };

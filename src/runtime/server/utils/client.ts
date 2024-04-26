@@ -1,5 +1,5 @@
-import { useRuntimeConfig } from "#app";
-import { AuthProvider } from "../providers/AuthProvider"
+import { useRuntimeConfig } from "#imports";
+import { AuthProvider } from "../../providers/AuthProvider"
 
 
 let authClient: AuthProvider;

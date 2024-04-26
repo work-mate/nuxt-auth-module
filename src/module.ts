@@ -6,10 +6,12 @@ import {
   installModule,
   addTypeTemplate,
   addPlugin,
+  addServerHandler,
 } from "@nuxt/kit";
 import type { AuthProviderInterface } from "./runtime/models";
 import defu from "defu";
 export { LocalAuthProvider } from "./runtime/providers/LocalAuthProvider";
+export { AuthProvider } from "./runtime/providers/AuthProvider";
 
 
 export interface ModuleOptions {
@@ -43,6 +45,11 @@ export default defineNuxtModule<ModuleOptions>({
 
     addImportsDir(resolver.resolve("runtime/composables"));
     addPlugin(resolver.resolve("./runtime/plugin"));
+
+    addServerHandler({
+      middleware: true,
+      handler: resolver.resolve('./runtime/server/middleware/auth'),
+    })
 
     logger.success("@workmate/nuxt-auth:: successfully installed");
   },
