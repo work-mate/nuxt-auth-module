@@ -19,6 +19,7 @@ export interface ModuleOptions {
   cookiesNames: {
     accessToken: string;
     refreshToken: string;
+    authProvider: string;
   };
 }
 
@@ -36,6 +37,7 @@ export default defineNuxtModule<ModuleOptions>({
     cookiesNames: {
       accessToken: "auth:token",
       refreshToken: "auth:refreshToken",
+      authProvider: "auth:provider",
     }
   },
   async setup(options, nuxt) {

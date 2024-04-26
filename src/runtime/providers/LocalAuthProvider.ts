@@ -1,4 +1,5 @@
 import type { AuthLoginData, AuthProviderInterface } from "../models";
+import type { AccessTokens } from "./AuthProvider";
 
 export interface LocalAuthLoginData extends AuthLoginData {
   principal: string;
@@ -6,24 +7,28 @@ export interface LocalAuthLoginData extends AuthLoginData {
 }
 
 export type LocalAuthInitializerOptions = {
-  secret: string,
+  secret: string;
   endpoints?: {
-    signIn?: { path?: string, method?: string },
-    signOut?: { path?: string, method?: string } | false,
-    signUp?: { path?: string, method?: string },
-    getSession?: { path?: string, method?: string },
-  },
+    signIn?: { path?: string; method?: string };
+    signOut?: { path?: string; method?: string } | false;
+    signUp?: { path?: string; method?: string };
+    getSession?: { path?: string; method?: string };
+  };
   token?: {
-    signInResponseTokenPointer?: string,
-    type?: string,
-    cookieName?: string,
-    headerName?: string,
-    maxAgeInSeconds?: number,
-  }
-}
+    signInResponseTokenPointer?: string;
+    type?: string;
+    cookieName?: string;
+    headerName?: string;
+    maxAgeInSeconds?: number;
+  };
+};
 
 export class LocalAuthProvider implements AuthProviderInterface {
   name: string = "local";
+  tokens: AccessTokens = {
+    accessToken: "",
+    refreshToken: "",
+  };
 
   login(authData: LocalAuthLoginData): Promise<unknown> {
     throw new Error("Method not implemented.");
@@ -43,6 +48,14 @@ export class LocalAuthProvider implements AuthProviderInterface {
 
   logout(): Promise<void> {
     throw new Error("Method not implemented.");
+  }
+
+  setTokens(tokens: AccessTokens): void {
+    this.tokens = tokens;
+  }
+
+  getTokens(): AccessTokens {
+    return this.tokens;
   }
 
   static create(options: LocalAuthInitializerOptions): LocalAuthProvider {

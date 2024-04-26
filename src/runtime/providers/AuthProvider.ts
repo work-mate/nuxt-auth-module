@@ -1,4 +1,8 @@
-import { SupportedAuthProvider, type AuthLoginData, type AuthProviderInterface } from "../models";
+import {
+  SupportedAuthProvider,
+  type AuthLoginData,
+  type AuthProviderInterface,
+} from "../models";
 import type { LocalAuthProvider } from "./LocalAuthProvider";
 
 export type AuthProviderContructorOptions = {
@@ -7,9 +11,9 @@ export type AuthProviderContructorOptions = {
 };
 
 export type AccessTokens = {
-  accessToken: string,
-  refreshToken?: string
-}
+  accessToken: string;
+  refreshToken?: string;
+};
 export class AuthProvider {
   private providers: Record<string, AuthProviderInterface>;
   private defaultProviderKey: string;
@@ -18,13 +22,16 @@ export class AuthProvider {
     refreshToken: "",
   };
 
-  constructor({ providers, defaultProviderKey }: AuthProviderContructorOptions) {
+  constructor({
+    providers,
+    defaultProviderKey,
+  }: AuthProviderContructorOptions) {
     this.providers = providers;
     this.defaultProviderKey = defaultProviderKey || "local";
 
-    if(!this.providers[this.defaultProviderKey]){
+    if (!this.providers[this.defaultProviderKey]) {
       const providerKeys = Object.keys(this.providers);
-      if(providerKeys.length) {
+      if (providerKeys.length) {
         this.defaultProviderKey = providerKeys[0];
       }
     }
@@ -39,29 +46,32 @@ export class AuthProvider {
     }
 
     return p;
-  }// end method provider
+  } // end method provider
 
   public local(): LocalAuthProvider {
-    return this.provider(SupportedAuthProvider.LOCAL) as unknown as LocalAuthProvider;
-  }// end method local
+    return this.provider(
+      SupportedAuthProvider.LOCAL
+    ) as unknown as LocalAuthProvider;
+  } // end method local
 
   private defaultProvider(): AuthProviderInterface {
     let p = this.providers[this.defaultProviderKey];
 
-    if(!p) {
+    if (!p) {
       const message = `AuthProvider:: You must set up at least one provider`;
       throw new Error(message);
     }
 
     return p;
-  }// end method defaultProvider
+  } // end method defaultProvider
 
-  setAuthTokens(tokens: AccessTokens){
+  setTokens(provider: string, tokens: AccessTokens) {
+    this.provider(provider).setTokens(tokens);
     this.tokens = tokens;
-  }//end setAuthCookies
+  } //end setAuthCookies
 
   getMessage(): string {
-    return `Tokens: ${JSON.stringify(this.tokens)}`
+    return `Tokens: ${JSON.stringify(this.tokens)}`;
   }
 
   // public login(authData?: AuthLoginData): Promise<any> {
@@ -81,4 +91,4 @@ export class AuthProvider {
   // logout(): Promise<void> {
   //   return this.defaultProvider().logout();
   // }
-}//end class AuthProvider
+} //end class AuthProvider

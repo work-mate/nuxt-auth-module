@@ -1,3 +1,5 @@
+import type { AccessTokens } from "./providers/AuthProvider";
+
 export enum SupportedAuthProvider {
   LOCAL = "local",
 }
@@ -11,6 +13,8 @@ export interface AuthProviderInterface {
   getUserData?(): Promise<unknown | null>;
   fetchUserData?(): Promise<void>;
   logout(): Promise<void>;
+  setTokens(token: AccessTokens): void;
+  getTokens(): AccessTokens;
 }
 
 export type AuthUser = { name: string; profilePicture: string };
