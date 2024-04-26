@@ -1,6 +1,5 @@
 import {
   SupportedAuthProvider,
-  type AuthLoginData,
   type AuthProviderInterface,
 } from "../models";
 import type { LocalAuthProvider } from "./LocalAuthProvider";
@@ -16,7 +15,7 @@ export type AccessTokens = {
 };
 export class AuthProvider {
   private providers: Record<string, AuthProviderInterface>;
-  private defaultProviderKey: string;
+  private activeProviderKey: string;
   private tokens: AccessTokens = {
     accessToken: "",
     refreshToken: "",
@@ -27,14 +26,19 @@ export class AuthProvider {
     defaultProviderKey,
   }: AuthProviderContructorOptions) {
     this.providers = providers;
-    this.defaultProviderKey = defaultProviderKey || "local";
+    const providerKey = defaultProviderKey || "local"
+    this.setDefaultProvider(providerKey);
+    this.activeProviderKey = providerKey;
+  }
 
-    if (!this.providers[this.defaultProviderKey]) {
-      const providerKeys = Object.keys(this.providers);
-      if (providerKeys.length) {
-        this.defaultProviderKey = providerKeys[0];
-      }
+  public setDefaultProvider(providerKey: string) {
+    this.activeProviderKey = providerKey;
+
+    if (!this.providers[providerKey]) {
+      throw new Error(`AuthProvider:: Cannot find provider with the key "${providerKey}"`);
     }
+
+    this.activeProviderKey = providerKey;
   }
 
   public provider(providerKey: string): AuthProviderInterface {
@@ -54,16 +58,6 @@ export class AuthProvider {
     ) as unknown as LocalAuthProvider;
   } // end method local
 
-  private defaultProvider(): AuthProviderInterface {
-    let p = this.providers[this.defaultProviderKey];
-
-    if (!p) {
-      const message = `AuthProvider:: You must set up at least one provider`;
-      throw new Error(message);
-    }
-
-    return p;
-  } // end method defaultProvider
 
   setTokens(provider: string, tokens: AccessTokens) {
     this.provider(provider).setTokens(tokens);
@@ -74,21 +68,15 @@ export class AuthProvider {
     return `Tokens: ${JSON.stringify(this.tokens)}`;
   }
 
-  // public login(authData?: AuthLoginData): Promise<any> {
-  //   return this.defaultProvider().login(authData);
-  // }
 
-  // isLoggedIn(): boolean {
-  //   return this.defaultProvider().isLoggedIn();
-  // }
+  // private defaultProvider(): AuthProviderInterface {
+  //   let p = this.providers[this.activeProviderKey];
 
-  // getUserData(): Promise<unknown | null> {
-  //   return this.defaultProvider().getUserData();
-  // }
-  // fetchUserData(): Promise<void> {
-  //   return this.defaultProvider().fetchUserData();
-  // }
-  // logout(): Promise<void> {
-  //   return this.defaultProvider().logout();
-  // }
+  //   if (!p) {
+  //     const message = `AuthProvider:: You must set up at least one provider`;
+  //     throw new Error(message);
+  //   }
+
+  //   return p;
+  // } // end method defaultProvider
 } //end class AuthProvider

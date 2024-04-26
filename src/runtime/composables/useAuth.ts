@@ -1,10 +1,5 @@
-import { useRuntimeConfig } from "#app";
-import useAuthToken from "./useAuthToken";
-import useAuthUser from "./useAuthUser";
+import { useNuxtApp, useRuntimeConfig } from "#app";
 
 export default function useAuth() {
-  return {
-    token: useAuthToken(),
-    user: useAuthUser(),
-  }
+  return useNuxtApp().$auth;
 }
