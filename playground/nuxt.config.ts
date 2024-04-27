@@ -7,7 +7,10 @@ export default defineNuxtConfig({
       local: {
         endpoints: {
           signIn: {
-            path:  "/auth/login",
+            path:  "http://localhost:8080/api/auth/login/password",
+            body: {
+              principal: "email_address"
+            }
           }
         }
       },

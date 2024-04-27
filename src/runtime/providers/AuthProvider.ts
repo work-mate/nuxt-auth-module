@@ -1,8 +1,6 @@
 import { SupportedAuthProvider, type AuthProviderInterface } from "../models";
 import type { LocalAuthProvider } from "./LocalAuthProvider";
-import type { H3Event } from "h3";
-import { getCookie } from "h3";
-import { useRuntimeConfig } from "#imports";
+import { getCookie, setCookie, type H3Event } from "h3";
 import type { ModuleOptions } from "@nuxt/schema";
 
 export type AuthProviderContructorOptions = {
@@ -60,5 +58,17 @@ export class AuthProvider {
   static getProviderKeyFromEvent(event: H3Event, authConfig: ModuleOptions): string {
     const cookiesNames = authConfig.token.cookiesNames;
     return getCookie(event, cookiesNames.authProvider) || "";
+  }
+
+  static setProviderTokensToCookies(event: H3Event, authConfig: ModuleOptions, provider: string, tokens: AccessTokens) {
+    const cookiesNames = authConfig.token.cookiesNames;
+    const maxAge = authConfig.token.maxAge;
+    const options = {
+      expires: new Date(Date.now() + maxAge),
+    };
+
+    setCookie(event, cookiesNames.accessToken, tokens.accessToken, options);
+    setCookie(event, cookiesNames.refreshToken, tokens.refreshToken || "", options);
+    setCookie(event, cookiesNames.authProvider, provider, options);
   }
 } //end class AuthProvider

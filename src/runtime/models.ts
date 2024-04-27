@@ -8,7 +8,7 @@ export interface AuthLoginData {}
 
 export interface AuthProviderInterface {
   name: string;
-  login(authData?: AuthLoginData): Promise<unknown>;
+  login(authData?: AuthLoginData): Promise<{tokens: AccessTokens}>;
   isLoggedIn(): boolean;
   getUserData?(): Promise<unknown | null>;
   fetchUserData?(): Promise<void>;

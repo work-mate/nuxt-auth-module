@@ -1,6 +1,9 @@
 import defu from "defu";
 import type { AuthLoginData, AuthProviderInterface, ErrorResponse } from "../models";
 import type { AccessTokens } from "./AuthProvider";
+import axios from "axios";
+import type { DeepRequired } from "~/src/module";
+import { getRecursiveProperty } from "../helpers";
 
 export interface LocalAuthLoginData extends AuthLoginData {
   principal: string;
@@ -9,8 +12,16 @@ export interface LocalAuthLoginData extends AuthLoginData {
 
 export type LocalAuthInitializerOptions = {
   endpoints?: {
-    signIn: { path?: string; method?: string };
-    signOut?: { path?: string; method?: string } | false;
+    signIn?: {
+      path?: string;
+      method?: "GET" | "HEAD" | "PATCH" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "get" | "head" | "patch" | "post" | "put" | "delete" | "connect" | "options" | "trace";
+      tokenKey?: string;
+      body?: {
+        principal?: string;
+        password?: string;
+      }
+    };
+    signOut?: { path: string; method: string } | false;
     signUp?: { path?: string; method?: string } | false;
     getSession?: { path?: string; method?: string } | false;
   };
@@ -18,12 +29,17 @@ export type LocalAuthInitializerOptions = {
 
 export class LocalAuthProvider implements AuthProviderInterface {
   name: string = "local";
-  private options: Required<LocalAuthInitializerOptions>;
-  static defaultOptions: Required<LocalAuthInitializerOptions> = {
+  private options: DeepRequired<LocalAuthInitializerOptions>;
+  static defaultOptions: DeepRequired<LocalAuthInitializerOptions> = {
     endpoints: {
       signIn: {
         path:  "/signin",
-        method: "GET"
+        method: "POST",
+        tokenKey: "token",
+        body: {
+          principal: "username",
+          password: "password",
+        }
       },
       signOut: false,
       signUp: false,
@@ -32,7 +48,7 @@ export class LocalAuthProvider implements AuthProviderInterface {
   }
 
   constructor(options: LocalAuthInitializerOptions) {
-    this.options = defu(options, LocalAuthProvider.defaultOptions) as Required<LocalAuthInitializerOptions>;
+    this.options = defu(options, LocalAuthProvider.defaultOptions) as DeepRequired<LocalAuthInitializerOptions>;
   }
 
   static create(options: LocalAuthInitializerOptions): LocalAuthProvider {
@@ -41,12 +57,32 @@ export class LocalAuthProvider implements AuthProviderInterface {
 
 
 
-  async login(authData: LocalAuthLoginData): Promise<unknown> {
+  async login(authData: LocalAuthLoginData): Promise<{tokens: AccessTokens}> {
     const url = this.options.endpoints.signIn.path;
-
-    return {
-      token: "This is some value here: " + url,
+    const method = this.options.endpoints.signIn.method;
+    const principal = this.options.endpoints.signIn.body.principal;
+    const password = this.options.endpoints.signIn.body.password;
+    const tokenKey = this.options.endpoints.signIn.tokenKey;
+    const body = {
+      [principal]: authData.principal,
+      [password]: authData.password
     }
+
+    return $fetch(url, {
+      method,
+      body,
+      headers: {
+        Accept: "application/json",
+      },
+    }).then(res => {
+      const token = getRecursiveProperty(res, tokenKey);
+
+      const accessTokens: AccessTokens = {
+        accessToken: token,
+      }
+
+      return {tokens: accessTokens};
+    })
   }
 
   isLoggedIn(): boolean {

@@ -19,11 +19,16 @@ export type ModuleProvidersOptions = {
   // [key: string]: AuthProviderInterface
 }
 
+export type DeepRequired<T> = Required<{
+  [P in keyof T]: T[P] extends object | undefined ? DeepRequired<Required<T[P]>> : T[P];
+}>;
+
 export interface ModuleOptions {
   providers: ModuleProvidersOptions;
   defaultProvider?: string;
   token: {
     type: "Bearer",
+    maxAge: number,
     cookiesNames: {
       accessToken: string;
       refreshToken: string;
@@ -45,6 +50,7 @@ export default defineNuxtModule<ModuleOptions>({
     defaultProvider: "local",
     token: {
       type: "Bearer",
+      maxAge: 1000 * 60 * 60 * 24 * 30,
       cookiesNames: {
         accessToken: "auth:token",
         refreshToken: "auth:refreshToken",
