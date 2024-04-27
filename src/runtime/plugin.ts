@@ -1,5 +1,5 @@
 import { defineNuxtPlugin, shallowRef, useRequestEvent, useState } from "#imports";
-import type { AuthState } from "./models";
+import type { AuthState, SupportedAuthProvider } from "./models";
 
 export default defineNuxtPlugin((nuxtApp) => {
   const state = useState<AuthState>('auth', shallowRef);
@@ -14,9 +14,29 @@ export default defineNuxtPlugin((nuxtApp) => {
     //   : { loggedIn: false, user: null }
   }
 
+  async function login(provider: string | SupportedAuthProvider, data: Record<string, string> = {}) {
+    return $fetch("/api/auth/login", {
+      method: "POST",
+      body: {
+        provider,
+        ...data
+      }
+    });
+  }
+
+  async function logout() {
+    return $fetch("/api/auth/logout", {
+      method: "POST",
+    });
+  }
+
   return {
     provide: {
-      auth: state.value,
+      auth: {
+        state: state.value,
+        login,
+        logout
+      }
     },
   }
 });

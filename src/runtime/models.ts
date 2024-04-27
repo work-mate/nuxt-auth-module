@@ -22,7 +22,7 @@ export interface AuthProviderInterface {
 
 export type AuthUser = { name: string; profilePicture: string };
 export type AuthState =
-  | { loggedIn: true; user: AuthUser }
+  | { loggedIn: true; user: AuthUser; token: string; refreshToken?: string }
   | { loggedIn: false; user: null };
 
 export interface ErrorResponse {
