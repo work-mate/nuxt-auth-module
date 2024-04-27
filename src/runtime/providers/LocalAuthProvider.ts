@@ -1,3 +1,4 @@
+import defu from "defu";
 import type { AuthLoginData, AuthProviderInterface, ErrorResponse } from "../models";
 import type { AccessTokens } from "./AuthProvider";
 
@@ -8,29 +9,44 @@ export interface LocalAuthLoginData extends AuthLoginData {
 
 export type LocalAuthInitializerOptions = {
   endpoints?: {
-    signIn?: { path?: string; method?: string };
+    signIn: { path?: string; method?: string };
     signOut?: { path?: string; method?: string } | false;
     signUp?: { path?: string; method?: string } | false;
-    getSession?: { path?: string; method?: string };
-  };
-  token?: {
-    signInResponseTokenPointer?: string;
-    type?: string;
-    cookieName?: string;
-    headerName?: string;
-    maxAgeInSeconds?: number;
+    getSession?: { path?: string; method?: string } | false;
   };
 };
 
 export class LocalAuthProvider implements AuthProviderInterface {
   name: string = "local";
-
-  static defaultOptions = {
-    
+  private options: Required<LocalAuthInitializerOptions>;
+  static defaultOptions: Required<LocalAuthInitializerOptions> = {
+    endpoints: {
+      signIn: {
+        path:  "/signin",
+        method: "GET"
+      },
+      signOut: false,
+      signUp: false,
+      getSession: false,
+    }
   }
 
-  login(authData: LocalAuthLoginData): Promise<unknown> {
-    throw new Error("Method not implemented.");
+  constructor(options: LocalAuthInitializerOptions) {
+    this.options = defu(options, LocalAuthProvider.defaultOptions) as Required<LocalAuthInitializerOptions>;
+  }
+
+  static create(options: LocalAuthInitializerOptions): LocalAuthProvider {
+    return new LocalAuthProvider(options);
+  }
+
+
+
+  async login(authData: LocalAuthLoginData): Promise<unknown> {
+    const url = this.options.endpoints.signIn.path;
+
+    return {
+      token: "This is some value here: " + url,
+    }
   }
 
   isLoggedIn(): boolean {
@@ -74,7 +90,5 @@ export class LocalAuthProvider implements AuthProviderInterface {
     return true;
   }
 
-  static create(options: LocalAuthInitializerOptions): LocalAuthProvider {
-    return new LocalAuthProvider();
-  }
+
 }

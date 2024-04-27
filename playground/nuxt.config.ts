@@ -4,7 +4,13 @@ export default defineNuxtConfig({
   modules: ['../src/module'],
   auth: {
     providers: {
-      local: LocalAuthProvider.create({}),
+      local: {
+        endpoints: {
+          signIn: {
+            path:  "/auth/login",
+          }
+        }
+      },
     }
   },
   devtools: { enabled: true }

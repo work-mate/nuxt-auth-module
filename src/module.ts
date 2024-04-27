@@ -15,9 +15,8 @@ export { LocalAuthProvider } from "./runtime/providers/LocalAuthProvider";
 export { AuthProvider } from "./runtime/providers/AuthProvider";
 
 export type ModuleProvidersOptions = {
-  local?: LocalAuthProvider,
-} | {
-  [key: string]: AuthProviderInterface
+  local?: LocalAuthInitializerOptions,
+  // [key: string]: AuthProviderInterface
 }
 
 export interface ModuleOptions {
