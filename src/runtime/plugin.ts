@@ -41,28 +41,28 @@ export default defineNuxtPlugin(async (nuxtApp) => {
    * @returns {boolean} true if the current page requires authentication, false otherwise
    */
   function doesPageRequireAuth() {
+    console.log("doesPageRequireAuth");
+    console.log("route.meta: ", route.meta);
     // Check if the page has the "auth" middleware declared
     if (route.meta.middleware) {
       // If the page has the "auth" middleware, return true
-      if (
-        typeof route.meta.middleware == "string" &&
-        route.meta.middleware == "auth"
-      ) {
-        return true;
+      if (typeof route.meta.middleware == "string") {
+        if (route.meta.middleware == "auth") return true;
+        else if (route.meta.middleware == "auth-guest") return false;
       }
 
       // If the page has an array of middleware, check if it includes "auth"
-      if (Array.isArray(route.meta.middleware) && route.meta.middleware) {
-        if (route.meta.middleware.some((el) => el == "auth")) {
-          return true;
-        }
+      else if (Array.isArray(route.meta.middleware)) {
+        if (route.meta.middleware.some((el) => el == "auth")) return true;
+        else if (route.meta.middleware.some((el) => el == "auth-guest"))
+          return false;
       }
     }
 
     // If the global middleware is enabled and the page is set to require auth, return true
     if (useRuntimeConfig().public.auth.global) {
       // If the page has the auth property set to true, or if it is undefined, return true
-      return Boolean(route.meta.auth ?? true);
+      return !!(route.meta.auth ?? true);
     }
 
     return false;
@@ -108,8 +108,12 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       user: user.user,
     };
 
-    if(!doesPageRequireAuth()) {
-      navigateTo(redirectTo || useRuntimeConfig().public.auth.redirects.redirectIfLoggedIn);
+    if (!doesPageRequireAuth()) {
+      console.log(useRuntimeConfig().public.auth.redirects.redirectIfLoggedIn);
+      navigateTo(
+        redirectTo ||
+          useRuntimeConfig().public.auth.redirects.redirectIfLoggedIn
+      );
     }
 
     return response;
@@ -135,8 +139,11 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 
     state.value = { loggedIn: false, user: null };
 
-    if(doesPageRequireAuth()) {
-      navigateTo(redirectTo || useRuntimeConfig().public.auth.redirects.redirectIfNotLoggedIn);
+    if (doesPageRequireAuth()) {
+      navigateTo(
+        redirectTo ||
+          useRuntimeConfig().public.auth.redirects.redirectIfNotLoggedIn
+      );
     }
 
     return response;
