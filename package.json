@@ -29,7 +29,6 @@
   },
   "dependencies": {
     "@nuxt/kit": "^3.11.2",
-    "axios": "^1.6.8",
     "defu": "^6.1.4"
   },
   "devDependencies": {
