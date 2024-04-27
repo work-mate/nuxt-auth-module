@@ -7,8 +7,4 @@
 </template>
 
 <script setup lang="ts">
-
-const {
-  state
-} = useAuth();
 </script>

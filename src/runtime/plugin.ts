@@ -10,7 +10,7 @@ import {
 import type { AuthState, SupportedAuthProvider } from "./models";
 import type { AccessTokens } from "./providers/AuthProvider";
 
-export default defineNuxtPlugin(async (nuxtApp) => {
+export default defineNuxtPlugin(async () => {
   const state = useState<AuthState>("auth", shallowRef);
   const route = useRoute();
 

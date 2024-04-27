@@ -1,7 +1,7 @@
 <template>
   <div>
     This is the nuxt auth playground
-   <test-navigations />
+    <test-navigations />
   </div>
 </template>
 

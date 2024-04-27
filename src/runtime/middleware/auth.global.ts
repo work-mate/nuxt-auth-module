@@ -1,10 +1,5 @@
 import {
-  abortNavigation,
-  createError,
   defineNuxtRouteMiddleware,
-  navigateTo,
-  useNuxtApp,
-  useRuntimeConfig,
 } from "#imports";
 import { authMiddleware } from "./auth";
 

@@ -10,8 +10,4 @@
 definePageMeta({
   middleware: ["auth"],
 });
-
-const {
-  state
-} = useAuth();
 </script>

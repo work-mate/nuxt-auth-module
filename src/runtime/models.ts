@@ -28,4 +28,4 @@ export type AuthState =
 export interface ErrorResponse {
   message: string;
   data?: Record<string, string[]>;
-};
+}
