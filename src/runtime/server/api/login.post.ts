@@ -20,11 +20,25 @@ export default defineEventHandler(async (event) => {
   }
 
   const authClient = getAuthClient();
-  let authProvider = authClient.provider(provider);
+  const authProvider = authClient.provider(provider);
+  // const authProvider = authClient.local();
+
+  if(!authProvider) {
+    return authProvider;
+  }
+
+  try {
+    authProvider.validateRequestBody(body);
+  } catch(e: any) {
+    setResponseStatus(event, 400);
+    return e;
+  }
 
   // if(provider == SupportedAuthProvider.LOCAL) {
   //   authProvider = authClient.local();
   // }
+
+
 
   return {
     body

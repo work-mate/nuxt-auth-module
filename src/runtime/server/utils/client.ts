@@ -2,6 +2,7 @@ import { useRuntimeConfig } from "#imports";
 import { AuthProvider } from "../../providers/AuthProvider";
 import type { H3Event } from "h3";
 import { getCookie } from "h3";
+import { LocalAuthProvider } from "../../providers/LocalAuthProvider";
 
 let authClient: AuthProvider;
 
@@ -29,7 +30,9 @@ export const getAuthClient = (): AuthProvider => {
     /**
      * The available auth providers from Nuxt runtime config
      */
-    providers: config.providers,
+    providers: {
+      local: LocalAuthProvider.create({}),
+    },
     /**
      * The default provider key to use from Nuxt runtime config,
      * or fallback to "local" if not specified

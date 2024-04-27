@@ -1,4 +1,4 @@
-import type { AuthLoginData, AuthProviderInterface } from "../models";
+import type { AuthLoginData, AuthProviderInterface, ErrorResponse } from "../models";
 import type { AccessTokens } from "./AuthProvider";
 
 export interface LocalAuthLoginData extends AuthLoginData {
@@ -7,7 +7,6 @@ export interface LocalAuthLoginData extends AuthLoginData {
 }
 
 export type LocalAuthInitializerOptions = {
-  secret: string;
   endpoints?: {
     signIn?: { path?: string; method?: string };
     signOut?: { path?: string; method?: string } | false;
@@ -25,10 +24,6 @@ export type LocalAuthInitializerOptions = {
 
 export class LocalAuthProvider implements AuthProviderInterface {
   name: string = "local";
-  tokens: AccessTokens = {
-    accessToken: "",
-    refreshToken: "",
-  };
 
   login(authData: LocalAuthLoginData): Promise<unknown> {
     throw new Error("Method not implemented.");
@@ -50,12 +45,29 @@ export class LocalAuthProvider implements AuthProviderInterface {
     throw new Error("Method not implemented.");
   }
 
-  setTokens(tokens: AccessTokens): void {
-    this.tokens = tokens;
-  }
+  /**
+   * @throws {ErrorResponse}
+   * @returns {boolean}
+   */
+  validateRequestBody(body: Record<string, any>): boolean {
+    const error = {
+      message: "Invalid request body: principal and password required",
+      data: {} as Record<string, string[]>
+    } satisfies ErrorResponse
 
-  getTokens(): AccessTokens {
-    return this.tokens;
+    if(!body.principal) {
+      error.data["principal"] = ["principal is required"];
+    }
+
+    if(!body.password) {
+      error.data["password"] = ["password is required"];
+    }
+
+    if(Object.keys(error.data).length > 0) {
+      throw error;
+    }
+
+    return true;
   }
 
   static create(options: LocalAuthInitializerOptions): LocalAuthProvider {

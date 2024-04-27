@@ -13,8 +13,11 @@ export interface AuthProviderInterface {
   getUserData?(): Promise<unknown | null>;
   fetchUserData?(): Promise<void>;
   logout(): Promise<void>;
-  setTokens(token: AccessTokens): void;
-  getTokens(): AccessTokens;
+  /**
+   * @throws {ErrorResponse}
+   * @returns {boolean}
+   */
+  validateRequestBody(body: Record<string, any>): boolean;
 }
 
 export type AuthUser = { name: string; profilePicture: string };
@@ -22,8 +25,7 @@ export type AuthState =
   | { loggedIn: true; user: AuthUser }
   | { loggedIn: false; user: null };
 
-
-export type ErrorResponse = {
+export interface ErrorResponse {
   message: string;
-  data?: Record<string, string[]>,
-}
+  data?: Record<string, string[]>;
+};

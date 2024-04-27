@@ -3,6 +3,7 @@ import type { LocalAuthProvider } from "./LocalAuthProvider";
 import type { H3Event } from "h3";
 import { getCookie } from "h3";
 import { useRuntimeConfig } from "#imports";
+import type { ModuleOptions } from "@nuxt/schema";
 
 export type AuthProviderContructorOptions = {
   providers: Record<string, AuthProviderInterface>;
@@ -16,10 +17,6 @@ export type AccessTokens = {
 export class AuthProvider {
   private providers: Record<string, AuthProviderInterface>;
   private defaultProviderKey: string;
-  private tokens: AccessTokens = {
-    accessToken: "",
-    refreshToken: "",
-  };
 
   constructor({
     providers,
@@ -52,16 +49,16 @@ export class AuthProvider {
     ) as unknown as LocalAuthProvider;
   } // end method local
 
-  static getTokensFromEvent(event: H3Event): AccessTokens {
-    const cookiesNames = useRuntimeConfig().auth.cookiesNames;
+  static getTokensFromEvent(event: H3Event, authConfig: ModuleOptions): AccessTokens {
+    const cookiesNames = authConfig.cookiesNames;
     const accessToken = getCookie(event, cookiesNames.accessToken) || "";
     const refreshToken = getCookie(event, cookiesNames.refreshToken) || "";
 
     return { accessToken, refreshToken }
   }
 
-  static getProviderKeyFromEvent(event: H3Event): string {
-    const cookiesNames = useRuntimeConfig().auth.cookiesNames;
+  static getProviderKeyFromEvent(event: H3Event, authConfig: ModuleOptions): string {
+    const cookiesNames = authConfig.cookiesNames;
     return getCookie(event, cookiesNames.authProvider) || "";
   }
 } //end class AuthProvider
