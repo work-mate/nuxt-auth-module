@@ -10,17 +10,27 @@ import {
 } from "@nuxt/kit";
 import type { AuthProviderInterface } from "./runtime/models";
 import defu from "defu";
+import type { LocalAuthInitializerOptions, LocalAuthProvider } from "./runtime/providers/LocalAuthProvider";
 export { LocalAuthProvider } from "./runtime/providers/LocalAuthProvider";
 export { AuthProvider } from "./runtime/providers/AuthProvider";
 
+export type ModuleProvidersOptions = {
+  local?: LocalAuthProvider,
+} | {
+  [key: string]: AuthProviderInterface
+}
+
 export interface ModuleOptions {
-  providers: Record<string, AuthProviderInterface>;
+  providers: ModuleProvidersOptions;
   defaultProvider?: string;
-  cookiesNames: {
-    accessToken: string;
-    refreshToken: string;
-    authProvider: string;
-  };
+  token: {
+    type: "Bearer",
+    cookiesNames: {
+      accessToken: string;
+      refreshToken: string;
+      authProvider: string;
+    };
+  }
 }
 
 export default defineNuxtModule<ModuleOptions>({
@@ -34,10 +44,13 @@ export default defineNuxtModule<ModuleOptions>({
   defaults: {
     providers: {},
     defaultProvider: "local",
-    cookiesNames: {
-      accessToken: "auth:token",
-      refreshToken: "auth:refreshToken",
-      authProvider: "auth:provider",
+    token: {
+      type: "Bearer",
+      cookiesNames: {
+        accessToken: "auth:token",
+        refreshToken: "auth:refreshToken",
+        authProvider: "auth:provider",
+      }
     }
   },
   async setup(options, nuxt) {

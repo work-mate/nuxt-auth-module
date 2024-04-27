@@ -34,13 +34,8 @@ export default defineEventHandler(async (event) => {
     return e;
   }
 
-  // if(provider == SupportedAuthProvider.LOCAL) {
-  //   authProvider = authClient.local();
-  // }
+  const result = await authProvider.login(body);
 
 
-
-  return {
-    body
-  }
+  return result;
 })

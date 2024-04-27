@@ -10,7 +10,7 @@ export type LocalAuthInitializerOptions = {
   endpoints?: {
     signIn?: { path?: string; method?: string };
     signOut?: { path?: string; method?: string } | false;
-    signUp?: { path?: string; method?: string };
+    signUp?: { path?: string; method?: string } | false;
     getSession?: { path?: string; method?: string };
   };
   token?: {
@@ -24,6 +24,10 @@ export type LocalAuthInitializerOptions = {
 
 export class LocalAuthProvider implements AuthProviderInterface {
   name: string = "local";
+
+  static defaultOptions = {
+    
+  }
 
   login(authData: LocalAuthLoginData): Promise<unknown> {
     throw new Error("Method not implemented.");

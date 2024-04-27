@@ -50,7 +50,7 @@ export class AuthProvider {
   } // end method local
 
   static getTokensFromEvent(event: H3Event, authConfig: ModuleOptions): AccessTokens {
-    const cookiesNames = authConfig.cookiesNames;
+    const cookiesNames = authConfig.token.cookiesNames;
     const accessToken = getCookie(event, cookiesNames.accessToken) || "";
     const refreshToken = getCookie(event, cookiesNames.refreshToken) || "";
 
@@ -58,7 +58,7 @@ export class AuthProvider {
   }
 
   static getProviderKeyFromEvent(event: H3Event, authConfig: ModuleOptions): string {
-    const cookiesNames = authConfig.cookiesNames;
+    const cookiesNames = authConfig.token.cookiesNames;
     return getCookie(event, cookiesNames.authProvider) || "";
   }
 } //end class AuthProvider
