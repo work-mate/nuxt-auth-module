@@ -1,7 +1,5 @@
 import {
   defineEventHandler,
-  sendRedirect,
-  getQuery,
   readBody,
   setResponseStatus,
 } from "h3";

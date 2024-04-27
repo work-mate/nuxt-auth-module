@@ -3,7 +3,6 @@ import {
   createResolver,
   logger,
   addImportsDir,
-  installModule,
   addPlugin,
   addServerHandler,
   addRouteMiddleware,

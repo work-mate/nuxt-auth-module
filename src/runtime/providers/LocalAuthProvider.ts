@@ -5,7 +5,6 @@ import type {
   ErrorResponse,
 } from "../models";
 import type { AccessTokens } from "./AuthProvider";
-import axios from "axios";
 import type { DeepRequired } from "~/src/module";
 import { getRecursiveProperty } from "../helpers";
 
