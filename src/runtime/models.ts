@@ -11,7 +11,7 @@ export interface AuthProviderInterface {
   login(authData?: AuthLoginData): Promise<{tokens: AccessTokens}>;
   isLoggedIn(): boolean;
   getUserData?(): Promise<unknown | null>;
-  fetchUserData?(): Promise<void>;
+  fetchUserData?(tokens: AccessTokens): Promise<{user: any}>;
   logout(): Promise<void>;
   /**
    * @throws {ErrorResponse}
@@ -22,7 +22,7 @@ export interface AuthProviderInterface {
 
 export type AuthUser = { name: string; profilePicture: string };
 export type AuthState =
-  | { loggedIn: true; user: AuthUser; token: string; refreshToken?: string }
+  | { loggedIn: true; user: any; token: string; refreshToken?: string }
   | { loggedIn: false; user: null };
 
 export interface ErrorResponse {

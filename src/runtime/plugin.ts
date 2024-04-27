@@ -29,7 +29,18 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     }
   }
 
-  async function fetchUserData() {}
+  async function fetchUserDataWithToken(): Promise<{ user: any }> {
+    const response: { user: any } = await $fetch("/api/auth/user", {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    console.log("User: ")
+    console.log(response)
+
+    return response;
+  }
 
   async function login(
     provider: string | SupportedAuthProvider,
@@ -45,15 +56,13 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 
     const tokens = response.tokens;
 
+    const user: { user: any } = await fetchUserDataWithToken();
+
     state.value = {
-      ...state.value,
       token: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       loggedIn: true,
-      user: {
-        name: "Oyinbo David",
-        profilePicture: "https://i.pravatar.cc/300",
-      }
+      user: user.user,
     };
 
     // await fetchUserData();
