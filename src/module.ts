@@ -83,11 +83,6 @@ export default defineNuxtModule<ModuleOptions>({
       }
     );
 
-    await installModule("@pinia/nuxt").catch((e) => {
-      logger.error("Unable to install pinia: \n install pinia and @pinia/nuxt");
-      throw e;
-    });
-
     addImportsDir(resolver.resolve("runtime/composables"));
     addPlugin(resolver.resolve("./runtime/plugin"));
 
