@@ -4,6 +4,7 @@
 
     <button @click="triggerLogin">Login</button>
     <button @click="triggerLogout">Logout</button>
+    <button @click="triggerRefreshUser">Refresh User</button>
 
     <pre>
       {{ state }}
@@ -13,7 +14,7 @@
 
 <script setup>
 const {
-  state, login, logout
+  state, login, logout, refreshUser
 } = useAuth();
 
 function triggerLogin() {
@@ -29,5 +30,9 @@ function triggerLogout() {
   logout().then(res => {
     console.log(res)
   })
+}
+
+async function triggerRefreshUser() {
+  await refreshUser()
 }
 </script>

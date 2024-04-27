@@ -34,9 +34,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       },
     });
 
-    console.log("User: ")
-    console.log(response)
-
     return response;
   }
 
@@ -44,6 +41,12 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     provider: string | SupportedAuthProvider,
     data: Record<string, string> = {}
   ) {
+    if (state.value.loggedIn) {
+      return {
+        message: "User already logged in",
+      };
+    }
+
     const response: { tokens: AccessTokens } = await $fetch("/api/auth/login", {
       method: "POST",
       body: {
@@ -63,12 +66,16 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       user: user.user,
     };
 
-    // await fetchUserData();
-
     return response;
   }
 
   async function logout() {
+    if (!state.value.loggedIn) {
+      return {
+        message: "User not logged in",
+      };
+    }
+
     const response = await $fetch("/api/auth/logout", {
       method: "POST",
     });
@@ -78,12 +85,27 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     return response;
   }
 
+  async function refreshUser() {
+    if (!state.value.loggedIn) {
+      throw {
+        message: "User not logged in",
+      };
+    }
+
+    const response = await fetchUserDataWithToken();
+    state.value = {
+      ...state.value,
+      user: response.user,
+    }
+  }
+
   return {
     provide: {
       auth: {
         state,
         login,
         logout,
+        refreshUser,
       },
     },
   };
