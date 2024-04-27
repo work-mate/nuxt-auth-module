@@ -3,6 +3,7 @@ import { LocalAuthProvider } from "../src/module";
 export default defineNuxtConfig({
   modules: ['../src/module'],
   auth: {
+    global: true,
     providers: {
       local: {
         endpoints: {

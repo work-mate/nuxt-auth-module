@@ -26,6 +26,7 @@ export type DeepRequired<T> = Required<{
 
 export interface ModuleOptions {
   providers: ModuleProvidersOptions;
+  global: boolean;
   defaultProvider?: string;
   redirects: {
     redirectIfNotLoggedIn: string;
@@ -52,6 +53,7 @@ export default defineNuxtModule<ModuleOptions>({
   },
   defaults: {
     providers: {},
+    global: false,
     redirects: {
       redirectIfNotLoggedIn: "/login",
       redirectIfLoggedIn: "/",
@@ -121,11 +123,13 @@ export default defineNuxtModule<ModuleOptions>({
       path: resolver.resolve('./runtime/middleware/auth-guest'),
     });
 
-    addRouteMiddleware({
-      name: 'auth-global',
-      path: resolver.resolve('./runtime/middleware/auth.global'),
-      global: true,
-    });
+    if(nuxt.options.runtimeConfig.auth.global) {
+      addRouteMiddleware({
+        name: 'auth-global',
+        path: resolver.resolve('./runtime/middleware/auth.global'),
+        global: true,
+      });
+    }
 
     logger.success("@workmate/nuxt-auth:: successfully installed");
   },
