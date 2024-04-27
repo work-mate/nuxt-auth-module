@@ -107,4 +107,23 @@ export class AuthProvider {
     deleteCookie(event, cookiesNames.refreshToken);
     deleteCookie(event, cookiesNames.authProvider);
   }
+
+  async getUserFromEvent(event: H3Event): Promise<{user: any}> {
+    const emptyUser = {user: null};
+
+    const tokens = AuthProvider.getTokensFromEvent(
+      event,
+      this.config,
+    );
+
+    const providerKey = AuthProvider.getProviderKeyFromEvent(event, this.config);
+    if(!providerKey) return emptyUser;
+
+    const provider = this.provider(providerKey);
+    if(!provider || !provider.fetchUserData) {
+      return emptyUser;
+    }
+
+    return await provider.fetchUserData(tokens);
+  }
 } //end class AuthProvider

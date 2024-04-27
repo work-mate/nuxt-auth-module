@@ -6,26 +6,26 @@ import { useRuntimeConfig } from "#imports";
 
 type AuthContext = {
   isAuthenticated: () => Promise<boolean>;
-  getUserProfile: () => Promise<any>;
+  getUser: () => Promise<{user: any}>;
   getTokens: () => Promise<AccessTokens>;
-}
+};
 
 export default defineEventHandler(async (event) => {
-  const authClient = getAuthClient();
-
   const authConfig = useRuntimeConfig().auth;
+  const authClient = getAuthClient();
   const tokens = AuthProvider.getTokensFromEvent(event, authConfig);
 
   event.context.auth = {
     isAuthenticated: async () => {
       return !!tokens.accessToken;
     },
-    getUserProfile: async () => {
+    getUser: async () => {
+      return { user: (await authClient.getUserFromEvent(event)).user };
     },
     getTokens: async () => {
       return tokens;
-    }
-  }
+    },
+  };
 });
 
 // type Slice<T extends Array<unknown>> = T extends [infer _A, ...infer B]

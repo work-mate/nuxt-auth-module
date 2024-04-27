@@ -15,12 +15,10 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     const tokens = await auth.getTokens();
 
     if (isLoggedIn) {
+      const userResponse = await auth.getUser();
       state.value = {
         loggedIn: true,
-        user: {
-          name: "Oyinbo David",
-          profilePicture: "https://i.pravatar.cc/300",
-        },
+        user: userResponse.user,
         token: tokens.accessToken,
         refreshToken: tokens.refreshToken,
       };
