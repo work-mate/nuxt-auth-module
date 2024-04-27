@@ -1,6 +1,7 @@
 import { useRuntimeConfig } from "#imports";
-import { AuthProvider } from "../../providers/AuthProvider"
-
+import { AuthProvider } from "../../providers/AuthProvider";
+import type { H3Event } from "h3";
+import { getCookie } from "h3";
 
 let authClient: AuthProvider;
 

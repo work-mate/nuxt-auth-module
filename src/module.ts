@@ -62,6 +62,11 @@ export default defineNuxtModule<ModuleOptions>({
       handler: resolver.resolve("./runtime/server/middleware/auth"),
     });
 
+    addServerHandler({
+      route: '/api/auth/login',
+      handler: resolver.resolve('./runtime/server/api/login.post'),
+    })
+
     logger.success("@workmate/nuxt-auth:: successfully installed");
   },
 });

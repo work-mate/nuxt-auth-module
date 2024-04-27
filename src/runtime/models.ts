@@ -21,3 +21,9 @@ export type AuthUser = { name: string; profilePicture: string };
 export type AuthState =
   | { loggedIn: true; user: AuthUser }
   | { loggedIn: false; user: null };
+
+
+export type ErrorResponse = {
+  message: string;
+  data?: Record<string, string[]>,
+}

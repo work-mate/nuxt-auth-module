@@ -1,8 +1,8 @@
-import {
-  SupportedAuthProvider,
-  type AuthProviderInterface,
-} from "../models";
+import { SupportedAuthProvider, type AuthProviderInterface } from "../models";
 import type { LocalAuthProvider } from "./LocalAuthProvider";
+import type { H3Event } from "h3";
+import { getCookie } from "h3";
+import { useRuntimeConfig } from "#imports";
 
 export type AuthProviderContructorOptions = {
   providers: Record<string, AuthProviderInterface>;
@@ -15,7 +15,7 @@ export type AccessTokens = {
 };
 export class AuthProvider {
   private providers: Record<string, AuthProviderInterface>;
-  private activeProviderKey: string;
+  private defaultProviderKey: string;
   private tokens: AccessTokens = {
     accessToken: "",
     refreshToken: "",
@@ -26,19 +26,13 @@ export class AuthProvider {
     defaultProviderKey,
   }: AuthProviderContructorOptions) {
     this.providers = providers;
-    const providerKey = defaultProviderKey || "local"
-    this.setDefaultProvider(providerKey);
-    this.activeProviderKey = providerKey;
-  }
-
-  public setDefaultProvider(providerKey: string) {
-    this.activeProviderKey = providerKey;
-
+    const providerKey = defaultProviderKey || "local";
     if (!this.providers[providerKey]) {
-      throw new Error(`AuthProvider:: Cannot find provider with the key "${providerKey}"`);
+      throw new Error(
+        `AuthProvider:: Cannot find provider with the key "${providerKey}"`
+      );
     }
-
-    this.activeProviderKey = providerKey;
+    this.defaultProviderKey = providerKey;
   }
 
   public provider(providerKey: string): AuthProviderInterface {
@@ -58,25 +52,16 @@ export class AuthProvider {
     ) as unknown as LocalAuthProvider;
   } // end method local
 
+  static getTokensFromEvent(event: H3Event): AccessTokens {
+    const cookiesNames = useRuntimeConfig().auth.cookiesNames;
+    const accessToken = getCookie(event, cookiesNames.accessToken) || "";
+    const refreshToken = getCookie(event, cookiesNames.refreshToken) || "";
 
-  setTokens(provider: string, tokens: AccessTokens) {
-    this.provider(provider).setTokens(tokens);
-    this.tokens = tokens;
-  } //end setAuthCookies
-
-  getMessage(): string {
-    return `Tokens: ${JSON.stringify(this.tokens)}`;
+    return { accessToken, refreshToken }
   }
 
-
-  // private defaultProvider(): AuthProviderInterface {
-  //   let p = this.providers[this.activeProviderKey];
-
-  //   if (!p) {
-  //     const message = `AuthProvider:: You must set up at least one provider`;
-  //     throw new Error(message);
-  //   }
-
-  //   return p;
-  // } // end method defaultProvider
+  static getProviderKeyFromEvent(event: H3Event): string {
+    const cookiesNames = useRuntimeConfig().auth.cookiesNames;
+    return getCookie(event, cookiesNames.authProvider) || "";
+  }
 } //end class AuthProvider

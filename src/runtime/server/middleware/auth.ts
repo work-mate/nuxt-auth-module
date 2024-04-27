@@ -1,18 +1,10 @@
-import type { H3Event } from "h3";
-import { defineEventHandler, getCookie } from "h3";
-import { useRuntimeConfig } from "#imports";
+import { defineEventHandler } from "h3";
+
 import { getAuthClient } from "../utils/client";
 import type { AuthProvider } from "../../providers/AuthProvider";
 
 export default defineEventHandler(async (event) => {
-  const cookiesNames = useRuntimeConfig().auth.cookiesNames;
-
-  const accessToken = getCookie(event, cookiesNames.accessToken) || "";
-  const refreshToken = getCookie(event, cookiesNames.refreshToken) || "";
-  const provider = getCookie(event, cookiesNames.authProvider) || "";
-
   const authClient = getAuthClient();
-  authClient.setTokens(provider, { accessToken, refreshToken });
 
   event.context.auth = authClient;
 });

@@ -6,7 +6,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   if (import.meta.server) {
     const auth = useRequestEvent()!.context.auth
     console.log("Request event")
-    console.log(auth.getMessage())
+    console.log(`auth.getMessage()`)
     // console.log(requestEveent)
     // const isLoggedIn = await kinde.isAuthenticated()
     // state.value = isLoggedIn
