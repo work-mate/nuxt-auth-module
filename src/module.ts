@@ -4,14 +4,12 @@ import {
   logger,
   addImportsDir,
   installModule,
-  addTypeTemplate,
   addPlugin,
   addServerHandler,
   addRouteMiddleware,
 } from "@nuxt/kit";
-import type { AuthProviderInterface } from "./runtime/models";
 import defu from "defu";
-import type { LocalAuthInitializerOptions, LocalAuthProvider } from "./runtime/providers/LocalAuthProvider";
+import type { LocalAuthInitializerOptions } from "./runtime/providers/LocalAuthProvider";
 export { LocalAuthProvider } from "./runtime/providers/LocalAuthProvider";
 export { AuthProvider } from "./runtime/providers/AuthProvider";
 

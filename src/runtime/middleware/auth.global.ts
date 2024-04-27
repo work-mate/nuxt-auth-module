@@ -24,8 +24,6 @@ export default defineNuxtRouteMiddleware((...params) => {
   }
 
   const authMeta = to.meta.auth ?? true;
-  console.log("Auth:::::: ", authMeta)
-
   if(!authMeta) return;
 
     return authMiddleware(...params);
