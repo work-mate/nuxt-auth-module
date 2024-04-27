@@ -27,6 +27,10 @@ export type DeepRequired<T> = Required<{
 export interface ModuleOptions {
   providers: ModuleProvidersOptions;
   defaultProvider?: string;
+  redirects: {
+    redirectIfNotLoggedIn: string;
+    redirectIfLoggedIn: string;
+  },
   token: {
     type: "Bearer",
     maxAge: number,
@@ -48,6 +52,10 @@ export default defineNuxtModule<ModuleOptions>({
   },
   defaults: {
     providers: {},
+    redirects: {
+      redirectIfNotLoggedIn: "/login",
+      redirectIfLoggedIn: "/",
+    },
     defaultProvider: "local",
     token: {
       type: "Bearer",
@@ -66,6 +74,13 @@ export default defineNuxtModule<ModuleOptions>({
     nuxt.options.runtimeConfig.auth = defu(
       nuxt.options.runtimeConfig.auth,
       options
+    );
+
+    nuxt.options.runtimeConfig.public.auth = defu(
+      nuxt.options.runtimeConfig.public.auth,
+      {
+        redirects: options.redirects,
+      }
     );
 
     await installModule("@pinia/nuxt").catch((e) => {
@@ -113,5 +128,11 @@ export default defineNuxtModule<ModuleOptions>({
 declare module "@nuxt/schema" {
   interface RuntimeConfig {
     auth: ModuleOptions;
+  }
+
+  interface PublicRuntimeConfig {
+    auth: {
+      redirects: ModuleOptions["redirects"];
+    }
   }
 }
