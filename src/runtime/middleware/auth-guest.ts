@@ -15,6 +15,6 @@ export default defineNuxtRouteMiddleware(() => {
         message: 'This page is only accessible to guests',
       })
     }
-    return abortNavigation()
+    return abortNavigation();
   }
 })

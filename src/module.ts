@@ -7,6 +7,7 @@ import {
   addTypeTemplate,
   addPlugin,
   addServerHandler,
+  addRouteMiddleware,
 } from "@nuxt/kit";
 import type { AuthProviderInterface } from "./runtime/models";
 import defu from "defu";
@@ -93,6 +94,16 @@ export default defineNuxtModule<ModuleOptions>({
     addServerHandler({
       route: '/api/auth/user',
       handler: resolver.resolve('./runtime/server/api/user'),
+    })
+
+    addRouteMiddleware({
+      name: 'auth',
+      path: resolver.resolve('./runtime/middleware/auth'),
+    })
+
+    addRouteMiddleware({
+      name: 'auth-guest',
+      path: resolver.resolve('./runtime/middleware/auth-guest'),
     })
 
     logger.success("@workmate/nuxt-auth:: successfully installed");
