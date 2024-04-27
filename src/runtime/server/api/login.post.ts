@@ -28,7 +28,6 @@ export default defineEventHandler(async (event) => {
   }
 
   const authClient = getAuthClient();
-  const responseData = {};
 
   let authProvider = authClient.provider(provider);
 
@@ -52,5 +51,5 @@ export default defineEventHandler(async (event) => {
     result.tokens
   );
 
-  return responseData;
+  return result;
 });

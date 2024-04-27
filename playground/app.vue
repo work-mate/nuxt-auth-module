@@ -1,13 +1,22 @@
 <template>
   <div>
     This is the nuxt auth playground
+
+    <button @click="triggerLogin">Login</button>
   </div>
 </template>
 
 <script setup>
-// const {
-//   token, user, options
-// } = useAuth();
+const {
+  state, login
+} = useAuth();
 
-// console.log(options);
+function triggerLogin() {
+  login('local', {
+    principal: "david6@email.com",
+    password: "password"
+  }).then(res => {
+    console.log(res)
+  })
+}
 </script>

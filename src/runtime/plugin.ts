@@ -2,11 +2,11 @@ import { defineNuxtPlugin, shallowRef, useRequestEvent, useState } from "#import
 import type { AuthState } from "./models";
 
 export default defineNuxtPlugin((nuxtApp) => {
-  const state = useState<AuthState>('auth', shallowRef)
+  const state = useState<AuthState>('auth', shallowRef);
   if (import.meta.server) {
     const auth = useRequestEvent()!.context.auth
-    console.log("Request event")
-    console.log(`auth.getMessage()`)
+    // console.log("Request event")
+    // console.log(`auth.getMessage()`)
     // console.log(requestEveent)
     // const isLoggedIn = await kinde.isAuthenticated()
     // state.value = isLoggedIn
