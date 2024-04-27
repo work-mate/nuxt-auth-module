@@ -26,8 +26,8 @@ export interface ModuleOptions {
   global: boolean;
   defaultProvider?: string;
   redirects: {
-    redirectIfNotLoggedIn: string;
-    redirectIfLoggedIn: string;
+    redirectIfNotLoggedIn?: string;
+    redirectIfLoggedIn?: string;
   },
   token: {
     type: "Bearer",

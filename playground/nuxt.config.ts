@@ -4,6 +4,9 @@ export default defineNuxtConfig({
   modules: ['../src/module'],
   auth: {
     global: true,
+    redirects: {
+      redirectIfLoggedIn: "/protected",
+    },
     providers: {
       local: {
         endpoints: {
