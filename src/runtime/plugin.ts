@@ -1,7 +1,10 @@
 import {
   defineNuxtPlugin,
+  navigateTo,
   shallowRef,
   useRequestEvent,
+  useRoute,
+  useRuntimeConfig,
   useState,
 } from "#imports";
 import type { AuthState, SupportedAuthProvider } from "./models";
@@ -9,6 +12,8 @@ import type { AccessTokens } from "./providers/AuthProvider";
 
 export default defineNuxtPlugin(async (nuxtApp) => {
   const state = useState<AuthState>("auth", shallowRef);
+  const route = useRoute();
+
   if (import.meta.server) {
     const auth = useRequestEvent()!.context.auth;
     const isLoggedIn = await auth.isAuthenticated();
@@ -27,6 +32,42 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     }
   }
 
+  /**
+   * Determine if the current page requires authentication
+   *
+   * If the page has a middleware that requires authentication, or if the global middleware is set
+   * in the Nuxt config and the page is set to require auth, then this function will return true.
+   *
+   * @returns {boolean} true if the current page requires authentication, false otherwise
+   */
+  function doesPageRequireAuth() {
+    // Check if the page has the "auth" middleware declared
+    if (route.meta.middleware) {
+      // If the page has the "auth" middleware, return true
+      if (
+        typeof route.meta.middleware == "string" &&
+        route.meta.middleware == "auth"
+      ) {
+        return true;
+      }
+
+      // If the page has an array of middleware, check if it includes "auth"
+      if (Array.isArray(route.meta.middleware) && route.meta.middleware) {
+        if (route.meta.middleware.some((el) => el == "auth")) {
+          return true;
+        }
+      }
+    }
+
+    // If the global middleware is enabled and the page is set to require auth, return true
+    if (useRuntimeConfig().public.auth.global) {
+      // If the page has the auth property set to true, or if it is undefined, return true
+      return Boolean(route.meta.auth ?? true);
+    }
+
+    return false;
+  }
+
   async function fetchUserDataWithToken(): Promise<{ user: any }> {
     const response: { user: any } = await $fetch("/api/auth/user", {
       headers: {
@@ -39,7 +80,8 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 
   async function login(
     provider: string | SupportedAuthProvider,
-    data: Record<string, string> = {}
+    data: Record<string, string> = {},
+    redirectTo?: string
   ) {
     if (state.value.loggedIn) {
       return {
@@ -66,10 +108,21 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       user: user.user,
     };
 
+    if(!doesPageRequireAuth()) {
+      navigateTo(redirectTo || useRuntimeConfig().public.auth.redirects.redirectIfLoggedIn);
+    }
+
     return response;
   }
 
-  async function logout() {
+  /**
+   * Logs out the current user.
+   *
+   * @returns The server response
+   *
+   * @throws {ErrorResponse} If the user was not logged in
+   */
+  async function logout(redirectTo?: string) {
     if (!state.value.loggedIn) {
       return {
         message: "User not logged in",
@@ -81,6 +134,10 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     });
 
     state.value = { loggedIn: false, user: null };
+
+    if(doesPageRequireAuth()) {
+      navigateTo(redirectTo || useRuntimeConfig().public.auth.redirects.redirectIfNotLoggedIn);
+    }
 
     return response;
   }
@@ -96,7 +153,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     state.value = {
       ...state.value,
       user: response.user,
-    }
+    };
   }
 
   return {

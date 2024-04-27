@@ -1,9 +1,7 @@
 <template>
   <div>
     Login Page:: Only guests can access this page
-    <pre>
-        {{ state }}
-      </pre>
+    <test-navigations />
   </div>
 </template>
 
@@ -11,8 +9,4 @@
 definePageMeta({
   middleware: ["auth-guest"],
 });
-
-const {
-  state
-} = useAuth();
 </script>

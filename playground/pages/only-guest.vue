@@ -1,9 +1,8 @@
 <template>
   <div>
     Only guests can access this page
-    <pre>
-        {{ state }}
-      </pre>
+
+    <test-navigations />
   </div>
 </template>
 

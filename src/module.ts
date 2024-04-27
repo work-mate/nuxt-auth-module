@@ -79,6 +79,7 @@ export default defineNuxtModule<ModuleOptions>({
       nuxt.options.runtimeConfig.public.auth,
       {
         redirects: options.redirects,
+        global: options.global,
       }
     );
 
@@ -135,6 +136,7 @@ declare module "@nuxt/schema" {
   interface PublicRuntimeConfig {
     auth: {
       redirects: ModuleOptions["redirects"];
+      global: ModuleOptions["global"];
     }
   }
 }
