@@ -4,6 +4,10 @@
 
     <button @click="triggerLogin">Login</button>
     <button @click="triggerLogout">Logout</button>
+
+    <pre>
+      {{ state }}
+    </pre>
   </div>
 </template>
 

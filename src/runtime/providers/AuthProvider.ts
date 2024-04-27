@@ -6,6 +6,7 @@ import type { ModuleOptions } from "@nuxt/schema";
 export type AuthProviderContructorOptions = {
   providers: Record<string, AuthProviderInterface>;
   defaultProviderKey?: string;
+  config: ModuleOptions;
 };
 
 export type AccessTokens = {
@@ -15,11 +16,14 @@ export type AccessTokens = {
 export class AuthProvider {
   private providers: Record<string, AuthProviderInterface>;
   private defaultProviderKey: string;
+  private config: ModuleOptions;
 
   constructor({
     providers,
     defaultProviderKey,
+    config,
   }: AuthProviderContructorOptions) {
+    this.config = config;
     this.providers = providers;
     const providerKey = defaultProviderKey || "local";
     if (!this.providers[providerKey]) {
@@ -47,20 +51,31 @@ export class AuthProvider {
     ) as unknown as LocalAuthProvider;
   } // end method local
 
-  static getTokensFromEvent(event: H3Event, authConfig: ModuleOptions): AccessTokens {
+  static getTokensFromEvent(
+    event: H3Event,
+    authConfig: ModuleOptions
+  ): AccessTokens {
     const cookiesNames = authConfig.token.cookiesNames;
     const accessToken = getCookie(event, cookiesNames.accessToken) || "";
     const refreshToken = getCookie(event, cookiesNames.refreshToken) || "";
 
-    return { accessToken, refreshToken }
+    return { accessToken, refreshToken };
   }
 
-  static getProviderKeyFromEvent(event: H3Event, authConfig: ModuleOptions): string {
+  static getProviderKeyFromEvent(
+    event: H3Event,
+    authConfig: ModuleOptions
+  ): string {
     const cookiesNames = authConfig.token.cookiesNames;
     return getCookie(event, cookiesNames.authProvider) || "";
   }
 
-  static setProviderTokensToCookies(event: H3Event, authConfig: ModuleOptions, provider: string, tokens: AccessTokens) {
+  static setProviderTokensToCookies(
+    event: H3Event,
+    authConfig: ModuleOptions,
+    provider: string,
+    tokens: AccessTokens
+  ) {
     const cookiesNames = authConfig.token.cookiesNames;
     const maxAge = authConfig.token.maxAge;
     const options = {
@@ -68,12 +83,25 @@ export class AuthProvider {
     };
     const tokenType = authConfig.token.type;
 
-    setCookie(event, cookiesNames.accessToken, `${tokenType} ${tokens.accessToken}`, options);
-    setCookie(event, cookiesNames.refreshToken, `${tokenType} ${tokens.refreshToken || ""}`, options);
+    setCookie(
+      event,
+      cookiesNames.accessToken,
+      tokens.accessToken ? `${tokenType} ${tokens.accessToken}` : "",
+      options
+    );
+    setCookie(
+      event,
+      cookiesNames.refreshToken,
+      tokens.refreshToken ? `${tokenType} ${tokens.refreshToken}` : "",
+      options
+    );
     setCookie(event, cookiesNames.authProvider, provider, options);
   }
 
-  static deleteProviderTokensFromCookies(event: H3Event, authConfig: ModuleOptions) {
+  static deleteProviderTokensFromCookies(
+    event: H3Event,
+    authConfig: ModuleOptions
+  ) {
     const cookiesNames = authConfig.token.cookiesNames;
     deleteCookie(event, cookiesNames.accessToken);
     deleteCookie(event, cookiesNames.refreshToken);

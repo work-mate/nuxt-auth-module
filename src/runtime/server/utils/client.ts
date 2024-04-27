@@ -1,7 +1,5 @@
 import { useRuntimeConfig } from "#imports";
 import { AuthProvider } from "../../providers/AuthProvider";
-import type { H3Event } from "h3";
-import { getCookie } from "h3";
 import { LocalAuthProvider } from "../../providers/LocalAuthProvider";
 import type { AuthProviderInterface } from "../../models";
 
@@ -43,6 +41,7 @@ export const getAuthClient = (): AuthProvider => {
      * or fallback to "local" if not specified
      */
     defaultProviderKey: config.defaultProvider || "local",
+    config,
   });
 
   /**
