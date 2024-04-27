@@ -15,7 +15,6 @@ export type AccessTokens = {
 };
 export class AuthProvider {
   private providers: Record<string, AuthProviderInterface>;
-  private defaultProviderKey: string;
   private config: ModuleOptions;
 
   constructor({
@@ -25,13 +24,21 @@ export class AuthProvider {
   }: AuthProviderContructorOptions) {
     this.config = config;
     this.providers = providers;
-    const providerKey = defaultProviderKey || "local";
-    if (!this.providers[providerKey]) {
-      throw new Error(
-        `AuthProvider:: Cannot find provider with the key "${providerKey}"`
-      );
+    let providerKey = defaultProviderKey || "local";
+    // if (!this.providers[providerKey]) {
+    //   throw new Error(
+    //     `AuthProvider:: Cannot find provider with the key "${providerKey}"`
+    //   );
+    // }
+
+    // const providerKey = defaultProviderKey || "local";
+
+    if(!this.providers[providerKey]){
+      const providerKeys = Object.keys(this.providers);
+      if(providerKeys.length) {
+        providerKey = providerKeys[0];
+      }
     }
-    this.defaultProviderKey = providerKey;
   }
 
   public provider(providerKey: string): AuthProviderInterface {
