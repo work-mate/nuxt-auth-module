@@ -8,7 +8,7 @@ import {
 import { SupportedAuthProvider, type ErrorResponse } from "../../models";
 import { getAuthClient } from "../utils/client";
 import { AuthProvider } from "../../providers/AuthProvider";
-import { useRuntimeConfig } from "#app";
+import { useRuntimeConfig } from "#imports";
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);

@@ -66,9 +66,10 @@ export class AuthProvider {
     const options = {
       expires: new Date(Date.now() + maxAge),
     };
+    const tokenType = authConfig.token.type;
 
-    setCookie(event, cookiesNames.accessToken, tokens.accessToken, options);
-    setCookie(event, cookiesNames.refreshToken, tokens.refreshToken || "", options);
+    setCookie(event, cookiesNames.accessToken, `${tokenType} ${tokens.accessToken}`, options);
+    setCookie(event, cookiesNames.refreshToken, `${tokenType} ${tokens.refreshToken || ""}`, options);
     setCookie(event, cookiesNames.authProvider, provider, options);
   }
 } //end class AuthProvider
