@@ -1,4 +1,3 @@
-
 <!--
 Get your module up and running quickly.
 
@@ -8,78 +7,224 @@ Find and replace all on all files (CMD+SHIFT+F):
 - Description: My new Nuxt module
 -->
 
-# My Module
+# Country flags, capitals and currency library
 
-[![npm version][npm-version-src]][npm-version-href]
-[![npm downloads][npm-downloads-src]][npm-downloads-href]
-[![License][license-src]][license-href]
-[![Nuxt][nuxt-src]][nuxt-href]
+![NPM](https://img.shields.io/npm/l/@workmate/nuxt-auth) ![npm bundle size](https://img.shields.io/bundlephobia/minzip/@workmate/nuxt-auth) ![npm](https://img.shields.io/npm/v/@workmate/nuxt-auth) ![Libraries.io dependency status for latest release, scoped npm package](https://img.shields.io/librariesio/release/npm/@workmate/nuxt-auth) ![GitHub last commit](https://img.shields.io/github/last-commit/work-mate/nuxt-auth-module)
 
-My new Nuxt module for doing amazing things.
+<br />
+Auth module for Nuxt 3 apps.
 
-- [✨ &nbsp;Release Notes](/CHANGELOG.md)
-<!-- - [🏀 Online playground](https://stackblitz.com/github/your-org/my-module?file=playground%2Fapp.vue) -->
-<!-- - [📖 &nbsp;Documentation](https://example.com) -->
+## Installation
 
-## Features
-
-<!-- Highlight some of the features your module provide here -->
-- ⛰ &nbsp;Foo
-- 🚠 &nbsp;Bar
-- 🌲 &nbsp;Baz
-
-## Quick Setup
-
-Install the module to your Nuxt application with one command:
+#### Package Manager
 
 ```bash
-npx nuxi module add my-module
+# using npm
+npm install --save @workmate/nuxt-auth
+
+# using yarn
+yarn add @workmate/nuxt-auth
 ```
 
-That's it! You can now use My Module in your Nuxt app ✨
+## Setup
+
+### Add to modules
+
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+  modules: [
+    "@workmate/nuxt-auth"
+  ],
+  ...
+});
+```
+
+### Configure Auth
+
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+  modules: ["@workmate/nuxt-auth"],
+  auth: {
+    providers: {
+      local: {
+        endpoints: {
+          signIn: {
+            path: "/signin",
+            method: "POST",
+            tokenKey: "token",
+            body: {
+              principal: "username",
+              password: "password",
+            },
+          },
+        },
+      },
+    },
+    global: false,
+    redirects: {
+      redirectIfNotLoggedIn: "/login",
+      redirectIfLoggedIn: "/",
+    },
+    defaultProvider: "local",
+    token: {
+      type: "Bearer",
+      maxAge: 1000 * 60 * 60 * 24 * 30,
+      cookiesNames: {
+        accessToken: "auth:token",
+        refreshToken: "auth:refreshToken",
+        authProvider: "auth:provider",
+      },
+    },
+  },
+});
+```
+
+### Full List of Module Options
+```ts
+interface ModuleOptions {
+  providers: ModuleProvidersOptions;
+  global: boolean;
+  defaultProvider?: string;
+  redirects: {
+    redirectIfNotLoggedIn?: string;
+    redirectIfLoggedIn?: string;
+  },
+  token: {
+    type: string,
+    maxAge: number,
+    cookiesNames: {
+      accessToken: string;
+      refreshToken: string;
+      authProvider: string;
+    };
+  }
+}
+
+type ModuleProvidersOptions = {
+  local?: LocalAuthInitializerOptions,
+}
+
+type LocalAuthInitializerOptions = {
+  endpoints?: {
+    signIn?: {
+      path?: string;
+      method?:
+        | "GET"
+        | "HEAD"
+        | "PATCH"
+        | "POST"
+        | "PUT"
+        | "DELETE"
+        | "CONNECT"
+        | "OPTIONS"
+        | "TRACE"
+        | "get"
+        | "head"
+        | "patch"
+        | "post"
+        | "put"
+        | "delete"
+        | "connect"
+        | "options"
+        | "trace";
+      tokenKey?: string;
+      body?: {
+        principal?: string;
+        password?: string;
+      };
+    };
+    signOut?: { path: string; method: string } | false;
+    signUp?: { path?: string; method?: string } | false;
+    user?: { path: string; userKey: string } | false;
+  };
+}
+
+```
+
+## Usage
+#### composables
+
+```ts
+const {
+  state, login, logout, refreshUser
+} = useAuth();
+
+// state is of type AuthState
+type AuthState =
+  | { loggedIn: true; user: any; token: string; refreshToken?: string }
+  | { loggedIn: false; user: null }
+```
+
+#### Logging in
+```ts
+const {
+  login
+} = useAuth();
+
+// to login
+login("local", {
+  principal,
+  password,
+})
+```
+
+## middlewares
+
+### Route middleware
+
+To protect a page
+
+```ts
+// pages/index.vue
+definePageMeta({
+  middleware: "auth",
+});
+
+// or if adding it to a list of middlewares
+definePageMeta({
+  middleware: [..., "auth", ...],
+});
+```
+
+To make sure a page is only accessible if you are not logged in. Eg. a login page
+
+```ts
+// pages/login.vue
+definePageMeta({
+  middleware: "auth-guest",
+});
+
+// or if adding it to a list of middlewares
+definePageMeta({
+  middleware: [..., "auth-guest", ...],
+});
+```
 
 
-## Contribution
-
-<details>
-  <summary>Local development</summary>
-  
-  ```bash
-  # Install dependencies
-  npm install
-  
-  # Generate type stubs
-  npm run dev:prepare
-  
-  # Develop with the playground
-  npm run dev
-  
-  # Build the playground
-  npm run dev:build
-  
-  # Run ESLint
-  npm run lint
-  
-  # Run Vitest
-  npm run test
-  npm run test:watch
-  
-  # Release new version
-  npm run release
-  ```
-
-</details>
 
 
-<!-- Badges -->
-[npm-version-src]: https://img.shields.io/npm/v/my-module/latest.svg?style=flat&colorA=020420&colorB=00DC82
-[npm-version-href]: https://npmjs.com/package/my-module
+### Global middleware
+For a global middleware, set the the `auth.global` to true in the `nuxt.config.ts` file
+```ts
+export default defineNuxtConfig({
+  ...
+  auth: {
+    global: true,
+    ...
+  },
+})
+```
 
-[npm-downloads-src]: https://img.shields.io/npm/dm/my-module.svg?style=flat&colorA=020420&colorB=00DC82
-[npm-downloads-href]: https://npmjs.com/package/my-module
+To prevent a page from being protected from auth, set the auth meta to false
 
-[license-src]: https://img.shields.io/npm/l/my-module.svg?style=flat&colorA=020420&colorB=00DC82
-[license-href]: https://npmjs.com/package/my-module
+```ts
+// pages/index.vue
+definePageMeta({
+  auth: false,
+});
+```
 
-[nuxt-src]: https://img.shields.io/badge/Nuxt-020420?logo=nuxt.js
-[nuxt-href]: https://nuxt.com
+
+

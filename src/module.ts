@@ -30,7 +30,7 @@ export interface ModuleOptions {
     redirectIfLoggedIn?: string;
   },
   token: {
-    type: "Bearer",
+    type: string,
     maxAge: number,
     cookiesNames: {
       accessToken: string;
