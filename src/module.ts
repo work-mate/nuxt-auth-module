@@ -114,12 +114,18 @@ export default defineNuxtModule<ModuleOptions>({
     addRouteMiddleware({
       name: 'auth',
       path: resolver.resolve('./runtime/middleware/auth'),
-    })
+    });
 
     addRouteMiddleware({
       name: 'auth-guest',
       path: resolver.resolve('./runtime/middleware/auth-guest'),
-    })
+    });
+
+    addRouteMiddleware({
+      name: 'auth-global',
+      path: resolver.resolve('./runtime/middleware/auth.global'),
+      global: true,
+    });
 
     logger.success("@workmate/nuxt-auth:: successfully installed");
   },

@@ -1,6 +1,6 @@
 <template>
   <div>
-    Only guests can access this page
+    Only logged in users can access this page
     <pre>
         {{ state }}
       </pre>
@@ -8,10 +8,6 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-  middleware: ["auth-guest"],
-  auth: false,
-});
 
 const {
   state

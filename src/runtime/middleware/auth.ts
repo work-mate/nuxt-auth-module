@@ -7,17 +7,8 @@ import {
   useRuntimeConfig,
 } from "#imports";
 
-/**
- * Auth middleware.
- *
- * This middleware redirects the user to the login page if they are not logged in.
- *
- * @example
- * definePageMeta({
- *  middleware: ["auth"],
- * });
- */
-export default defineNuxtRouteMiddleware(() => {
+//@ts-ignore
+export const authMiddleware: RouteMiddleware = () => {
   const { state } = useNuxtApp().$auth;
   const config = useRuntimeConfig().public.auth;
 
@@ -37,4 +28,19 @@ export default defineNuxtRouteMiddleware(() => {
       return navigateTo(redirectIfNotLoggedIn);
     }
   }
+}
+
+
+/**
+ * Auth middleware.
+ *
+ * This middleware redirects the user to the login page if they are not logged in.
+ *
+ * @example
+ * definePageMeta({
+ *  middleware: ["auth"],
+ * });
+ */
+export default defineNuxtRouteMiddleware((...params) => {
+  return authMiddleware(...params)
 });

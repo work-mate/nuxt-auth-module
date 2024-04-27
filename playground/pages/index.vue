@@ -5,6 +5,8 @@
       <NuxtLink to="/protected">Protected</NuxtLink>
       <br />
       <NuxtLink to="/only-guest">Only Guest Page</NuxtLink>
+      <br />
+      <NuxtLink to="/implicit-protected">Implicit Protected</NuxtLink>
     </div>
 
     <button @click="triggerLogin">Login</button>
@@ -21,6 +23,10 @@
 const {
   state, login, logout, refreshUser
 } = useAuth();
+
+definePageMeta({
+  auth: false,
+})
 
 function triggerLogin() {
   login('local', {
