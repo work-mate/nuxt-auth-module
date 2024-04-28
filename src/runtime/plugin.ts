@@ -7,6 +7,7 @@ import {
   useState,
   watchEffect,
 } from "#imports";
+import { ofetch } from "ofetch";
 import type { AuthState, SupportedAuthProvider } from "./models";
 import type { AccessTokens } from "./providers/AuthProvider";
 
@@ -52,7 +53,7 @@ export default defineNuxtPlugin(async () => {
    *
    * @returns {boolean} true if the current page requires authentication, false otherwise
    */
-  function doesPageRequireAuth() {
+  function doesPageRequireAuth(): boolean {
     console.log("doesPageRequireAuth");
     console.log("route.meta: ", route.meta);
     // Check if the page has the "auth" middleware declared
@@ -80,13 +81,8 @@ export default defineNuxtPlugin(async () => {
     return false;
   }
 
-  watchEffect(() => {
-    console.log("Auth State")
-    console.log(state.value)
-  })
-
   async function fetchUserDataWithToken(): Promise<{ user: any }> {
-    const response: { user: any } = await $fetch("/api/auth/user", {
+    const response: { user: any } = await ofetch("/api/auth/user", {
       headers: {
         Accept: "application/json",
       },
@@ -106,7 +102,7 @@ export default defineNuxtPlugin(async () => {
       };
     }
 
-    const response: { tokens: AccessTokens } = await $fetch("/api/auth/login", {
+    const response: { tokens: AccessTokens } = await ofetch("/api/auth/login", {
       method: "POST",
       body: {
         provider,
@@ -150,7 +146,7 @@ export default defineNuxtPlugin(async () => {
       };
     }
 
-    const response = await $fetch("/api/auth/logout", {
+    const response = await ofetch("/api/auth/logout", {
       method: "POST",
     });
 

@@ -7,6 +7,7 @@ import type {
 import type { AccessTokens } from "./AuthProvider";
 import type { DeepRequired } from "~/src/module";
 import { getRecursiveProperty } from "../helpers";
+import { ofetch } from "ofetch";
 
 export interface LocalAuthLoginData extends AuthLoginData {
   principal: string;
@@ -90,7 +91,7 @@ export class LocalAuthProvider implements AuthProviderInterface {
       [password]: authData.password,
     };
 
-    return $fetch(url, {
+    return ofetch(url, {
       method,
       body,
       headers: {
@@ -121,7 +122,7 @@ export class LocalAuthProvider implements AuthProviderInterface {
     const method = "GET";
     const userKey = this.options.endpoints.user.userKey;
 
-    return $fetch(url, {
+    return ofetch(url, {
       method,
       headers: {
         Accept: "application/json",
