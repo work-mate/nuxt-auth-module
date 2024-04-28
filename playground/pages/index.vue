@@ -1,6 +1,7 @@
 <template>
   <div>
     This is the nuxt auth playground
+    <button @click="trigger">use auth fetch</button>
     <test-navigations />
   </div>
 </template>
@@ -10,8 +11,13 @@ definePageMeta({
   auth: false,
 });
 
-onMounted(() => {
-  console.log($fetch)
-  // debugger
-})
+// onMounted(() => {
+//   console.log($fetch)
+//   // debugger
+
+// })
+
+function trigger() {
+  useAuthFetch('/api/auth/melting');
+}
 </script>
