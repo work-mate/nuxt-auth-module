@@ -87,7 +87,10 @@ export default defineNuxtModule<ModuleOptions>({
     );
 
     addImportsDir(resolver.resolve("runtime/composables"));
-    addPlugin(resolver.resolve("./runtime/plugin"));
+    addPlugin(resolver.resolve("./runtime/plugin/auth"));
+    addPlugin(resolver.resolve("./runtime/plugin/auth-fetch"), {
+      append: true
+    });
 
     addServerHandler({
       middleware: true,
