@@ -14,6 +14,15 @@ Find and replace all on all files (CMD+SHIFT+F):
 <br />
 Auth module for Nuxt 3 apps.
 
+## Featured Auth Providers
+| Provider       | Provider Key    | Status      |
+|----------------|-----------------|-------------|
+| Local          | local           | :construction: |
+| Local Refresh  | local_refresh   | :hourglass: |
+| Google         | google          | :hourglass: |
+| Github         | github          | :hourglass: |
+| Facebook       | facebook        | :hourglass: |
+
 ## Installation
 
 #### Package Manager
