@@ -30,15 +30,17 @@ export default defineNuxtPlugin(async () => {
           refreshToken: tokens.refreshToken,
         };
       } catch(e: any) {
-        if(e.statusCode == 401) {
+        const statusCodes = [];
+
+        if(typeof e.statusCode == "number") {
+          statusCodes.push(e.statusCode);
+        }else if(Array.isArray(e.statusCode)) {
+          statusCodes.push(...e.statusCode);
+        }
+
+        if(statusCodes.some(el => el == e.statusCode)) {
           await auth.logout();
         }
-        console.log("Status code: ", e.statusCode)
-        console.log("Status coded ddd: ", e.statusCode == 401)
-        // console.error(e);
-        // console.log(e);
-
-        // throw e;
       }
     } else {
       state.value = { loggedIn: false, user: null };

@@ -22,8 +22,9 @@ export type DeepRequired<T> = Required<{
 }>;
 
 export interface ModuleOptions {
-  providers: ModuleProvidersOptions;
   global: boolean;
+  triggerLogoutOnHttpStatusCode?: number | number[],
+  providers: ModuleProvidersOptions;
   defaultProvider?: string;
   redirects: {
     redirectIfNotLoggedIn?: string;
@@ -49,8 +50,9 @@ export default defineNuxtModule<ModuleOptions>({
     },
   },
   defaults: {
-    providers: {},
     global: false,
+    triggerLogoutOnHttpStatusCode: 401,
+    providers: {},
     redirects: {
       redirectIfNotLoggedIn: "/login",
       redirectIfLoggedIn: "/",
@@ -80,6 +82,7 @@ export default defineNuxtModule<ModuleOptions>({
       {
         redirects: options.redirects,
         global: options.global,
+        triggerLogoutOnHttpStatusCode: options.triggerLogoutOnHttpStatusCode,
       }
     );
 
@@ -137,6 +140,7 @@ declare module "@nuxt/schema" {
     auth: {
       redirects: ModuleOptions["redirects"];
       global: ModuleOptions["global"];
+      triggerLogoutOnHttpStatusCode: ModuleOptions["triggerLogoutOnHttpStatusCode"]
     }
   }
 }
