@@ -5,6 +5,7 @@ import {
   useRoute,
   useRuntimeConfig,
   useState,
+  watchEffect,
 } from "#imports";
 import type { AuthState, SupportedAuthProvider } from "./models";
 import type { AccessTokens } from "./providers/AuthProvider";
@@ -78,6 +79,11 @@ export default defineNuxtPlugin(async () => {
 
     return false;
   }
+
+  watchEffect(() => {
+    console.log("Auth State")
+    console.log(state.value)
+  })
 
   async function fetchUserDataWithToken(): Promise<{ user: any }> {
     const response: { user: any } = await $fetch("/api/auth/user", {
