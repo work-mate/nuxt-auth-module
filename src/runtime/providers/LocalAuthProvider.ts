@@ -3,6 +3,7 @@ import type {
   AuthLoginData,
   AuthProviderInterface,
   ErrorResponse,
+  HttpMethod,
 } from "../models";
 import type { AccessTokens } from "./AuthProvider";
 import type { DeepRequired } from "~/src/module";
@@ -18,33 +19,15 @@ export type LocalAuthInitializerOptions = {
   endpoints?: {
     signIn?: {
       path?: string;
-      method?:
-        | "GET"
-        | "HEAD"
-        | "PATCH"
-        | "POST"
-        | "PUT"
-        | "DELETE"
-        | "CONNECT"
-        | "OPTIONS"
-        | "TRACE"
-        | "get"
-        | "head"
-        | "patch"
-        | "post"
-        | "put"
-        | "delete"
-        | "connect"
-        | "options"
-        | "trace";
+      method?: HttpMethod;
       tokenKey?: string;
       body?: {
         principal?: string;
         password?: string;
       };
     };
-    signOut?: { path: string; method: string } | false;
-    signUp?: { path?: string; method?: string } | false;
+    signOut?: { path: string; method: HttpMethod } | false;
+    signUp?: { path?: string; method?: HttpMethod } | false;
     user?: { path: string; userKey: string } | false;
   };
 };

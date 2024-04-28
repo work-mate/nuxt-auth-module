@@ -29,3 +29,5 @@ export interface ErrorResponse {
   message: string;
   data?: Record<string, string[]>;
 }
+
+export type HttpMethod = "GET" | "HEAD" | "PATCH" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE";
