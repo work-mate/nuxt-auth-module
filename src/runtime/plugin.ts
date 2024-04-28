@@ -1,7 +1,6 @@
 import {
   defineNuxtPlugin,
   navigateTo,
-  shallowRef,
   useRequestEvent,
   useRoute,
   useRuntimeConfig,
@@ -11,7 +10,7 @@ import type { AuthState, SupportedAuthProvider } from "./models";
 import type { AccessTokens } from "./providers/AuthProvider";
 
 export default defineNuxtPlugin(async () => {
-  const state = useState<AuthState>("auth", shallowRef);
+  const state = useState<AuthState>("auth", () => ({ loggedIn: false, user: null }));
   const route = useRoute();
 
   if (import.meta.server) {
@@ -20,13 +19,25 @@ export default defineNuxtPlugin(async () => {
     const tokens = await auth.getTokens();
 
     if (isLoggedIn) {
-      const userResponse = await auth.getUser();
-      state.value = {
-        loggedIn: true,
-        user: userResponse.user,
-        token: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-      };
+      try {
+        const userResponse = await auth.getUser();
+        state.value = {
+          loggedIn: true,
+          user: userResponse.user,
+          token: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+        };
+      } catch(e: any) {
+        if(e.statusCode == 401) {
+          await auth.logout();
+        }
+        console.log("Status code: ", e.statusCode)
+        console.log("Status coded ddd: ", e.statusCode == 401)
+        // console.error(e);
+        // console.log(e);
+
+        // throw e;
+      }
     } else {
       state.value = { loggedIn: false, user: null };
     }

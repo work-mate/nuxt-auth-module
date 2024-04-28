@@ -8,6 +8,7 @@ type AuthContext = {
   isAuthenticated: () => Promise<boolean>;
   getUser: () => Promise<{user: any}>;
   getTokens: () => Promise<AccessTokens>;
+  logout: () => Promise<void>;
 };
 
 export default defineEventHandler(async (event) => {
@@ -25,6 +26,12 @@ export default defineEventHandler(async (event) => {
     getTokens: async () => {
       return tokens;
     },
+    logout: async () => {
+      AuthProvider.deleteProviderTokensFromCookies(
+        event,
+        useRuntimeConfig().auth
+      )
+    }
   };
 });
 
