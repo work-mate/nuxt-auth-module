@@ -1,4 +1,5 @@
 import { defineNuxtPlugin, useNuxtApp } from "#app";
+import type { $Fetch } from "ofetch";
 
 export default defineNuxtPlugin(async () => {
   console.log("auth fetch plugin");
@@ -16,3 +17,9 @@ export default defineNuxtPlugin(async () => {
     }
   };
 });
+
+declare module '#app' {
+  interface NuxtApp {
+    $getAuthFetch (): $Fetch,
+  }
+}

@@ -15,7 +15,6 @@ export default function useAuthFetch<DataT, ErrorT>(
 
   return useFetch(req, {
     ...options,
-    // @ts-ignore
     $fetch: $authFetch,
   }) as unknown as Promise<AsyncData<DataT, ErrorT>>;
 }
