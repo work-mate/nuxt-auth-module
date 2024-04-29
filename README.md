@@ -76,6 +76,9 @@ export default defineNuxtConfig({
       redirectIfNotLoggedIn: "/login",
       redirectIfLoggedIn: "/",
     },
+    apiClient: {
+      baseURL: "",
+    },
     defaultProvider: "local",
     token: {
       type: "Bearer",
@@ -99,6 +102,9 @@ interface ModuleOptions {
   redirects: {
     redirectIfNotLoggedIn?: string;
     redirectIfLoggedIn?: string;
+  },
+  apiClient: {
+    baseURL: string;
   },
   token: {
     type: string,
@@ -147,6 +153,35 @@ const {
 type AuthState =
   | { loggedIn: true; user: any; token: string; refreshToken?: string }
   | { loggedIn: false; user: null }
+```
+
+
+To use useFetch with the authorization header, use `useAuthFetch`, and instead of fetch use $getAuthFetch()
+
+```ts
+useAuthFetch('/api/auth/melting', options)
+
+// instead of $fetch, 
+$fetch('/api/auth/melting', options)
+
+// use, 
+$authFetch = useNuxtApp().$getAuthFetch();
+$authFetch('/api/auth/melting', options)
+```
+
+to change the base URI of the authFetch client, update the nuxt.config.ts
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+  auth: {
+    ...
+    apiClient: {
+      baseURL: "http://localhost:8080/v1",
+    },
+    ...
+  },
+})
+
 ```
 
 #### Logging in
