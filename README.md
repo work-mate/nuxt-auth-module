@@ -18,11 +18,13 @@ Auth module for Nuxt 3 apps.
 
 | Provider      | Provider Key  | Status         |
 | ------------- | ------------- | -------------- |
-| Local         | local         | :construction: |
+| Local         | local         | :heavy_check_mark: |
 | Local Refresh | local_refresh | :x:            |
 | Google        | google        | :x:            |
 | Github        | github        | :x:            |
 | Facebook      | facebook      | :x:            |
+
+<!-- :construction: -->
 
 ## Installation
 
