@@ -5,11 +5,12 @@ import {
 } from "h3";
 import { SupportedAuthProvider, type ErrorResponse } from "../../models";
 import { getAuthClient } from "../utils/client";
-import { AuthProvider } from "../../providers/AuthProvider";
+import { AuthProvider, type AccessTokens } from "../../providers/AuthProvider";
 import { useRuntimeConfig } from "#imports";
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
+  const authConfig = useRuntimeConfig().auth
 
   const provider = body.provider;
 
@@ -29,10 +30,6 @@ export default defineEventHandler(async (event) => {
 
   let authProvider = authClient.provider(provider);
 
-  if (provider == SupportedAuthProvider.LOCAL) {
-    authProvider = authClient.local();
-  }
-
   try {
     authProvider.validateRequestBody(body);
   } catch (e: any) {
@@ -40,14 +37,23 @@ export default defineEventHandler(async (event) => {
     return e;
   }
 
-  const result = await authProvider.login(body);
+  const { tokens } = await authProvider.login(body);
+  const tokenType = authConfig.token.type;
+  const tokenTypePrefix = tokenType ? `${tokenType} ` : "";
+
+  const tokensWithType: AccessTokens = {
+    accessToken: tokens.accessToken ? `${tokenTypePrefix}${tokens.accessToken}` : "",
+    refreshToken: tokens.refreshToken ? `${tokenTypePrefix}${tokens.refreshToken}` : "",
+  }
 
   AuthProvider.setProviderTokensToCookies(
     event,
-    useRuntimeConfig().auth,
+    authConfig,
     provider,
-    result.tokens
+    tokensWithType
   );
 
-  return result;
+  return {
+    tokens: tokensWithType
+  };
 });

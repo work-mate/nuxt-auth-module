@@ -104,6 +104,7 @@ export class LocalAuthProvider implements AuthProviderInterface {
     const url =  this.options.endpoints.user.path;
     const method = "GET";
     const userKey = this.options.endpoints.user.userKey;
+    // const tokenType = this.options
 
     return ofetch(url, {
       method,

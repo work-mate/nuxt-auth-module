@@ -23,6 +23,7 @@
     <button @click="triggerRefreshUser">
       Refresh User
     </button>
+    <button @click="trigger">use auth fetch</button>
 
     <pre>
       {{ state }}
@@ -53,6 +54,10 @@ function triggerLogout() {
 
 async function triggerRefreshUser() {
   await refreshUser()
+}
+
+function trigger() {
+  useAuthFetch('/api/auth/melting');
 }
 </script>
 
