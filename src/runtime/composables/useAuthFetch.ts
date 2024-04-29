@@ -11,7 +11,7 @@ export default function useAuthFetch<DataT, ErrorT>(
   req: string | Request | Ref<string | Request> | (() => string | Request),
   options?: Omit<UseFetchOptions<DataT>, "$fetch">
 ): Promise<AsyncData<DataT, ErrorT>> {
-  const $authFetch = useNuxtApp().$getAuthFetch();
+  const $authFetch = useNuxtApp().$authFetch;
 
   return useFetch(req, {
     ...options,

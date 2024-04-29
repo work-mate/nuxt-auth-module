@@ -5,22 +5,41 @@ export default defineNuxtPlugin(async () => {
   const { state } = useNuxtApp().$auth;
   const authConfig = useRuntimeConfig().public.auth;
 
+  const authFetch = $fetch.create({
+    baseURL: authConfig.apiClient.baseURL,
+    // headers: {
+    //   Authorization: state.value.loggedIn ? state.value.token : "",
+    // },
+    onRequest({ options }) {
+      const headerAddition = {
+        Authorization: state.value.loggedIn ? state.value.token : "",
+      };
+
+      if (!options.headers) {
+        options.headers = headerAddition;
+      } else {
+        // // Object.assign(options.headers, headerAddition);
+        // Object.keys(headerAddition).forEach((key) => {
+        //   //@ts-ignore
+        //   options.headers[key] = headerAddition[key];
+        // });
+        options.headers = {
+          ...options.headers,
+          ...headerAddition,
+        };
+      }
+    },
+  });
+
   return {
     provide: {
-      getAuthFetch: () => {
-        return $fetch.create({
-          baseURL: authConfig.apiClient.baseURL,
-          headers: {
-            Authorization: state.value.loggedIn ? state.value.token : "",
-          },
-        })
-      },
-    }
+      authFetch,
+    },
   };
 });
 
-declare module '#app' {
+declare module "#app" {
   interface NuxtApp {
-    $getAuthFetch (): $Fetch,
+    $authFetch: $Fetch;
   }
 }

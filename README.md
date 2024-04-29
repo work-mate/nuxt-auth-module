@@ -15,13 +15,14 @@ Find and replace all on all files (CMD+SHIFT+F):
 Auth module for Nuxt 3 apps.
 
 ## Featured Auth Providers
-| Provider       | Provider Key    | Status      |
-|----------------|-----------------|-------------|
-| Local          | local           | :construction: |
-| Local Refresh  | local_refresh   | :x: |
-| Google         | google          | :x: |
-| Github         | github          | :x: |
-| Facebook       | facebook        | :x: |
+
+| Provider      | Provider Key  | Status         |
+| ------------- | ------------- | -------------- |
+| Local         | local         | :construction: |
+| Local Refresh | local_refresh | :x:            |
+| Google        | google        | :x:            |
+| Github        | github        | :x:            |
+| Facebook      | facebook      | :x:            |
 
 ## Installation
 
@@ -94,6 +95,7 @@ export default defineNuxtConfig({
 ```
 
 ### Full List of Module Options
+
 ```ts
 interface ModuleOptions {
   providers: ModuleProvidersOptions;
@@ -102,25 +104,34 @@ interface ModuleOptions {
   redirects: {
     redirectIfNotLoggedIn?: string;
     redirectIfLoggedIn?: string;
-  },
+  };
   apiClient: {
     baseURL: string;
-  },
+  };
   token: {
-    type: string,
-    maxAge: number,
+    type: string;
+    maxAge: number;
     cookiesNames: {
       accessToken: string;
       refreshToken: string;
       authProvider: string;
     };
-  }
+  };
 }
 
 type ModuleProvidersOptions = {
-  local?: LocalAuthInitializerOptions,
-}
-type HttpMethod = "GET" | "HEAD" | "PATCH" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE";
+  local?: LocalAuthInitializerOptions;
+};
+type HttpMethod =
+  | "GET"
+  | "HEAD"
+  | "PATCH"
+  | "POST"
+  | "PUT"
+  | "DELETE"
+  | "CONNECT"
+  | "OPTIONS"
+  | "TRACE";
 
 type LocalAuthInitializerOptions = {
   endpoints?: {
@@ -138,38 +149,36 @@ type LocalAuthInitializerOptions = {
     user?: { path: string; userKey: string } | false;
   };
 };
-
 ```
 
 ## Usage
+
 #### composables
 
 ```ts
-const {
-  state, login, logout, refreshUser
-} = useAuth();
+const { state, login, logout, refreshUser } = useAuth();
 
 // state is of type AuthState
 type AuthState =
   | { loggedIn: true; user: any; token: string; refreshToken?: string }
-  | { loggedIn: false; user: null }
+  | { loggedIn: false; user: null };
 ```
 
-
-To use useFetch with the authorization header, use `useAuthFetch`, and instead of fetch use $getAuthFetch()
+To use useFetch with the authorization header, use `useAuthFetch`, and instead of using $fetch use $authFetch
 
 ```ts
-useAuthFetch('/api/auth/melting', options)
+useAuthFetch("/api/auth/melting", options);
 
-// instead of $fetch, 
-$fetch('/api/auth/melting', options)
+// instead of $fetch,
+$fetch("/api/auth/melting", options);
 
-// use, 
-$authFetch = useNuxtApp().$getAuthFetch();
-$authFetch('/api/auth/melting', options)
+// use,
+const { $authFetch } = useNuxtApp();
+$authFetch("/api/auth/melting", options);
 ```
 
 to change the base URI of the authFetch client, update the nuxt.config.ts
+
 ```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
@@ -185,16 +194,15 @@ export default defineNuxtConfig({
 ```
 
 #### Logging in
+
 ```ts
-const {
-  login
-} = useAuth();
+const { login } = useAuth();
 
 // to login
 login("local", {
   principal,
   password,
-})
+});
 ```
 
 ## middlewares
@@ -229,11 +237,10 @@ definePageMeta({
 });
 ```
 
-
-
-
 ### Global middleware
+
 For a global middleware, set the the `auth.global` to true in the `nuxt.config.ts` file
+
 ```ts
 export default defineNuxtConfig({
   ...
@@ -252,6 +259,3 @@ definePageMeta({
   auth: false,
 });
 ```
-
-
-
