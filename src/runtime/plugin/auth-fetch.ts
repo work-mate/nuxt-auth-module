@@ -1,14 +1,15 @@
-import { defineNuxtPlugin, useNuxtApp } from "#app";
+import { defineNuxtPlugin, useNuxtApp, useRuntimeConfig } from "#app";
 import type { $Fetch } from "ofetch";
 
 export default defineNuxtPlugin(async () => {
-  console.log("auth fetch plugin");
   const { state } = useNuxtApp().$auth;
+  const authConfig = useRuntimeConfig().public.auth;
 
   return {
     provide: {
       getAuthFetch: () => {
         return $fetch.create({
+          baseURL: authConfig.apiClient.baseURL,
           headers: {
             Authorization: state.value.loggedIn ? state.value.token : "",
           },

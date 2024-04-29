@@ -30,6 +30,9 @@ export interface ModuleOptions {
     redirectIfNotLoggedIn?: string;
     redirectIfLoggedIn?: string;
   },
+  apiClient: {
+    baseURL: string;
+  },
   token: {
     type: string,
     maxAge: number,
@@ -57,6 +60,9 @@ export default defineNuxtModule<ModuleOptions>({
       redirectIfNotLoggedIn: "/login",
       redirectIfLoggedIn: "/",
     },
+    apiClient: {
+      baseURL: "",
+    },
     defaultProvider: "local",
     token: {
       type: "Bearer",
@@ -83,6 +89,7 @@ export default defineNuxtModule<ModuleOptions>({
         redirects: options.redirects,
         global: options.global,
         triggerLogoutOnHttpStatusCode: options.triggerLogoutOnHttpStatusCode,
+        apiClient: options.apiClient,
       }
     );
 
@@ -144,6 +151,7 @@ declare module "@nuxt/schema" {
       redirects: ModuleOptions["redirects"];
       global: ModuleOptions["global"];
       triggerLogoutOnHttpStatusCode: ModuleOptions["triggerLogoutOnHttpStatusCode"]
+      apiClient: ModuleOptions["apiClient"]
     }
   }
 }
