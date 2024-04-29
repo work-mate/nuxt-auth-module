@@ -1,17 +1,40 @@
 import {
   defineNuxtPlugin,
   navigateTo,
+  readonly,
   useRequestEvent,
   useRoute,
   useRuntimeConfig,
   useState,
+  type Ref,
 } from "#imports";
 import { ofetch } from "ofetch";
 import type { AuthState, SupportedAuthProvider } from "../models";
 import type { AccessTokens } from "../providers/AuthProvider";
 
+export type AuthPlugin = {
+  state: Readonly<Ref<AuthState>>;
+  login: (
+    provider: string | SupportedAuthProvider,
+    data?: Record<string, string>,
+    redirectTo?: string
+  ) => Promise<
+    | {
+        tokens: AccessTokens;
+      }
+    | {
+        message: string;
+      }
+  >;
+  logout: (redirectTo?: string) => Promise<unknown>;
+  refreshUser: () => Promise<void>;
+};
+
 export default defineNuxtPlugin(async () => {
-  const state = useState<AuthState>("auth", () => ({ loggedIn: false, user: null }));
+  const state = useState<AuthState>("auth", () => ({
+    loggedIn: false,
+    user: null,
+  }));
   const route = useRoute();
 
   if (import.meta.server) {
@@ -28,16 +51,16 @@ export default defineNuxtPlugin(async () => {
           token: tokens.accessToken,
           refreshToken: tokens.refreshToken,
         };
-      } catch(e: any) {
+      } catch (e: any) {
         const statusCodes = [];
 
-        if(typeof e.statusCode == "number") {
+        if (typeof e.statusCode == "number") {
           statusCodes.push(e.statusCode);
-        }else if(Array.isArray(e.statusCode)) {
+        } else if (Array.isArray(e.statusCode)) {
           statusCodes.push(...e.statusCode);
         }
 
-        if(statusCodes.some(el => el == e.statusCode)) {
+        if (statusCodes.some((el) => el == e.statusCode)) {
           await auth.logout();
         }
       }
@@ -140,7 +163,7 @@ export default defineNuxtPlugin(async () => {
    *
    * @throws {ErrorResponse} If the user was not logged in
    */
-  async function logout(redirectTo?: string) {
+  async function logout(redirectTo?: string): Promise<unknown> {
     if (!state.value.loggedIn) {
       return {
         message: "User not logged in",
@@ -180,7 +203,7 @@ export default defineNuxtPlugin(async () => {
   return {
     provide: {
       auth: {
-        state,
+        state: readonly(state),
         login,
         logout,
         refreshUser,
@@ -188,3 +211,9 @@ export default defineNuxtPlugin(async () => {
     },
   };
 });
+
+declare module "#app" {
+  interface NuxtApp {
+    $auth: AuthPlugin
+  }
+}
