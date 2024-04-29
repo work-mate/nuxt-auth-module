@@ -1,16 +1,12 @@
-import {
-  defineEventHandler,
-  readBody,
-  setResponseStatus,
-} from "h3";
-import { SupportedAuthProvider, type ErrorResponse } from "../../models";
+import { defineEventHandler, readBody, setResponseStatus } from "h3";
+import { type ErrorResponse } from "../../models";
 import { getAuthClient } from "../utils/client";
 import { AuthProvider, type AccessTokens } from "../../providers/AuthProvider";
 import { useRuntimeConfig } from "#imports";
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
-  const authConfig = useRuntimeConfig().auth
+  const authConfig = useRuntimeConfig().auth;
 
   const provider = body.provider;
 
@@ -28,7 +24,7 @@ export default defineEventHandler(async (event) => {
 
   const authClient = getAuthClient();
 
-  let authProvider = authClient.provider(provider);
+  const authProvider = authClient.provider(provider);
 
   try {
     authProvider.validateRequestBody(body);
@@ -42,9 +38,13 @@ export default defineEventHandler(async (event) => {
   const tokenTypePrefix = tokenType ? `${tokenType} ` : "";
 
   const tokensWithType: AccessTokens = {
-    accessToken: tokens.accessToken ? `${tokenTypePrefix}${tokens.accessToken}` : "",
-    refreshToken: tokens.refreshToken ? `${tokenTypePrefix}${tokens.refreshToken}` : "",
-  }
+    accessToken: tokens.accessToken
+      ? `${tokenTypePrefix}${tokens.accessToken}`
+      : "",
+    refreshToken: tokens.refreshToken
+      ? `${tokenTypePrefix}${tokens.refreshToken}`
+      : "",
+  };
 
   AuthProvider.setProviderTokensToCookies(
     event,
@@ -54,6 +54,6 @@ export default defineEventHandler(async (event) => {
   );
 
   return {
-    tokens: tokensWithType
+    tokens: tokensWithType,
   };
 });

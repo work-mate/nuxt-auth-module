@@ -23,7 +23,9 @@
     <button @click="triggerRefreshUser">
       Refresh User
     </button>
-    <button @click="trigger">use auth fetch</button>
+    <button @click="trigger">
+      use auth fetch
+    </button>
 
     <pre>
       {{ state }}
