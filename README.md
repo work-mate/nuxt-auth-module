@@ -158,12 +158,29 @@ type LocalAuthInitializerOptions = {
 #### composables
 
 ```ts
-const { state, login, logout, refreshUser } = useAuth();
+const { loggedIn,  user, token, refreshToken, login, logout, refreshUser } = useAuth();
 
 // state is of type AuthState
-type AuthState =
-  | { loggedIn: true; user: any; token: string; refreshToken?: string }
-  | { loggedIn: false; user: null };
+type AuthPlugin = {
+  loggedIn: ComputedRef<boolean>;
+  user: ComputedRef<any | null | undefined>;
+  token: ComputedRef<string | undefined>;
+  refreshToken: ComputedRef<string | undefined>;
+  login: (
+    provider: string | SupportedAuthProvider,
+    data?: Record<string, string>,
+    redirectTo?: string
+  ) => Promise<
+    | {
+        tokens: AccessTokens;
+      }
+    | {
+        message: string;
+      }
+  >;
+  logout: (redirectTo?: string) => Promise<unknown>;
+  refreshUser: () => Promise<void>;
+};
 ```
 
 To use useFetch with the authorization header, use `useAuthFetch`, and instead of using $fetch use $authFetch

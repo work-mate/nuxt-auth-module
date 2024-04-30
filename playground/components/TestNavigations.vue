@@ -36,8 +36,15 @@
 
 <script setup>
 const {
-  state, login, logout, refreshUser
+  loggedIn, user, token, refreshToken, login, logout, refreshUser
 } = useAuth();
+
+const state = computed(() => ({
+  loggedIn: loggedIn.value,
+  user: user.value,
+  token: token.value,
+  refreshToken: refreshToken.value,
+}))
 
 function triggerLogin() {
   login('local', {

@@ -21,9 +21,7 @@ export interface AuthProviderInterface {
 }
 
 export type AuthUser = { name: string; profilePicture: string };
-export type AuthState =
-  | { loggedIn: true; user: any; token: string; refreshToken?: string }
-  | { loggedIn: false; user: null };
+export type AuthState = { loggedIn: boolean; user?: null; token?: string; refreshToken?: string }
 
 export interface ErrorResponse {
   message: string;

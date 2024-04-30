@@ -1,4 +1,5 @@
 import {
+  computed,
   defineNuxtPlugin,
   navigateTo,
   readonly,
@@ -6,6 +7,7 @@ import {
   useRoute,
   useRuntimeConfig,
   useState,
+  type ComputedRef,
   type Ref,
 } from "#imports";
 import { ofetch } from "ofetch";
@@ -13,7 +15,11 @@ import type { AuthState, SupportedAuthProvider } from "../models";
 import type { AccessTokens } from "../providers/AuthProvider";
 
 export type AuthPlugin = {
-  state: Readonly<Ref<AuthState>>;
+  // state: Readonly<Ref<AuthState>>;
+  loggedIn: ComputedRef<boolean>;
+  user: ComputedRef<any | null | undefined>;
+  token: ComputedRef<string | undefined>;
+  refreshToken: ComputedRef<string | undefined>;
   login: (
     provider: string | SupportedAuthProvider,
     data?: Record<string, string>,
@@ -203,11 +209,14 @@ export default defineNuxtPlugin(async () => {
   return {
     provide: {
       auth: {
-        state: readonly(state),
+        loggedIn: computed(() => state.value.loggedIn),
+        user: computed(() => state.value.user),
+        token: computed(() => state.value.token),
+        refreshToken: computed(() => state.value.refreshToken),
         login,
         logout,
         refreshUser,
-      },
+      } as AuthPlugin,
     },
   };
 });
