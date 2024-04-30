@@ -15,7 +15,6 @@ import type { AuthState, SupportedAuthProvider } from "../models";
 import type { AccessTokens } from "../providers/AuthProvider";
 
 export type AuthPlugin = {
-  // state: Readonly<Ref<AuthState>>;
   loggedIn: ComputedRef<boolean>;
   user: ComputedRef<any | null | undefined>;
   token: ComputedRef<string | undefined>;
