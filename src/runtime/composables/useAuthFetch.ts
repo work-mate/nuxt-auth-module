@@ -1,11 +1,6 @@
-import {
-  useFetch,
-  useNuxtApp,
-  type AsyncData,
-  type UseFetchOptions,
-} from "#app";
+import { type AsyncData, type UseFetchOptions } from "#app";
 
-import { type Ref } from "#imports";
+import { type Ref, useFetch , useNuxtApp} from "#imports";
 
 export default function useAuthFetch<DataT, ErrorT>(
   req: string | Request | Ref<string | Request> | (() => string | Request),
@@ -14,6 +9,7 @@ export default function useAuthFetch<DataT, ErrorT>(
   const $authFetch = useNuxtApp().$authFetch;
 
   return useFetch(req, {
+    key: `auth:${req};options:${btoa(JSON.stringify(options))}`,
     ...options,
     $fetch: $authFetch,
   }) as unknown as Promise<AsyncData<DataT, ErrorT>>;

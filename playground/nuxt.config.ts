@@ -6,7 +6,7 @@ export default defineNuxtConfig({
       redirectIfLoggedIn: "/protected",
     },
     apiClient: {
-      baseURL: "http://localhost:8080/v1",
+      baseURL: "http://localhost:8080",
     },
     providers: {
       local: {
