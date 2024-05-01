@@ -7,7 +7,7 @@ Find and replace all on all files (CMD+SHIFT+F):
 - Description: My new Nuxt module
 -->
 
-# Country flags, capitals and currency library
+# Auth module for Nuxt 3 server apps
 
 ![NPM](https://img.shields.io/npm/l/@workmate/nuxt-auth) ![npm bundle size](https://img.shields.io/bundlephobia/minzip/@workmate/nuxt-auth) ![npm](https://img.shields.io/npm/v/@workmate/nuxt-auth) ![Libraries.io dependency status for latest release, scoped npm package](https://img.shields.io/librariesio/release/npm/@workmate/nuxt-auth) ![GitHub last commit](https://img.shields.io/github/last-commit/work-mate/nuxt-auth-module)
 
