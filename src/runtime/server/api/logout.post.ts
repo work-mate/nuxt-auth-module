@@ -1,16 +1,10 @@
 import {
   defineEventHandler,
 } from "h3";
-import { AuthProvider } from "../../providers/AuthProvider";
-import { useRuntimeConfig } from "#imports";
+import { getAuthClient } from "../utils/client";
 
 export default defineEventHandler(async (event) => {
-  AuthProvider.deleteProviderTokensFromCookies(
-    event,
-    useRuntimeConfig().auth
-  );
+  const response = await getAuthClient().logoutFromEvent(event);
 
-  return {
-    message: "Logout successful",
-  }
+  return response;
 });

@@ -91,20 +91,11 @@ export class LocalAuthProvider implements AuthProviderInterface {
     });
   }
 
-  isLoggedIn(): boolean {
-    throw new Error("Method not implemented.");
-  }
-
-  getUserData?(): Promise<unknown> {
-    throw new Error("Method not implemented.");
-  }
-
   async fetchUserData(tokens: AccessTokens): Promise<{ user: any }> {
     if(!this.options.endpoints.user) return { user: null };
     const url =  this.options.endpoints.user.path;
     const method = "GET";
     const userKey = this.options.endpoints.user.userKey;
-    // const tokenType = this.options
 
     return ofetch(url, {
       method,
@@ -120,8 +111,19 @@ export class LocalAuthProvider implements AuthProviderInterface {
     });
   }
 
-  logout(): Promise<void> {
-    throw new Error("Method not implemented.");
+  async logout(tokens: AccessTokens): Promise<any> {
+    if(!this.options.endpoints.signOut) return;
+
+    const url =  this.options.endpoints.signOut.path;
+    const method = this.options.endpoints.signOut.method;
+
+    return ofetch(url, {
+      method,
+      headers: {
+        Accept: "application/json",
+        Authorization: tokens.accessToken,
+      },
+    });
   }
 
   /**
