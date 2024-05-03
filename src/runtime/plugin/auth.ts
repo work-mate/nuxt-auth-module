@@ -2,13 +2,11 @@ import {
   computed,
   defineNuxtPlugin,
   navigateTo,
-  readonly,
   useRequestEvent,
   useRoute,
   useRuntimeConfig,
   useState,
   type ComputedRef,
-  type Ref,
 } from "#imports";
 import { ofetch } from "ofetch";
 import type { AuthState, SupportedAuthProvider } from "../models";

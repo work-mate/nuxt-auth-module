@@ -1,5 +1,4 @@
-import { SupportedAuthProvider, type AuthProviderInterface } from "../models";
-import type { LocalAuthProvider } from "./LocalAuthProvider";
+import {  type AuthProviderInterface } from "../models";
 import { getCookie, setCookie, deleteCookie, type H3Event } from "h3";
 import type { ModuleOptions } from "@nuxt/schema";
 
@@ -60,16 +59,6 @@ export class AuthProvider {
 
     return p;
   } // end method provider
-
-  /**
-   * Returns local auth provider
-   * @return {LocalAuthProvider}
-   */
-  public local(): LocalAuthProvider {
-    return this.provider(
-      SupportedAuthProvider.LOCAL
-    ) as unknown as LocalAuthProvider;
-  } // end method local
 
   /**
    * Returns tokens from event
