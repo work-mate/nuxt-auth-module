@@ -18,7 +18,7 @@ Auth module for Nuxt 3 apps.
 
 | Provider      | Provider Key  | Status         |
 | ------------- | ------------- | -------------- |
-| Local         | local         | :heavy_check_mark: |
+| Local         | local         | :white_check_mark: |
 | Google        | google        | :x:            |
 | Github        | github        | :x:            |
 | Facebook      | facebook      | :x:            |
@@ -27,10 +27,10 @@ Auth module for Nuxt 3 apps.
 
 | Feature      | Status         |
 | ------------- | -------------- |
-| Login        | :heavy_check_mark: |
-| Logout       | :heavy_check_mark: |
-| User         | :heavy_check_mark: |
-| Refresh Token        | :heavy_check_mark:   |
+| Login        | :white_check_mark: |
+| Logout       | :white_check_mark: |
+| User         | :white_check_mark: |
+| Refresh Token        | :white_check_mark:   |
 
 <!-- :construction: -->
 
