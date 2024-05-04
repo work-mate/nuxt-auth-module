@@ -233,7 +233,7 @@ export class AuthProvider {
     }
 
     await provider
-      .refreshTokens(tokens)
+      .refreshTokens(tokens, this.config.token.type)
       .then((newTokens) => {
         AuthProvider.setProviderTokensToCookies(
           event,

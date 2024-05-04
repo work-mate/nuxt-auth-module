@@ -172,7 +172,7 @@ export class LocalAuthProvider implements AuthProviderInterface {
     return true;
   }
 
-  async refreshTokens(tokens: AccessTokens): Promise<{tokens: AccessTokens}> {
+  async refreshTokens(tokens: AccessTokens, tokenType: string): Promise<{tokens: AccessTokens}> {
     if(!this.options.endpoints.refreshToken) return Promise.reject("refreshToken not configured");
 
     const url = this.options.endpoints.refreshToken.path;
@@ -181,9 +181,12 @@ export class LocalAuthProvider implements AuthProviderInterface {
     const refreshTokenKey = this.options.endpoints.refreshToken.refreshTokenKey;
     const tokenBodyKey = this.options.endpoints.refreshToken.body.token;
     const refreshTokenBodyKey = this.options.endpoints.refreshToken.body.refreshToken;
+    const tokenTypePrefix = tokenType ? `${tokenType} ` : "";
+    const tokenTypeRegex = new RegExp("^" + tokenTypePrefix);
+
     const body = {
-      [tokenBodyKey]: tokens.accessToken,
-      [refreshTokenBodyKey]: tokens.refreshToken,
+      [tokenBodyKey]: tokens.accessToken.replace(tokenTypeRegex, ""),
+      [refreshTokenBodyKey]: (tokens.refreshToken || "").replace(tokenTypeRegex, ""),
     };
 
     return ofetch(url, {

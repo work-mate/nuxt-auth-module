@@ -1,5 +1,5 @@
 import { defineNuxtPlugin, useNuxtApp, useRuntimeConfig } from "#app";
-import type { $Fetch } from "ofetch";
+import { ofetch, type $Fetch } from "ofetch";
 
 export default defineNuxtPlugin(async () => {
   const { loggedIn, token } = useNuxtApp().$auth;
@@ -23,9 +23,13 @@ export default defineNuxtPlugin(async () => {
         };
       }
     },
-    onResponseError({response}) {
+    async onResponseError({response}) {
       if (response.status === 401) {
-        useNuxtApp().$auth.logout();
+        await ofetch("/api/auth/refresh", {
+          headers: {
+            Accept: "application/json",
+          },
+        });
       }
     }
   });

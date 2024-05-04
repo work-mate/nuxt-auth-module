@@ -20,6 +20,18 @@ export default defineNuxtConfig({
             body: {
               principal: "email_address"
             },
+            tokenKey: "token",
+            refreshTokenKey: "refresh_token",
+          },
+          refreshToken: {
+            path: "http://localhost:8080/api/auth/refresh",
+            method: "POST",
+            tokenKey: "token",
+            refreshTokenKey: "refresh_token",
+            body: {
+              token: "token",
+              refreshToken: "refresh_token",
+            },
           }
         }
       },
