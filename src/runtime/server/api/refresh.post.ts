@@ -44,10 +44,6 @@ export default defineEventHandler(async (event) => {
       return {
         tokens: tokensWithType,
       };
-    })
-    .catch((error) => {
-      AuthProvider.deleteProviderTokensFromCookies(event, authConfig);
-      return Promise.reject(error);
     });
 
   return {

@@ -1,8 +1,9 @@
 import { defineNuxtPlugin, useNuxtApp, useRuntimeConfig } from "#app";
+import { error } from "console";
 import { type $Fetch } from "ofetch";
 
 export default defineNuxtPlugin(async () => {
-  const { loggedIn, token, refreshTokens } = useNuxtApp().$auth;
+  const { loggedIn, token, refreshTokens, logout } = useNuxtApp().$auth;
   const authConfig = useRuntimeConfig().public.auth;
 
   const authFetch = $fetch.create({
@@ -23,11 +24,14 @@ export default defineNuxtPlugin(async () => {
         };
       }
     },
-    async onResponseError({response}) {
+    async onResponseError({ response }) {
       if (response.status === 401) {
-        await refreshTokens();
+        await refreshTokens().catch(async (error) => {
+          await logout();
+          throw error;
+        });
       }
-    }
+    },
   });
 
   return {
