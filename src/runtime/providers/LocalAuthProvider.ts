@@ -21,6 +21,7 @@ export type LocalAuthInitializerOptions = {
       path?: string;
       method?: HttpMethod;
       tokenKey?: string;
+      refreshTokenKey?: string;
       body?: {
         principal?: string;
         password?: string;
@@ -34,6 +35,10 @@ export type LocalAuthInitializerOptions = {
       method: HttpMethod;
       tokenKey: string;
       refreshTokenKey: string;
+      body: {
+        token: string;
+        refreshToken: string;
+      }
     } | false;
   };
 };
@@ -47,6 +52,7 @@ export class LocalAuthProvider implements AuthProviderInterface {
         path: "/signin",
         method: "POST",
         tokenKey: "token",
+        refreshTokenKey: "refresh_token",
         body: {
           principal: "username",
           password: "password",
@@ -76,6 +82,7 @@ export class LocalAuthProvider implements AuthProviderInterface {
     const principal = this.options.endpoints.signIn.body.principal;
     const password = this.options.endpoints.signIn.body.password;
     const tokenKey = this.options.endpoints.signIn.tokenKey;
+    const refreshTokenKey = this.options.endpoints.signIn.refreshTokenKey;
     const body = {
       [principal]: authData.principal,
       [password]: authData.password,
@@ -88,10 +95,17 @@ export class LocalAuthProvider implements AuthProviderInterface {
         Accept: "application/json",
       },
     }).then((res) => {
-      const token = getRecursiveProperty(res, tokenKey);
+      let token = res;
+      if(tokenKey)
+        token = getRecursiveProperty(res, tokenKey);
+
+      let refreshToken = "";
+      if(refreshTokenKey)
+        refreshToken = getRecursiveProperty(res, refreshTokenKey);
 
       const accessTokens: AccessTokens = {
         accessToken: token,
+        refreshToken: refreshToken || "",
       };
 
       return { tokens: accessTokens };
@@ -165,9 +179,20 @@ export class LocalAuthProvider implements AuthProviderInterface {
     const method = this.options.endpoints.refreshToken.method;
     const tokenKey = this.options.endpoints.refreshToken.tokenKey;
     const refreshTokenKey = this.options.endpoints.refreshToken.refreshTokenKey;
+    const tokenBodyKey = this.options.endpoints.refreshToken.body.token;
+    const refreshTokenBodyKey = this.options.endpoints.refreshToken.body.refreshToken;
+    const body = {
+      [tokenBodyKey]: tokens.accessToken,
+      [refreshTokenBodyKey]: tokens.refreshToken,
+    };
 
     return ofetch(url, {
       method,
+      ...(method == "GET" ? {
+        query: body,
+      } : {
+        body,
+      }),
       headers: {
         Accept: "application/json",
       },
@@ -176,7 +201,7 @@ export class LocalAuthProvider implements AuthProviderInterface {
       if(tokenKey)
         token = getRecursiveProperty(res, tokenKey);
 
-      let refreshToken = res;
+      let refreshToken = "";
       if(refreshTokenKey)
         refreshToken = getRecursiveProperty(res, refreshTokenKey);
 
