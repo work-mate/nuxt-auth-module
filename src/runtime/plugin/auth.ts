@@ -248,7 +248,11 @@ export default defineNuxtPlugin(async () => {
         Accept: "application/json",
       },
     }).then((res: {tokens: AccessTokens}) => {
-
+      state.value = {
+        ...state.value,
+        token: res.tokens.accessToken,
+        refreshToken: res.tokens.refreshToken,
+      };
     });
   }
 
