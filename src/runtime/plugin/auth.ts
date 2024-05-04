@@ -31,7 +31,7 @@ export type AuthPlugin = {
   >;
   logout: (redirectTo?: string) => Promise<unknown>;
   refreshUser: () => Promise<void>;
-  refreshTokens: () => Promise<void>
+  refreshTokens: () => Promise<void>;
 };
 
 export default defineNuxtPlugin(async () => {

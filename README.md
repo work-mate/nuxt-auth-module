@@ -141,6 +141,7 @@ type LocalAuthInitializerOptions = {
       path?: string;
       method?: HttpMethod;
       tokenKey?: string;
+      refreshTokenKey?: string;
       body?: {
         principal?: string;
         password?: string;
@@ -149,6 +150,16 @@ type LocalAuthInitializerOptions = {
     signOut?: { path: string; method: HttpMethod } | false;
     signUp?: { path?: string; method?: HttpMethod } | false;
     user?: { path: string; userKey: string } | false;
+    refreshToken?: {
+      path: string;
+      method: HttpMethod;
+      tokenKey: string;
+      refreshTokenKey: string;
+      body: {
+        token: string;
+        refreshToken: string;
+      }
+    } | false;
   };
 };
 ```
@@ -158,7 +169,7 @@ type LocalAuthInitializerOptions = {
 #### composables
 
 ```ts
-const { loggedIn,  user, token, refreshToken, login, logout, refreshUser } = useAuth();
+const { loggedIn,  user, token, refreshToken, login, logout, refreshUser, refreshTokens } = useAuth();
 
 // state is of type AuthState
 type AuthPlugin = {
@@ -180,6 +191,7 @@ type AuthPlugin = {
   >;
   logout: (redirectTo?: string) => Promise<unknown>;
   refreshUser: () => Promise<void>;
+  refreshTokens: () => Promise<void>;
 };
 ```
 
@@ -277,4 +289,52 @@ To prevent a page from being protected from auth, set the auth meta to false
 definePageMeta({
   auth: false,
 });
+```
+
+Example of nuxt.config.ts
+```ts
+const BACKEND_URL = "http://localhost:8080/api/v1";
+export default defineNuxtConfig({
+  modules: ['@workmate/nuxt-auth'],
+  auth: {
+    global: true,
+    redirects: {
+      redirectIfLoggedIn: "/protected",
+    },
+    apiClient: {
+      baseURL: BACKEND_URL,
+    },
+    providers: {
+      local: {
+        endpoints: {
+          user: {
+            path: BACKEND_URL + "/api/auth/user",
+            userKey: "user",
+          },
+          signIn: {
+            path:  BACKEND_URL + "/api/auth/login/password",
+            body: {
+              principal: "email_address",
+              password: "password",
+            },
+            tokenKey: "token",
+            refreshTokenKey: "refresh_token",
+          },
+          refreshToken: {
+            path: BACKEND_URL + "/api/auth/refresh",
+            method: "POST",
+            tokenKey: "token",
+            refreshTokenKey: "refresh_token",
+            body: {
+              token: "token",
+              refreshToken: "refresh_token",
+            },
+          }
+        }
+      },
+    }
+  },
+  devtools: { enabled: true }
+})
+
 ```
