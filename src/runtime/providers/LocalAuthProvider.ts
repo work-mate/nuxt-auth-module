@@ -29,6 +29,12 @@ export type LocalAuthInitializerOptions = {
     signOut?: { path: string; method: HttpMethod } | false;
     signUp?: { path?: string; method?: HttpMethod } | false;
     user?: { path: string; userKey: string } | false;
+    refreshToken?: {
+      path: string;
+      method: HttpMethod;
+      tokenKey: string;
+      refreshTokenKey: string;
+    } | false;
   };
 };
 
@@ -49,6 +55,7 @@ export class LocalAuthProvider implements AuthProviderInterface {
       signOut: false,
       signUp: false,
       user: false,
+      refreshToken: false,
     },
   };
 
@@ -149,5 +156,36 @@ export class LocalAuthProvider implements AuthProviderInterface {
     }
 
     return true;
+  }
+
+  async refreshTokens(tokens: AccessTokens): Promise<{tokens: AccessTokens}> {
+    if(!this.options.endpoints.refreshToken) return Promise.reject("refreshToken not configured");
+
+    const url = this.options.endpoints.refreshToken.path;
+    const method = this.options.endpoints.refreshToken.method;
+    const tokenKey = this.options.endpoints.refreshToken.tokenKey;
+    const refreshTokenKey = this.options.endpoints.refreshToken.refreshTokenKey;
+
+    return ofetch(url, {
+      method,
+      headers: {
+        Accept: "application/json",
+      },
+    }).then((res) => {
+      let token = res;
+      if(tokenKey)
+        token = getRecursiveProperty(res, tokenKey);
+
+      let refreshToken = res;
+      if(refreshTokenKey)
+        refreshToken = getRecursiveProperty(res, refreshTokenKey);
+
+      const accessTokens: AccessTokens = {
+        accessToken: token,
+        refreshToken: refreshToken || tokens.refreshToken || "",
+      };
+
+      return { tokens: accessTokens };
+    });
   }
 }

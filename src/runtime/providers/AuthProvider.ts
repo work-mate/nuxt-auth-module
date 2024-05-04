@@ -239,7 +239,7 @@ export class AuthProvider {
           event,
           this.config,
           providerKey,
-          newTokens
+          newTokens.tokens,
         );
       })
       .catch((error) => {

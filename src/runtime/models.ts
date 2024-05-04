@@ -11,7 +11,7 @@ export interface AuthProviderInterface {
   login(authData?: AuthLoginData): Promise<{tokens: AccessTokens}>;
   fetchUserData?(tokens: AccessTokens): Promise<{user: any}>;
   logout(tokens: AccessTokens): Promise<void>;
-  refreshTokens?(tokens: AccessTokens): Promise<AccessTokens>;
+  refreshTokens?(tokens: AccessTokens): Promise<{tokens: AccessTokens}>;
   /**
    * @throws {ErrorResponse}
    * @returns {boolean}
