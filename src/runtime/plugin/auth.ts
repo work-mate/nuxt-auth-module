@@ -31,6 +31,7 @@ export type AuthPlugin = {
   >;
   logout: (redirectTo?: string) => Promise<unknown>;
   refreshUser: () => Promise<void>;
+  refreshTokens: () => Promise<void>
 };
 
 export default defineNuxtPlugin(async () => {
@@ -240,6 +241,17 @@ export default defineNuxtPlugin(async () => {
     };
   }
 
+  async function refreshTokens() {
+    return ofetch("/api/auth/refresh", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+      },
+    }).then((res: {tokens: AccessTokens}) => {
+
+    });
+  }
+
   return {
     provide: {
       auth: {
@@ -250,6 +262,7 @@ export default defineNuxtPlugin(async () => {
         login,
         logout,
         refreshUser,
+        refreshTokens,
       } as AuthPlugin,
     },
   };

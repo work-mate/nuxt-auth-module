@@ -26,6 +26,9 @@
     <button @click="trigger">
       use auth fetch
     </button>
+    <button @click="triggerAlways401">
+      Always 401
+    </button>
 
     <pre>
       {{ state }}
@@ -67,6 +70,12 @@ async function triggerRefreshUser() {
 
 function trigger() {
   useAuthFetch('/api/auth/melting');
+}
+
+function triggerAlways401() {
+  useAuthFetch('/api/auth/always-401', {
+    method: 'POST',
+  });
 }
 </script>
 

@@ -1,8 +1,8 @@
 import { defineNuxtPlugin, useNuxtApp, useRuntimeConfig } from "#app";
-import { ofetch, type $Fetch } from "ofetch";
+import { type $Fetch } from "ofetch";
 
 export default defineNuxtPlugin(async () => {
-  const { loggedIn, token } = useNuxtApp().$auth;
+  const { loggedIn, token, refreshTokens } = useNuxtApp().$auth;
   const authConfig = useRuntimeConfig().public.auth;
 
   const authFetch = $fetch.create({
@@ -25,11 +25,7 @@ export default defineNuxtPlugin(async () => {
     },
     async onResponseError({response}) {
       if (response.status === 401) {
-        await ofetch("/api/auth/refresh", {
-          headers: {
-            Accept: "application/json",
-          },
-        });
+        await refreshTokens();
       }
     }
   });

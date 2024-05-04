@@ -232,21 +232,9 @@ export class AuthProvider {
       );
     }
 
-    await provider
-      .refreshTokens(tokens, this.config.token.type)
-      .then((newTokens) => {
-        AuthProvider.setProviderTokensToCookies(
-          event,
-          this.config,
-          providerKey,
-          newTokens.tokens,
-        );
-      })
-      .catch((error) => {
-        AuthProvider.deleteProviderTokensFromCookies(event, this.config);
-        return Promise.reject(error);
-      });
-
-    return Promise.resolve({ tokens });
+    return provider.refreshTokens(
+      tokens,
+      this.config.token.type
+    );
   } //end method refreshTokensFromEvent
 } //end class AuthProvider
