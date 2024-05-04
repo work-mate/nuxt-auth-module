@@ -45,7 +45,5 @@
     "nuxt": "^3.11.2",
     "vitest": "^1.4.0"
   },
-  "resolutions": {
-    "string-width": "4.2.3"
-  }
+  "packageManager": "yarn@4.1.1"
 }
