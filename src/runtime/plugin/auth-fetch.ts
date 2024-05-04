@@ -7,6 +7,8 @@ export default defineNuxtPlugin(async () => {
 
   const authFetch = $fetch.create({
     baseURL: authConfig.apiClient.baseURL,
+    retry: 1,
+    retryStatusCodes: [401],
     onRequest({ options }) {
       const headerAddition = {
         Authorization: loggedIn.value && token.value ? token.value : "",
@@ -21,6 +23,11 @@ export default defineNuxtPlugin(async () => {
         };
       }
     },
+    onResponseError({response}) {
+      if (response.status === 401) {
+        useNuxtApp().$auth.logout();
+      }
+    }
   });
 
   return {

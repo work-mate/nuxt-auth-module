@@ -117,7 +117,12 @@ export default defineNuxtModule<ModuleOptions>({
     addServerHandler({
       route: '/api/auth/user',
       handler: resolver.resolve('./runtime/server/api/user'),
-    })
+    });
+
+    addServerHandler({
+      route: '/api/auth/refresh',
+      handler: resolver.resolve('./runtime/server/api/refresh.post'),
+    });
 
     addRouteMiddleware({
       name: 'auth',

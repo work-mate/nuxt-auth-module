@@ -81,8 +81,6 @@ export default defineNuxtPlugin(async () => {
    * @returns {boolean} true if the current page requires authentication, false otherwise
    */
   function doesPageRequireAuth(): boolean {
-    console.log("doesPageRequireAuth");
-    console.log("route.meta: ", route.meta);
     // Check if the page has the "auth" middleware declared
     if (route.meta.middleware) {
       // If the page has the "auth" middleware, return true
@@ -108,7 +106,21 @@ export default defineNuxtPlugin(async () => {
     return false;
   }
 
+  /**
+   * Fetches the user data from the server using the user's access token.
+   *
+   * This function is used to fetch the user data after the user has been
+   * authenticated. The user's access token is automatically added to the
+   * request headers.
+   *
+   * @returns {Promise<{ user: any }>} The user data returned by the server
+   */
   async function fetchUserDataWithToken(): Promise<{ user: any }> {
+    /**
+     * Fetches the user data from the server using the user's access token.
+     *
+     * @returns {Promise<{ user: any }>} The user data returned by the server
+     */
     const response: { user: any } = await ofetch("/api/auth/user", {
       headers: {
         Accept: "application/json",
@@ -118,11 +130,23 @@ export default defineNuxtPlugin(async () => {
     return response;
   }
 
+
+  /**
+   * Logs in the user with the given provider and data.
+   *
+   * @param {string | SupportedAuthProvider} provider - The provider to use
+   * @param {Record<string, string>} data - The form data to send to the server
+   * @param {string} [redirectTo] - The path to redirect to after logging in
+   *
+   * @returns {Promise<{message: string, tokens?: AccessTokens}>} The server response
+   *
+   * @throws {ErrorResponse} If the user is already logged in
+   */
   async function login(
     provider: string | SupportedAuthProvider,
     data: Record<string, string> = {},
     redirectTo?: string
-  ) {
+  ): Promise<{ message: string; tokens?: AccessTokens }> {
     if (state.value.loggedIn) {
       return {
         message: "User already logged in",
@@ -149,15 +173,21 @@ export default defineNuxtPlugin(async () => {
     };
 
     if (!doesPageRequireAuth()) {
-      console.log(useRuntimeConfig().public.auth.redirects.redirectIfLoggedIn);
+      console.log(
+        useRuntimeConfig().public.auth.redirects.redirectIfLoggedIn
+      );
       navigateTo(
         redirectTo ||
           useRuntimeConfig().public.auth.redirects.redirectIfLoggedIn
       );
     }
 
-    return response;
+    return {
+      message: "Login successful",
+      tokens,
+    };
   }
+
 
   /**
    * Logs out the current user.
@@ -189,7 +219,14 @@ export default defineNuxtPlugin(async () => {
     return response;
   }
 
-  async function refreshUser() {
+  /**
+   * Refreshes the current user's data from the API.
+   *
+   * @throws {ErrorResponse} If the user was not logged in
+   *
+   * @returns {Promise<void>}
+   */
+  async function refreshUser(): Promise<void> {
     if (!state.value.loggedIn) {
       throw {
         message: "User not logged in",

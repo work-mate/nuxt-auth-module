@@ -1,4 +1,4 @@
-import {  type AuthProviderInterface } from "../models";
+import { type AuthProviderInterface } from "../models";
 import { getCookie, setCookie, deleteCookie, type H3Event } from "h3";
 import type { ModuleOptions } from "@nuxt/schema";
 
@@ -199,7 +199,7 @@ export class AuthProvider {
     } as {
       message: string;
       remote_error?: any;
-    }
+    };
 
     try {
       await logout();
@@ -210,6 +210,43 @@ export class AuthProvider {
     AuthProvider.deleteProviderTokensFromCookies(event, this.config);
 
     return response;
-  }
+  } // end method logoutFromEvent
 
+  async refreshTokensFromEvent(
+    event: H3Event
+  ): Promise<{ tokens: AccessTokens }> {
+    const tokens = AuthProvider.getTokensFromEvent(event, this.config);
+
+    const providerKey = AuthProvider.getProviderKeyFromEvent(
+      event,
+      this.config
+    );
+    if (!providerKey) {
+      return Promise.reject("provider is required");
+    }
+
+    const provider = this.provider(providerKey);
+    if (!provider || !provider.refreshTokens) {
+      return Promise.reject(
+        "refresh tokens is not implemented for this provider"
+      );
+    }
+
+    await provider
+      .refreshTokens(tokens)
+      .then((newTokens) => {
+        AuthProvider.setProviderTokensToCookies(
+          event,
+          this.config,
+          providerKey,
+          newTokens
+        );
+      })
+      .catch((error) => {
+        AuthProvider.deleteProviderTokensFromCookies(event, this.config);
+        return Promise.reject(error);
+      });
+
+    return Promise.resolve({ tokens });
+  } //end method refreshTokensFromEvent
 } //end class AuthProvider
