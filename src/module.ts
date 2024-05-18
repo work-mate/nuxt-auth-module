@@ -126,6 +126,13 @@ export default defineNuxtModule<ModuleOptions>({
       handler: resolver.resolve('./runtime/server/api/refresh.post'),
     });
 
+    // if(options.providers.github) {
+    //   addServerHandler({
+    //     route: '/api/auth/callback/github',
+    //     handler: resolver.resolve('./runtime/server/api/callback/github.get'),
+    //   })
+    // }
+
     addRouteMiddleware({
       name: 'auth',
       path: resolver.resolve('./runtime/middleware/auth'),
