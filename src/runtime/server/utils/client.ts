@@ -2,6 +2,7 @@ import { useRuntimeConfig } from "#imports";
 import { AuthProvider } from "../../providers/AuthProvider";
 import { LocalAuthProvider } from "../../providers/LocalAuthProvider";
 import type { AuthProviderInterface } from "../../models";
+import { GithubAuthProvider } from "../../providers/GithubAuthProvider";
 
 let authClient: AuthProvider;
 
@@ -26,6 +27,9 @@ export const getAuthClient = (): AuthProvider => {
 
   if (config.providers.local) {
     providers.local = LocalAuthProvider.create(config.providers.local);
+  }
+  if (config.providers.github) {
+    providers.github = GithubAuthProvider.create(config.providers.github);
   }
 
   /**

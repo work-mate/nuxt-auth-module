@@ -9,11 +9,13 @@ import {
 } from "@nuxt/kit";
 import defu from "defu";
 import type { LocalAuthInitializerOptions } from "./runtime/providers/LocalAuthProvider";
+import type { GithubAuthInitializerOptions } from "./runtime/providers/GithubAuthProvider";
 export { LocalAuthProvider } from "./runtime/providers/LocalAuthProvider";
 export { AuthProvider } from "./runtime/providers/AuthProvider";
 
 export type ModuleProvidersOptions = {
   local?: LocalAuthInitializerOptions,
+  github?: GithubAuthInitializerOptions,
   // [key: string]: AuthProviderInterface
 }
 
