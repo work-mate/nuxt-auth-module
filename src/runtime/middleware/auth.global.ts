@@ -5,6 +5,10 @@ import { authMiddleware } from "./auth";
 
 export default defineNuxtRouteMiddleware((...params) => {
   const [to] = params;
+
+  if(to.matched.length === 0) {
+    return;
+  }
   // Check if user has auth middleware
   if (to.meta.middleware) {
     if (to.meta.middleware == "auth" || to.meta.middleware == "auth-guest") {
