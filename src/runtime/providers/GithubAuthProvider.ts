@@ -77,10 +77,15 @@ export class GithubAuthProvider implements AuthProviderInterface {
   }
 
   async fetchUserData(tokens: any): Promise<{ user: any }> {
+    const response = await ofetch("https://api.github.com/user", {
+      method: "GET",
+      headers: {
+        Authorization: `${tokens.tokenType} ${tokens.accessToken}`,
+      },
+    });
+
     return {
-      user: {
-        name: "Github User"
-      }
+      user: response,
     }
   } // end method fetchUserData
 
