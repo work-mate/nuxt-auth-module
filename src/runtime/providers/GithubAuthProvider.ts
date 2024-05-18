@@ -23,7 +23,6 @@ export class GithubAuthProvider implements AuthProviderInterface {
   async login(): Promise<{ url: string }> {
     const params = new URLSearchParams();
     params.set("client_id", this.options.CLIENT_ID);
-    params.set("redirect_uri", "http://localhost:3000/github-redirect-location");
     // params.set("scope", "user:email");
     return {
       url: `https://github.com/login/oauth/authorize?${params.toString()}`
