@@ -1,5 +1,4 @@
-import defu from "defu";
-import type { DeepRequired, ModuleOptions } from "~/src/module";
+import type { ModuleOptions } from "~/src/module";
 import type { AuthProviderInterface } from "../models";
 import jwt from "jsonwebtoken";
 import { ofetch } from "ofetch";
@@ -120,11 +119,11 @@ export class GithubAuthProvider implements AuthProviderInterface {
     };
   } // end method fetchUserData
 
-  async logout(tokens: any): Promise<any> {
-    return Promise.reject("GithubAuthProvider is not implemented");
+  async logout(): Promise<any> {
+    return Promise.resolve();
   } // end method logout
 
-  validateRequestBody(body: Record<string, any>): boolean {
+  validateRequestBody(): boolean {
     return true;
   } // end method validateRequestBody
 } // end class GithubAuthProvider

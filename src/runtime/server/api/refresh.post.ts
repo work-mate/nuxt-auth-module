@@ -1,7 +1,7 @@
 import { defineEventHandler } from "h3";
 import { getAuthClient } from "../utils/client";
 import { useRuntimeConfig } from "#imports";
-import { AuthProvider, type AccessTokens } from "../../providers/AuthProvider";
+import { AuthProvider } from "../../providers/AuthProvider";
 
 export default defineEventHandler(async (event) => {
   const authConfig = useRuntimeConfig().auth;
