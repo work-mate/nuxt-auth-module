@@ -1,9 +1,8 @@
 import { defineNuxtPlugin, useNuxtApp, useRuntimeConfig } from "#app";
-import { error } from "console";
 import { type $Fetch } from "ofetch";
 
 export default defineNuxtPlugin(async () => {
-  const { loggedIn, token, refreshTokens, logout } = useNuxtApp().$auth;
+  const { loggedIn, token, tokenType, refreshTokens, logout } = useNuxtApp().$auth;
   const authConfig = useRuntimeConfig().public.auth;
 
   const authFetch = $fetch.create({
@@ -11,8 +10,9 @@ export default defineNuxtPlugin(async () => {
     retry: 1,
     retryStatusCodes: [401],
     onRequest({ options }) {
+      const accessToken = tokenType.value ? `${tokenType.value} ${token.value}` : token.value;
       const headerAddition = {
-        Authorization: loggedIn.value && token.value ? token.value : "",
+        Authorization: loggedIn.value && accessToken ? accessToken : "",
       };
 
       if (!options.headers) {

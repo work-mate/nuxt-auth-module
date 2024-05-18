@@ -9,7 +9,7 @@ import {
   type ComputedRef,
 } from "#imports";
 import { ofetch } from "ofetch";
-import type { AuthState, SupportedAuthProvider } from "../models";
+import { SupportedAuthProvider, type AuthState } from "../models";
 import type { AccessTokens } from "../providers/AuthProvider";
 
 export type AuthPlugin = {
@@ -17,6 +17,8 @@ export type AuthPlugin = {
   user: ComputedRef<any | null | undefined>;
   token: ComputedRef<string | undefined>;
   refreshToken: ComputedRef<string | undefined>;
+  tokenType: ComputedRef<string | undefined>;
+  provider: ComputedRef<string | undefined>;
   login: (
     provider: string | SupportedAuthProvider,
     data?: Record<string, string>,
@@ -54,6 +56,8 @@ export default defineNuxtPlugin(async () => {
           user: userResponse.user,
           token: tokens.accessToken,
           refreshToken: tokens.refreshToken,
+          tokenType: tokens.tokenType,
+          provider: tokens.provider
         };
       } catch (e: any) {
         const statusCodes = [];
@@ -148,19 +152,35 @@ export default defineNuxtPlugin(async () => {
     data: Record<string, string> = {},
     redirectTo?: string
   ): Promise<{ message: string; tokens?: AccessTokens }> {
+    const expectUrlFromProviders = [SupportedAuthProvider.GITHUB];
+
     if (state.value.loggedIn) {
       return {
         message: "User already logged in",
       };
     }
 
-    const response: { tokens: AccessTokens } = await ofetch("/api/auth/login", {
+    const response: { tokens: AccessTokens, url?: string } = await ofetch("/api/auth/login", {
       method: "POST",
       body: {
         provider,
         ...data,
       },
     });
+
+    if(expectUrlFromProviders.some(el => el == provider)) {
+      if(!response.url) return Promise.reject({message: "Login failed"});
+
+      const isExternal = /^https?:\/\//.test(response.url);
+
+      // debugger
+
+      await navigateTo(response.url, {
+        external: isExternal,
+      });
+
+      return Promise.resolve({message: `Redirecting to login url for provider "${provider}"`})
+    }
 
     const tokens = response.tokens;
 
@@ -169,14 +189,13 @@ export default defineNuxtPlugin(async () => {
     state.value = {
       token: tokens.accessToken,
       refreshToken: tokens.refreshToken,
+      provider: tokens.provider,
+      tokenType: tokens.tokenType,
       loggedIn: true,
       user: user.user,
     };
 
     if (!doesPageRequireAuth()) {
-      console.log(
-        useRuntimeConfig().public.auth.redirects.redirectIfLoggedIn
-      );
       navigateTo(
         redirectTo ||
           useRuntimeConfig().public.auth.redirects.redirectIfLoggedIn
@@ -242,12 +261,19 @@ export default defineNuxtPlugin(async () => {
   }
 
   async function refreshTokens() {
+    if(!state.value.loggedIn) {
+      return {
+        message: "User not logged in"
+      }
+    }
     return ofetch("/api/auth/refresh", {
       method: "POST",
       headers: {
         Accept: "application/json",
       },
     }).then((res: {tokens: AccessTokens}) => {
+      if(!state.value.loggedIn) return;
+
       state.value = {
         ...state.value,
         token: res.tokens.accessToken,
@@ -261,8 +287,10 @@ export default defineNuxtPlugin(async () => {
       auth: {
         loggedIn: computed(() => state.value.loggedIn),
         user: computed(() => state.value.user),
-        token: computed(() => state.value.token),
-        refreshToken: computed(() => state.value.refreshToken),
+        token: computed(() => state.value.loggedIn ? state.value.token : undefined),
+        refreshToken: computed(() => state.value.loggedIn ? state.value.refreshToken : undefined),
+        provider: computed(() => state.value.loggedIn ? state.value.provider : undefined),
+        tokenType: computed(() => state.value.loggedIn ? state.value.tokenType : undefined),
         login,
         logout,
         refreshUser,

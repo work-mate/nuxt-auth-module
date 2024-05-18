@@ -9,11 +9,13 @@ import {
 } from "@nuxt/kit";
 import defu from "defu";
 import type { LocalAuthInitializerOptions } from "./runtime/providers/LocalAuthProvider";
+import type { GithubAuthInitializerOptions } from "./runtime/providers/GithubAuthProvider";
 export { LocalAuthProvider } from "./runtime/providers/LocalAuthProvider";
 export { AuthProvider } from "./runtime/providers/AuthProvider";
 
 export type ModuleProvidersOptions = {
   local?: LocalAuthInitializerOptions,
+  github?: GithubAuthInitializerOptions,
   // [key: string]: AuthProviderInterface
 }
 
@@ -40,6 +42,7 @@ export interface ModuleOptions {
       accessToken: string;
       refreshToken: string;
       authProvider: string;
+      tokenType: string;
     };
   }
 }
@@ -71,6 +74,7 @@ export default defineNuxtModule<ModuleOptions>({
         accessToken: "auth:token",
         refreshToken: "auth:refreshToken",
         authProvider: "auth:provider",
+        tokenType: "auth:tokenType",
       }
     }
   },
@@ -123,6 +127,13 @@ export default defineNuxtModule<ModuleOptions>({
       route: '/api/auth/refresh',
       handler: resolver.resolve('./runtime/server/api/refresh.post'),
     });
+
+    if(nuxt.options.runtimeConfig.auth.providers.github) {
+      addServerHandler({
+        route: '/api/auth/callback/github',
+        handler: resolver.resolve('./runtime/server/api/callback/github.get'),
+      })
+    }
 
     addRouteMiddleware({
       name: 'auth',

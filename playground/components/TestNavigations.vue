@@ -17,6 +17,9 @@
     <button @click="triggerLogin">
       Login
     </button>
+    <button @click="triggerLoginWithGoogle">
+      Github login Login
+    </button>
     <button @click="triggerLogout">
       Logout
     </button>
@@ -39,7 +42,7 @@
 
 <script setup>
 const {
-  loggedIn, user, token, refreshToken, login, logout, refreshUser
+  loggedIn, user, token, refreshToken, provider, tokenType, login, logout, refreshUser
 } = useAuth();
 
 const state = computed(() => ({
@@ -47,6 +50,8 @@ const state = computed(() => ({
   user: user.value,
   token: token.value,
   refreshToken: refreshToken.value,
+  provider: provider.value,
+  tokenType: tokenType.value
 }))
 
 function triggerLogin() {
@@ -63,6 +68,13 @@ function triggerLogout() {
     console.log(res)
   })
 }
+ function triggerLoginWithGoogle() {
+  login('github')
+  .then(res => {
+    console.log(res)
+  })
+  console.log("login with google")
+ }
 
 async function triggerRefreshUser() {
   await refreshUser()

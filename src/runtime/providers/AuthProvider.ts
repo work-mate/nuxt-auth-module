@@ -11,6 +11,8 @@ export type AuthProviderContructorOptions = {
 export type AccessTokens = {
   accessToken: string;
   refreshToken?: string;
+  tokenType: string;
+  provider: string;
 };
 
 export class AuthProvider {
@@ -73,8 +75,10 @@ export class AuthProvider {
     const cookiesNames = authConfig.token.cookiesNames;
     const accessToken = getCookie(event, cookiesNames.accessToken) || "";
     const refreshToken = getCookie(event, cookiesNames.refreshToken) || "";
+    const tokenType = getCookie(event, cookiesNames.tokenType) || "";
+    const provider = getCookie(event, cookiesNames.authProvider) || "";
 
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken, tokenType, provider };
   }
 
   /**
@@ -95,13 +99,11 @@ export class AuthProvider {
    * Sets provider tokens to cookies
    * @param {H3Event} event
    * @param {ModuleOptions} authConfig
-   * @param {string} provider
    * @param {AccessTokens} tokens
    */
   static setProviderTokensToCookies(
     event: H3Event,
     authConfig: ModuleOptions,
-    provider: string,
     tokens: AccessTokens
   ) {
     const cookiesNames = authConfig.token.cookiesNames;
@@ -122,7 +124,8 @@ export class AuthProvider {
       tokens.refreshToken || "",
       options
     );
-    setCookie(event, cookiesNames.authProvider, provider, options);
+    setCookie(event, cookiesNames.authProvider, tokens.provider, options);
+    setCookie(event, cookiesNames.tokenType, tokens.tokenType, options);
   }
 
   /**
@@ -137,6 +140,7 @@ export class AuthProvider {
     const cookiesNames = authConfig.token.cookiesNames;
     deleteCookie(event, cookiesNames.accessToken);
     deleteCookie(event, cookiesNames.refreshToken);
+    deleteCookie(event, cookiesNames.tokenType);
     deleteCookie(event, cookiesNames.authProvider);
   }
 
@@ -150,13 +154,9 @@ export class AuthProvider {
 
     const tokens = AuthProvider.getTokensFromEvent(event, this.config);
 
-    const providerKey = AuthProvider.getProviderKeyFromEvent(
-      event,
-      this.config
-    );
-    if (!providerKey) return emptyUser;
+    if (!tokens.provider) return emptyUser;
 
-    const provider = this.provider(providerKey);
+    const provider = this.provider(tokens.provider);
     if (!provider || !provider.fetchUserData) {
       return emptyUser;
     }
@@ -178,18 +178,13 @@ export class AuthProvider {
      * @return {Promise<void>}
      */
     const logout = async (): Promise<void> => {
-      const providerKey = AuthProvider.getProviderKeyFromEvent(
-        event,
-        this.config
-      );
-      if (!providerKey) return;
+      const tokens = AuthProvider.getTokensFromEvent(event, this.config);
+      if (!tokens.provider) return;
 
-      const provider = this.provider(providerKey);
+      const provider = this.provider(tokens.provider);
       if (!provider) {
         return;
       }
-
-      const tokens = AuthProvider.getTokensFromEvent(event, this.config);
 
       await provider.logout(tokens);
     };
@@ -217,24 +212,17 @@ export class AuthProvider {
   ): Promise<{ tokens: AccessTokens }> {
     const tokens = AuthProvider.getTokensFromEvent(event, this.config);
 
-    const providerKey = AuthProvider.getProviderKeyFromEvent(
-      event,
-      this.config
-    );
-    if (!providerKey) {
+    if (!tokens.provider) {
       return Promise.reject("provider is required");
     }
 
-    const provider = this.provider(providerKey);
+    const provider = this.provider(tokens.provider);
     if (!provider || !provider.refreshTokens) {
       return Promise.reject(
         "refresh tokens is not implemented for this provider"
       );
     }
 
-    return provider.refreshTokens(
-      tokens,
-      this.config.token.type
-    );
+    return provider.refreshTokens(tokens);
   } //end method refreshTokensFromEvent
 } //end class AuthProvider

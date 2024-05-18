@@ -1,7 +1,7 @@
 import { defineEventHandler, readBody, setResponseStatus } from "h3";
 import { type ErrorResponse } from "../../models";
 import { getAuthClient } from "../utils/client";
-import { AuthProvider, type AccessTokens } from "../../providers/AuthProvider";
+import { AuthProvider } from "../../providers/AuthProvider";
 import { useRuntimeConfig } from "#imports";
 
 export default defineEventHandler(async (event) => {
@@ -33,27 +33,18 @@ export default defineEventHandler(async (event) => {
     return e;
   }
 
-  const { tokens } = await authProvider.login(body);
-  const tokenType = authConfig.token.type;
-  const tokenTypePrefix = tokenType ? `${tokenType} ` : "";
+  const { tokens, url } = await authProvider.login(body);
 
-  const tokensWithType: AccessTokens = {
-    accessToken: tokens.accessToken
-      ? `${tokenTypePrefix}${tokens.accessToken}`
-      : "",
-    refreshToken: tokens.refreshToken
-      ? `${tokenTypePrefix}${tokens.refreshToken}`
-      : "",
-  };
-
-  AuthProvider.setProviderTokensToCookies(
-    event,
-    authConfig,
-    provider,
-    tokensWithType
-  );
+  if (tokens) {
+    AuthProvider.setProviderTokensToCookies(
+      event,
+      authConfig,
+      tokens
+    );
+  }
 
   return {
-    tokens: tokensWithType,
+    tokens,
+    url,
   };
 });
