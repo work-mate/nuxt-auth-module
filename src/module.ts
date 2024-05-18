@@ -42,7 +42,7 @@ export interface ModuleOptions {
       accessToken: string;
       refreshToken: string;
       authProvider: string;
-      authTokenType: string;
+      tokenType: string;
     };
   }
 }
@@ -74,7 +74,7 @@ export default defineNuxtModule<ModuleOptions>({
         accessToken: "auth:token",
         refreshToken: "auth:refreshToken",
         authProvider: "auth:provider",
-        authTokenType: "auth:tokenType",
+        tokenType: "auth:tokenType",
       }
     }
   },

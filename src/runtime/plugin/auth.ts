@@ -196,9 +196,6 @@ export default defineNuxtPlugin(async () => {
     };
 
     if (!doesPageRequireAuth()) {
-      console.log(
-        useRuntimeConfig().public.auth.redirects.redirectIfLoggedIn
-      );
       navigateTo(
         redirectTo ||
           useRuntimeConfig().public.auth.redirects.redirectIfLoggedIn

@@ -45,7 +45,6 @@ export type LocalAuthInitializerOptions = {
 };
 
 export class LocalAuthProvider implements AuthProviderInterface {
-  name: string = "local";
   private options: DeepRequired<LocalAuthInitializerOptions>;
   private config: ModuleOptions;
   static defaultOptions: DeepRequired<LocalAuthInitializerOptions> = {
@@ -73,6 +72,10 @@ export class LocalAuthProvider implements AuthProviderInterface {
       options,
       LocalAuthProvider.defaultOptions
     ) as DeepRequired<LocalAuthInitializerOptions>;
+  }
+
+  static getProviderName(): string {
+    return "local";
   }
 
   static create(options: LocalAuthInitializerOptions, config: ModuleOptions): LocalAuthProvider {
@@ -109,7 +112,7 @@ export class LocalAuthProvider implements AuthProviderInterface {
       const accessTokens: AccessTokens = {
         accessToken: token,
         refreshToken: refreshToken || "",
-        provider: this.name,
+        provider: LocalAuthProvider.getProviderName(),
         tokenType: this.config.token.type,
       };
 
@@ -217,7 +220,7 @@ export class LocalAuthProvider implements AuthProviderInterface {
       const accessTokens: AccessTokens = {
         accessToken: token,
         refreshToken: refreshToken || tokens.refreshToken || "",
-        provider: this.name,
+        provider: LocalAuthProvider.getProviderName(),
         tokenType: this.config.token.type,
       };
 

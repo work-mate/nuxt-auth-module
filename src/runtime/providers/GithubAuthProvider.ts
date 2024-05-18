@@ -12,27 +12,29 @@ export type GithubAuthInitializerOptions = {
 };
 
 export class GithubAuthProvider implements AuthProviderInterface {
-  name = "github";
-
   private options: DeepRequired<GithubAuthInitializerOptions>;
 
   constructor(options: GithubAuthInitializerOptions) {
     this.options = options;
   } // end constructor method
 
+  static getProviderName(): string {
+    return "github";
+  }
+
   static verifyGithubState(state: string, config: ModuleOptions): boolean {
     try {
-      jwt.verify(
-        state,
-        config.providers.github?.HASHING_SECRET || "secret"
-      );
+      jwt.verify(state, config.providers.github?.HASHING_SECRET || "secret");
       return true;
     } catch (e) {
       return false;
     }
   }
 
-  static getTokens(code: string, config: ModuleOptions): Promise<AccessTokens> {
+  static getTokens(
+    code: string,
+    config: ModuleOptions
+  ): Promise<{ tokens: AccessTokens }> {
     return ofetch(`https://github.com/login/oauth/access_token`, {
       method: "GET",
       headers: {
@@ -45,12 +47,16 @@ export class GithubAuthProvider implements AuthProviderInterface {
         client_secret: config.providers.github?.CLIENT_SECRET,
         code,
       },
-    }).then(res => {
-      return {
+    }).then((res) => {
+      const tokens = {
         accessToken: res.access_token,
         refreshToken: res.refresh_token,
-      }
-    })
+        tokenType: res.token_type,
+        provider: GithubAuthProvider.getProviderName(),
+      };
+
+      return { tokens };
+    });
   }
 
   static create(options: GithubAuthInitializerOptions): GithubAuthProvider {
@@ -71,7 +77,11 @@ export class GithubAuthProvider implements AuthProviderInterface {
   }
 
   async fetchUserData(tokens: any): Promise<{ user: any }> {
-    return Promise.reject("GithubAuthProvider is not implemented");
+    return {
+      user: {
+        name: "Github User"
+      }
+    }
   } // end method fetchUserData
 
   async logout(tokens: any): Promise<any> {

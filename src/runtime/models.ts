@@ -8,7 +8,6 @@ export enum SupportedAuthProvider {
 export interface AuthLoginData {}
 
 export interface AuthProviderInterface {
-  name: string;
   login(
     authData?: AuthLoginData
   ): Promise<{ tokens?: AccessTokens; url?: string }>;
