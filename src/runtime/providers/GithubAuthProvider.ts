@@ -2,6 +2,8 @@ import defu from "defu";
 import type { DeepRequired, ModuleOptions } from "~/src/module";
 import type { AuthProviderInterface } from "../models";
 import jwt from "jsonwebtoken";
+import { ofetch } from "ofetch";
+import type { AccessTokens } from "./AuthProvider";
 
 export type GithubAuthInitializerOptions = {
   CLIENT_ID: string;
@@ -28,6 +30,27 @@ export class GithubAuthProvider implements AuthProviderInterface {
     } catch (e) {
       return false;
     }
+  }
+
+  static getTokens(code: string, config: ModuleOptions): Promise<AccessTokens> {
+    return ofetch(`https://github.com/login/oauth/access_token`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "Accept-Encoding": "application/json",
+      },
+      params: {
+        client_id: config.providers.github?.CLIENT_ID,
+        client_secret: config.providers.github?.CLIENT_SECRET,
+        code,
+      },
+    }).then(res => {
+      return {
+        accessToken: res.access_token,
+        refreshToken: res.refresh_token,
+      }
+    })
   }
 
   static create(options: GithubAuthInitializerOptions): GithubAuthProvider {
