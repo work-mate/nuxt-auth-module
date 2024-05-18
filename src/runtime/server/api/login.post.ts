@@ -1,7 +1,7 @@
 import { defineEventHandler, readBody, setResponseStatus } from "h3";
 import { type ErrorResponse } from "../../models";
 import { getAuthClient } from "../utils/client";
-import { AuthProvider, type AccessTokens } from "../../providers/AuthProvider";
+import { AuthProvider } from "../../providers/AuthProvider";
 import { useRuntimeConfig } from "#imports";
 
 export default defineEventHandler(async (event) => {
