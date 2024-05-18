@@ -9,6 +9,7 @@ import type { AccessTokens } from "./AuthProvider";
 import type { DeepRequired } from "~/src/module";
 import { getRecursiveProperty } from "../helpers";
 import { ofetch } from "ofetch";
+import type { ModuleOptions } from "@nuxt/schema";
 
 export interface LocalAuthLoginData extends AuthLoginData {
   principal: string;
@@ -46,6 +47,7 @@ export type LocalAuthInitializerOptions = {
 export class LocalAuthProvider implements AuthProviderInterface {
   name: string = "local";
   private options: DeepRequired<LocalAuthInitializerOptions>;
+  private config: ModuleOptions;
   static defaultOptions: DeepRequired<LocalAuthInitializerOptions> = {
     endpoints: {
       signIn: {
@@ -65,15 +67,16 @@ export class LocalAuthProvider implements AuthProviderInterface {
     },
   };
 
-  constructor(options: LocalAuthInitializerOptions) {
+  constructor(options: LocalAuthInitializerOptions, config: ModuleOptions) {
+    this.config = config;
     this.options = defu(
       options,
       LocalAuthProvider.defaultOptions
     ) as DeepRequired<LocalAuthInitializerOptions>;
   }
 
-  static create(options: LocalAuthInitializerOptions): LocalAuthProvider {
-    return new LocalAuthProvider(options);
+  static create(options: LocalAuthInitializerOptions, config: ModuleOptions): LocalAuthProvider {
+    return new LocalAuthProvider(options, config);
   }
 
   async login(authData: LocalAuthLoginData): Promise<{ tokens: AccessTokens }> {
@@ -106,6 +109,8 @@ export class LocalAuthProvider implements AuthProviderInterface {
       const accessTokens: AccessTokens = {
         accessToken: token,
         refreshToken: refreshToken || "",
+        provider: this.name,
+        tokenType: this.config.token.type,
       };
 
       return { tokens: accessTokens };
@@ -117,12 +122,13 @@ export class LocalAuthProvider implements AuthProviderInterface {
     const url =  this.options.endpoints.user.path;
     const method = "GET";
     const userKey = this.options.endpoints.user.userKey;
+    const accessToken = tokens.tokenType ? `${tokens.tokenType} ${tokens.accessToken}` : tokens.accessToken;
 
     return ofetch(url, {
       method,
       headers: {
         Accept: "application/json",
-        Authorization: tokens.accessToken,
+        Authorization: accessToken,
       },
     }).then((res) => {
       let user = res;
@@ -138,11 +144,13 @@ export class LocalAuthProvider implements AuthProviderInterface {
     const url =  this.options.endpoints.signOut.path;
     const method = this.options.endpoints.signOut.method;
 
+    const accessToken = tokens.tokenType ? `${tokens.tokenType} ${tokens.accessToken}` : tokens.accessToken;
+
     return ofetch(url, {
       method,
       headers: {
         Accept: "application/json",
-        Authorization: tokens.accessToken,
+        Authorization: accessToken,
       },
     });
   }
@@ -172,7 +180,7 @@ export class LocalAuthProvider implements AuthProviderInterface {
     return true;
   }
 
-  async refreshTokens(tokens: AccessTokens, tokenType: string): Promise<{tokens: AccessTokens}> {
+  async refreshTokens(tokens: AccessTokens): Promise<{tokens: AccessTokens}> {
     if(!this.options.endpoints.refreshToken) return Promise.reject("refreshToken not configured");
 
     const url = this.options.endpoints.refreshToken.path;
@@ -181,12 +189,10 @@ export class LocalAuthProvider implements AuthProviderInterface {
     const refreshTokenKey = this.options.endpoints.refreshToken.refreshTokenKey;
     const tokenBodyKey = this.options.endpoints.refreshToken.body.token;
     const refreshTokenBodyKey = this.options.endpoints.refreshToken.body.refreshToken;
-    const tokenTypePrefix = tokenType ? `${tokenType} ` : "";
-    const tokenTypeRegex = new RegExp("^" + tokenTypePrefix);
 
     const body = {
-      [tokenBodyKey]: tokens.accessToken.replace(tokenTypeRegex, ""),
-      [refreshTokenBodyKey]: (tokens.refreshToken || "").replace(tokenTypeRegex, ""),
+      [tokenBodyKey]: tokens.accessToken,
+      [refreshTokenBodyKey]: (tokens.refreshToken || ""),
     };
 
     return ofetch(url, {
@@ -211,6 +217,8 @@ export class LocalAuthProvider implements AuthProviderInterface {
       const accessTokens: AccessTokens = {
         accessToken: token,
         refreshToken: refreshToken || tokens.refreshToken || "",
+        provider: this.name,
+        tokenType: this.config.token.type,
       };
 
       return { tokens: accessTokens };

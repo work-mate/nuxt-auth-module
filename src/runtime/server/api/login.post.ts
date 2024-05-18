@@ -34,27 +34,17 @@ export default defineEventHandler(async (event) => {
   }
 
   const { tokens, url } = await authProvider.login(body);
-  const tokenType = authConfig.token.type;
-  const tokenTypePrefix = tokenType ? `${tokenType} ` : "";
 
-  const tokensWithType: AccessTokens = {
-    accessToken: tokens?.accessToken
-      ? `${tokenTypePrefix}${tokens.accessToken}`
-      : "",
-    refreshToken: tokens?.refreshToken
-      ? `${tokenTypePrefix}${tokens.refreshToken}`
-      : "",
-  };
-
-  AuthProvider.setProviderTokensToCookies(
-    event,
-    authConfig,
-    provider,
-    tokensWithType
-  );
+  if (tokens) {
+    AuthProvider.setProviderTokensToCookies(
+      event,
+      authConfig,
+      tokens
+    );
+  }
 
   return {
-    tokens: tokensWithType,
+    tokens,
     url,
   };
 });

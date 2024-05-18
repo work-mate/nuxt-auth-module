@@ -26,7 +26,7 @@ export const getAuthClient = (): AuthProvider => {
   const providers: Record<string, AuthProviderInterface> = {};
 
   if (config.providers.local) {
-    providers.local = LocalAuthProvider.create(config.providers.local);
+    providers.local = LocalAuthProvider.create(config.providers.local, config);
   }
   if (config.providers.github) {
     providers.github = GithubAuthProvider.create(config.providers.github);
