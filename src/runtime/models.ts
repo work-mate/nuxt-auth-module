@@ -2,13 +2,14 @@ import type { AccessTokens } from "./providers/AuthProvider";
 
 export enum SupportedAuthProvider {
   LOCAL = "local",
+  GITHUB = "github"
 }
 
 export interface AuthLoginData {}
 
 export interface AuthProviderInterface {
   name: string;
-  login(authData?: AuthLoginData): Promise<{tokens: AccessTokens}>;
+  login(authData?: AuthLoginData): Promise<{tokens?: AccessTokens, url?: string}>;
   fetchUserData?(tokens: AccessTokens): Promise<{user: any}>;
   logout(tokens: AccessTokens): Promise<void>;
   refreshTokens?(tokens: AccessTokens, tokenType: string): Promise<{tokens: AccessTokens}>;

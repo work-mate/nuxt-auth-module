@@ -9,7 +9,7 @@ import {
   type ComputedRef,
 } from "#imports";
 import { ofetch } from "ofetch";
-import type { AuthState, SupportedAuthProvider } from "../models";
+import { SupportedAuthProvider, type AuthState } from "../models";
 import type { AccessTokens } from "../providers/AuthProvider";
 
 export type AuthPlugin = {
@@ -148,19 +148,35 @@ export default defineNuxtPlugin(async () => {
     data: Record<string, string> = {},
     redirectTo?: string
   ): Promise<{ message: string; tokens?: AccessTokens }> {
+    const expectUrlFromProviders = [SupportedAuthProvider.GITHUB];
+
     if (state.value.loggedIn) {
       return {
         message: "User already logged in",
       };
     }
 
-    const response: { tokens: AccessTokens } = await ofetch("/api/auth/login", {
+    const response: { tokens: AccessTokens, url?: string } = await ofetch("/api/auth/login", {
       method: "POST",
       body: {
         provider,
         ...data,
       },
     });
+
+    if(expectUrlFromProviders.some(el => el == provider)) {
+      if(!response.url) return Promise.reject({message: "Login failed"});
+
+      const isExternal = /^https?:\/\//.test(response.url);
+
+      // debugger
+
+      await navigateTo(response.url, {
+        external: isExternal,
+      });
+
+      return Promise.resolve({message: `Redirecting to login url for provider "${provider}"`})
+    }
 
     const tokens = response.tokens;
 

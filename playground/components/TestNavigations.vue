@@ -69,6 +69,10 @@ function triggerLogout() {
   })
 }
  function triggerLoginWithGoogle() {
+  login('github')
+  .then(res => {
+    console.log(res)
+  })
   console.log("login with google")
  }
 

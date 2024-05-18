@@ -33,15 +33,15 @@ export default defineEventHandler(async (event) => {
     return e;
   }
 
-  const { tokens } = await authProvider.login(body);
+  const { tokens, url } = await authProvider.login(body);
   const tokenType = authConfig.token.type;
   const tokenTypePrefix = tokenType ? `${tokenType} ` : "";
 
   const tokensWithType: AccessTokens = {
-    accessToken: tokens.accessToken
+    accessToken: tokens?.accessToken
       ? `${tokenTypePrefix}${tokens.accessToken}`
       : "",
-    refreshToken: tokens.refreshToken
+    refreshToken: tokens?.refreshToken
       ? `${tokenTypePrefix}${tokens.refreshToken}`
       : "",
   };
@@ -55,5 +55,6 @@ export default defineEventHandler(async (event) => {
 
   return {
     tokens: tokensWithType,
+    url,
   };
 });
