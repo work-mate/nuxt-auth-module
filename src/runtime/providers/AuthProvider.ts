@@ -223,6 +223,6 @@ export class AuthProvider {
       );
     }
 
-    return provider.refreshTokens(tokens, this.config.token.type);
+    return provider.refreshTokens(tokens);
   } //end method refreshTokensFromEvent
 } //end class AuthProvider

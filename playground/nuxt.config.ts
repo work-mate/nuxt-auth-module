@@ -39,6 +39,7 @@ export default defineNuxtConfig({
         CLIENT_ID: process.env.GITHUB_CLIENT_ID || "",
         CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET || "",
         HASHING_SECRET: process.env.HASHING_SECRET || "secret",
+        SCOPES: "user repo",
       }
     }
   },

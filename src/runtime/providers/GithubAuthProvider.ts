@@ -9,10 +9,11 @@ export type GithubAuthInitializerOptions = {
   CLIENT_ID: string;
   CLIENT_SECRET: string;
   HASHING_SECRET: string;
+  SCOPES?: string;
 };
 
 export class GithubAuthProvider implements AuthProviderInterface {
-  private options: DeepRequired<GithubAuthInitializerOptions>;
+  private options: GithubAuthInitializerOptions;
 
   constructor(options: GithubAuthInitializerOptions) {
     this.options = options;
@@ -70,10 +71,40 @@ export class GithubAuthProvider implements AuthProviderInterface {
       "state",
       jwt.sign({}, this.options.HASHING_SECRET || "secret", { expiresIn: "1h" })
     );
-    // params.set("scope", "user:email");
+
+    if (this.options.SCOPES) {
+      params.set("scope", this.options.SCOPES);
+    }
+
     return {
       url: `https://github.com/login/oauth/authorize?${params.toString()}`,
     };
+  }
+
+  refreshTokens(tokens: AccessTokens): Promise<{ tokens: AccessTokens }> {
+    return ofetch(`https://github.com/login/oauth/access_token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "Accept-Encoding": "application/json",
+      },
+      params: {
+        client_id: this.options.CLIENT_ID,
+        client_secret: this.options.CLIENT_SECRET,
+        grant_type: "refresh_token",
+        refresh_token: tokens.refreshToken,
+      },
+    }).then((res) => {
+      const tokens = {
+        accessToken: res.access_token,
+        refreshToken: res.refresh_token,
+        tokenType: res.token_type,
+        provider: GithubAuthProvider.getProviderName(),
+      };
+
+      return { tokens };
+    });
   }
 
   async fetchUserData(tokens: any): Promise<{ user: any }> {
@@ -86,7 +117,7 @@ export class GithubAuthProvider implements AuthProviderInterface {
 
     return {
       user: response,
-    }
+    };
   } // end method fetchUserData
 
   async logout(tokens: any): Promise<any> {
