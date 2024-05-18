@@ -42,16 +42,16 @@
 
 <script setup>
 const {
-  loggedIn, user, token, refreshToken, login, logout, refreshUser
+  loggedIn, user, token, refreshToken, provider, tokenType, login, logout, refreshUser
 } = useAuth();
-
-// /api/auth/callback/github
 
 const state = computed(() => ({
   loggedIn: loggedIn.value,
   user: user.value,
   token: token.value,
   refreshToken: refreshToken.value,
+  provider: provider.value,
+  tokenType: tokenType.value
 }))
 
 function triggerLogin() {

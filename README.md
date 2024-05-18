@@ -9,7 +9,7 @@ Find and replace all on all files (CMD+SHIFT+F):
 
 # Auth module for Nuxt 3 server apps
 
-![NPM](https://img.shields.io/npm/l/@workmate/nuxt-auth) ![npm bundle size](https://img.shields.io/bundlephobia/minzip/@workmate/nuxt-auth) ![npm](https://img.shields.io/npm/v/@workmate/nuxt-auth) ![Libraries.io dependency status for latest release, scoped npm package](https://img.shields.io/librariesio/release/npm/@workmate/nuxt-auth) ![GitHub last commit](https://img.shields.io/github/last-commit/work-mate/nuxt-auth-module)
+![NPM](https://img.shields.io/npm/l/@workmate/nuxt-auth) ![npm](https://img.shields.io/npm/v/@workmate/nuxt-auth) ![GitHub last commit](https://img.shields.io/github/last-commit/work-mate/nuxt-auth-module)
 
 <br />
 Auth module for Nuxt 3 apps.
@@ -20,7 +20,7 @@ Auth module for Nuxt 3 apps.
 | ------------- | ------------- | -------------- |
 | Local         | local         | :white_check_mark: |
 | Google        | google        | :x:            |
-| Github        | github        | :x:            |
+| Github        | github        | :white_check_mark: |
 | Facebook      | facebook      | :x:            |
 
 ## Local Auth Features
@@ -81,6 +81,13 @@ export default defineNuxtConfig({
           },
         },
       },
+
+      github: {
+        CLIENT_ID: process.env.GITHUB_CLIENT_ID || "",
+        CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET || "",
+        HASHING_SECRET: process.env.HASHING_SECRET || "secret",
+        SCOPES: "user repo",
+      }
     },
     global: false,
     redirects: {
@@ -98,6 +105,7 @@ export default defineNuxtConfig({
         accessToken: "auth:token",
         refreshToken: "auth:refreshToken",
         authProvider: "auth:provider",
+        tokenType: "auth:tokenType",
       },
     },
   },
@@ -130,8 +138,11 @@ interface ModuleOptions {
 }
 
 type ModuleProvidersOptions = {
-  local?: LocalAuthInitializerOptions;
-};
+  local?: LocalAuthInitializerOptions,
+  github?: GithubAuthInitializerOptions,
+  // [key: string]: AuthProviderInterface
+}
+
 type HttpMethod =
   | "GET"
   | "HEAD"
@@ -170,6 +181,13 @@ type LocalAuthInitializerOptions = {
     } | false;
   };
 };
+
+type GithubAuthInitializerOptions = {
+  CLIENT_ID: string;
+  CLIENT_SECRET: string;
+  HASHING_SECRET: string;
+  SCOPES?: string;
+};
 ```
 
 ## Usage
@@ -185,6 +203,8 @@ type AuthPlugin = {
   user: ComputedRef<any | null | undefined>;
   token: ComputedRef<string | undefined>;
   refreshToken: ComputedRef<string | undefined>;
+  tokenType: ComputedRef<string | undefined>;
+  provider: ComputedRef<string | undefined>;
   login: (
     provider: string | SupportedAuthProvider,
     data?: Record<string, string>,
@@ -242,6 +262,9 @@ login("local", {
   principal,
   password,
 });
+
+// using github
+login("github")
 ```
 
 ## middlewares
@@ -340,9 +363,15 @@ export default defineNuxtConfig({
           }
         }
       },
+
+      github: {
+        CLIENT_ID: process.env.GITHUB_CLIENT_ID || "",
+        CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET || "",
+        HASHING_SECRET: process.env.HASHING_SECRET || "secret",
+        SCOPES: "user repo",
+      }
     }
   },
-  devtools: { enabled: true }
 })
 
 ```
