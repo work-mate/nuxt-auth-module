@@ -112,6 +112,10 @@ export default defineNuxtConfig({
 });
 ```
 
+### While using github provider
+If you are using the github provider, you would need to add the callback `<baseUrl>/api/auth/callback/github` to your github app settings.
+
+
 ### Full List of Module Options
 
 ```ts
