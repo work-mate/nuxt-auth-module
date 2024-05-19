@@ -1,6 +1,6 @@
 {
   "name": "@workmate/nuxt-auth",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Nuxt Auth Module: Auth module for Nuxt 3 apps",
   "repository": "https://github.com/work-mate/nuxt-auth-module",
   "license": "MIT",
