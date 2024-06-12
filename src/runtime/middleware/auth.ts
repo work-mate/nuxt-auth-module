@@ -3,14 +3,17 @@ import {
   createError,
   defineNuxtRouteMiddleware,
   navigateTo,
+  useCookie,
   useNuxtApp,
   useRuntimeConfig,
 } from "#imports";
 
 //@ts-ignore
 export const authMiddleware: RouteMiddleware = () => {
-  const { loggedIn } = useNuxtApp().$auth;
+  const { loggedIn, logout, tokenNames } = useNuxtApp().$auth;
   const config = useRuntimeConfig().public.auth;
+
+  console.log("AuthModdleware");
 
   if (!loggedIn.value) {
     const redirectIfNotLoggedIn = config.redirects.redirectIfNotLoggedIn;
@@ -27,9 +30,17 @@ export const authMiddleware: RouteMiddleware = () => {
     } else {
       return navigateTo(redirectIfNotLoggedIn);
     }
+  } else if (tokenNames.value) {
+    const accessToken = useCookie(tokenNames.value.accessToken);
+    const authProvider = useCookie(tokenNames.value.authProvider);
+    console.log(tokenNames.value);
+    if (!accessToken.value || !authProvider.value) {
+      console.log("From Auth moddleware");
+      console.log(accessToken.value);
+      logout();
+    }
   }
-}
-
+};
 
 /**
  * Auth middleware.
@@ -42,5 +53,5 @@ export const authMiddleware: RouteMiddleware = () => {
  * });
  */
 export default defineNuxtRouteMiddleware((...params) => {
-  return authMiddleware(...params)
+  return authMiddleware(...params);
 });

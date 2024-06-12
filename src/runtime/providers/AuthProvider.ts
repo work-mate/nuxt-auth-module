@@ -15,6 +15,13 @@ export type AccessTokens = {
   provider: string;
 };
 
+export type AccessTokensNames = {
+  accessToken: string;
+  refreshToken?: string;
+  authProvider: string;
+  tokenType: string;
+};
+
 export class AuthProvider {
   /**
    * @type {Record<string, AuthProviderInterface>}
@@ -70,7 +77,7 @@ export class AuthProvider {
    */
   static getTokensFromEvent(
     event: H3Event,
-    authConfig: ModuleOptions
+    authConfig: ModuleOptions,
   ): AccessTokens {
     const cookiesNames = authConfig.token.cookiesNames;
     const accessToken = getCookie(event, cookiesNames.accessToken) || "";
@@ -82,6 +89,14 @@ export class AuthProvider {
   }
 
   /**
+   * Returns token names
+   * @return {AccessTokensNames}
+   */
+  getTokenNames(): AccessTokensNames {
+    return this.config.token.cookiesNames;
+  }
+
+  /**
    * Returns provider key from event
    * @param {H3Event} event
    * @param {ModuleOptions} authConfig
@@ -89,7 +104,7 @@ export class AuthProvider {
    */
   static getProviderKeyFromEvent(
     event: H3Event,
-    authConfig: ModuleOptions
+    authConfig: ModuleOptions,
   ): string {
     const cookiesNames = authConfig.token.cookiesNames;
     return getCookie(event, cookiesNames.authProvider) || "";
@@ -104,7 +119,7 @@ export class AuthProvider {
   static setProviderTokensToCookies(
     event: H3Event,
     authConfig: ModuleOptions,
-    tokens: AccessTokens
+    tokens: AccessTokens,
   ) {
     const cookiesNames = authConfig.token.cookiesNames;
     const maxAge = authConfig.token.maxAge;
@@ -116,13 +131,13 @@ export class AuthProvider {
       event,
       cookiesNames.accessToken,
       tokens.accessToken || "",
-      options
+      options,
     );
     setCookie(
       event,
       cookiesNames.refreshToken,
       tokens.refreshToken || "",
-      options
+      options,
     );
     setCookie(event, cookiesNames.authProvider, tokens.provider, options);
     setCookie(event, cookiesNames.tokenType, tokens.tokenType, options);
@@ -135,7 +150,7 @@ export class AuthProvider {
    */
   static deleteProviderTokensFromCookies(
     event: H3Event,
-    authConfig: ModuleOptions
+    authConfig: ModuleOptions,
   ) {
     const cookiesNames = authConfig.token.cookiesNames;
     deleteCookie(event, cookiesNames.accessToken);
@@ -208,7 +223,7 @@ export class AuthProvider {
   } // end method logoutFromEvent
 
   async refreshTokensFromEvent(
-    event: H3Event
+    event: H3Event,
   ): Promise<{ tokens: AccessTokens }> {
     const tokens = AuthProvider.getTokensFromEvent(event, this.config);
 
@@ -219,7 +234,7 @@ export class AuthProvider {
     const provider = this.provider(tokens.provider);
     if (!provider || !provider.refreshTokens) {
       return Promise.reject(
-        "refresh tokens is not implemented for this provider"
+        "refresh tokens is not implemented for this provider",
       );
     }
 

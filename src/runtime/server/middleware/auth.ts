@@ -1,13 +1,18 @@
 import { defineEventHandler } from "h3";
 
 import { getAuthClient } from "../utils/client";
-import { AuthProvider, type AccessTokens } from "../../providers/AuthProvider";
+import {
+  AuthProvider,
+  type AccessTokens,
+  type AccessTokensNames,
+} from "../../providers/AuthProvider";
 import { useRuntimeConfig } from "#imports";
 
 type AuthContext = {
   isAuthenticated: () => Promise<boolean>;
-  getUser: () => Promise<{user: any}>;
+  getUser: () => Promise<{ user: any }>;
   getTokens: () => Promise<AccessTokens>;
+  getTokenNames: () => AccessTokensNames;
   logout: () => Promise<void>;
 };
 
@@ -20,6 +25,9 @@ export default defineEventHandler(async (event) => {
     isAuthenticated: async () => {
       return !!tokens.accessToken;
     },
+    getTokenNames: () => {
+      return authClient.getTokenNames();
+    },
     getUser: async () => {
       return { user: (await authClient.getUserFromEvent(event)).user };
     },
@@ -29,9 +37,9 @@ export default defineEventHandler(async (event) => {
     logout: async () => {
       AuthProvider.deleteProviderTokensFromCookies(
         event,
-        useRuntimeConfig().auth
-      )
-    }
+        useRuntimeConfig().auth,
+      );
+    },
   };
 });
 
