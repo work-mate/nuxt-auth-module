@@ -6,16 +6,18 @@ export enum SupportedAuthProvider {
 }
 
 export interface AuthLoginData {}
+export interface AuthConfig {
+  baseURL: string;
+}
 
 export interface AuthProviderInterface {
   login(
-    authData?: AuthLoginData
+    authConfig: AuthConfig,
+    authData?: AuthLoginData,
   ): Promise<{ tokens?: AccessTokens; url?: string }>;
   fetchUserData?(tokens: AccessTokens): Promise<{ user: any }>;
   logout(tokens: AccessTokens): Promise<void>;
-  refreshTokens?(
-    tokens: AccessTokens
-  ): Promise<{ tokens: AccessTokens }>;
+  refreshTokens?(tokens: AccessTokens): Promise<{ tokens: AccessTokens }>;
   /**
    * @throws {ErrorResponse}
    * @returns {boolean}

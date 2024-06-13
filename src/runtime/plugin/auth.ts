@@ -170,28 +170,32 @@ export default defineNuxtPlugin(async () => {
       };
     }
 
-    const response: { tokens: AccessTokens; url?: string } = await ofetch(
-      "/api/auth/login",
-      {
-        method: "POST",
-        body: {
-          provider,
-          ...data,
-        },
-      },
-    );
-
     let redirectUrl = redirectTo;
     if (!redirectTo) {
       redirectUrl = useRoute().query.redirect?.toString();
     }
 
+    const body = {
+      provider,
+      ...data,
+    } as Record<string, any>;
+
+    if (redirectUrl) {
+      body.redirectUrl = redirectUrl;
+    }
+
+    const response: { tokens: AccessTokens; url?: string } = await ofetch(
+      "/api/auth/login",
+      {
+        method: "POST",
+        body,
+      },
+    );
+
     if (expectUrlFromProviders.some((el) => el == provider)) {
       if (!response.url) return Promise.reject({ message: "Login failed" });
 
       const isExternal = /^https?:\/\//.test(response.url);
-
-      // debugger
 
       await navigateTo(response.url, {
         external: isExternal,

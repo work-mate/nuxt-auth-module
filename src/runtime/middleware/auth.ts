@@ -36,7 +36,6 @@ export const authMiddleware: RouteMiddleware = (to) => {
   } else if (tokenNames.value) {
     const accessToken = useCookie(tokenNames.value.accessToken);
     const authProvider = useCookie(tokenNames.value.authProvider);
-    console.log(tokenNames.value);
     if (!accessToken.value || !authProvider.value) {
       logout();
     }

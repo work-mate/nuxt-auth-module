@@ -1,15 +1,22 @@
-import { defineEventHandler, readBody, setResponseStatus } from "h3";
+import {
+  defineEventHandler,
+  getRequestHost,
+  getRequestProtocol,
+  readBody,
+  setResponseStatus,
+} from "h3";
 import { type ErrorResponse } from "../../models";
 import { getAuthClient } from "../utils/client";
 import { AuthProvider } from "../../providers/AuthProvider";
 import { useRuntimeConfig } from "#imports";
 
 export default defineEventHandler(async (event) => {
+  const baseURL = `${getRequestProtocol(event)}://${getRequestHost(event)}`;
+
   const body = await readBody(event);
   const authConfig = useRuntimeConfig().auth;
 
   const provider = body.provider;
-
   if (!provider) {
     setResponseStatus(event, 400);
     const error = {
@@ -33,14 +40,10 @@ export default defineEventHandler(async (event) => {
     return e;
   }
 
-  const { tokens, url } = await authProvider.login(body);
+  const { tokens, url } = await authProvider.login({ baseURL }, body);
 
   if (tokens) {
-    AuthProvider.setProviderTokensToCookies(
-      event,
-      authConfig,
-      tokens
-    );
+    AuthProvider.setProviderTokensToCookies(event, authConfig, tokens);
   }
 
   return {

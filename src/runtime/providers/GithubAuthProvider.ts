@@ -1,5 +1,9 @@
 import type { ModuleOptions } from "~/src/module";
-import type { AuthProviderInterface } from "../models";
+import type {
+  AuthConfig,
+  AuthLoginData,
+  AuthProviderInterface,
+} from "../models";
 import jwt from "jsonwebtoken";
 import { ofetch } from "ofetch";
 import type { AccessTokens } from "./AuthProvider";
@@ -10,6 +14,10 @@ export type GithubAuthInitializerOptions = {
   HASHING_SECRET: string;
   SCOPES?: string;
 };
+
+export interface GithubAuthLoginData extends AuthLoginData {
+  redirectUrl?: string;
+}
 
 export class GithubAuthProvider implements AuthProviderInterface {
   private options: GithubAuthInitializerOptions;
@@ -33,7 +41,7 @@ export class GithubAuthProvider implements AuthProviderInterface {
 
   static getTokens(
     code: string,
-    config: ModuleOptions
+    config: ModuleOptions,
   ): Promise<{ tokens: AccessTokens }> {
     return ofetch(`https://github.com/login/oauth/access_token`, {
       method: "GET",
@@ -63,17 +71,31 @@ export class GithubAuthProvider implements AuthProviderInterface {
     return new GithubAuthProvider(options);
   }
 
-  async login(): Promise<{ url: string }> {
+  async login(
+    authConfig: AuthConfig,
+    authData?: GithubAuthLoginData,
+  ): Promise<{ url: string }> {
     const params = new URLSearchParams();
     params.set("client_id", this.options.CLIENT_ID);
     params.set(
       "state",
-      jwt.sign({}, this.options.HASHING_SECRET || "secret", { expiresIn: "1h" })
+      jwt.sign({}, this.options.HASHING_SECRET || "secret", {
+        expiresIn: "1h",
+      }),
     );
 
     if (this.options.SCOPES) {
       params.set("scope", this.options.SCOPES);
     }
+
+    const redirectUriParams = new URLSearchParams();
+
+    if (authData?.redirectUrl) {
+      redirectUriParams.set("redirect", encodeURI(authData.redirectUrl));
+    }
+
+    const callbackUrl = `${authConfig.baseURL}/api/auth/callback/github?${redirectUriParams.toString()}`;
+    params.set("redirect_uri", callbackUrl);
 
     return {
       url: `https://github.com/login/oauth/authorize?${params.toString()}`,

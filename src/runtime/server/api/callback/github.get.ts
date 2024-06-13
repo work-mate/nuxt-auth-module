@@ -23,5 +23,9 @@ export default defineEventHandler(async (event) => {
 
   await AuthProvider.setProviderTokensToCookies(event, config, tokens);
 
-  await sendRedirect(event, config.redirects.redirectIfLoggedIn || "/", 302);
+  await sendRedirect(
+    event,
+    query.redirect?.toString() || config.redirects.redirectIfLoggedIn || "/",
+    302,
+  );
 });
