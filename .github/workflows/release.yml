@@ -19,8 +19,8 @@ jobs:
       - run: corepack enable
       - run: yarn
       - run: yarn lint
-      - run: yarn test
       - run: yarn prepack
+      - run: yarn test
 
   release:
     needs: build
@@ -38,6 +38,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
           scope: '@workmate'
       - run: yarn
+      - run: yarn prepack
       - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
