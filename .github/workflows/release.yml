@@ -17,10 +17,10 @@ jobs:
         with:
           node-version: 21
       - run: corepack enable
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run prepack
-      - run: npm run test
+      - run: yarn install --frozen-lockfile
+      - run: yarn lint
+      - run: yarn prepack
+      - run: yarn test
 
   release:
     needs: build
@@ -37,8 +37,8 @@ jobs:
           node-version: 21
           registry-url: https://registry.npmjs.org/
           scope: '@workmate'
-      - run: yarn install
-      - run: npm run prepack
+      - run: yarn install --frozen-lockfile
+      - run: yarn prepack
       - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
