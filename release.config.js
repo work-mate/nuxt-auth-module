@@ -7,8 +7,7 @@ export default {
       "@semantic-release/git",
       {
         assets: [
-          "dist/**/*.{js,cjs,mjs,json}",
-          "dist/**/*.d.{ts,mts}",
+          "CHANGELOG.md",
           "package.json",
           "docs",
         ],
