@@ -19,6 +19,7 @@ jobs:
       - run: corepack enable
       - run: yarn install --frozen-lockfile
       - run: yarn lint
+      - run: npx nuxt-module-build prepare
       - run: yarn prepack
       - run: yarn test
 
@@ -38,6 +39,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
           scope: '@workmate'
       - run: yarn install --frozen-lockfile
+      - run: npx nuxt-module-build prepare
       - run: yarn prepack
       - run: npx semantic-release
         env:
