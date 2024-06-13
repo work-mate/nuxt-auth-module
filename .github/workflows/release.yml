@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: 21
       - run: corepack enable
-      - run: yarn
+      - run: yarn install
       - run: yarn lint
       - run: yarn prepack
       - run: yarn test
@@ -37,7 +37,7 @@ jobs:
           node-version: 16
           registry-url: https://registry.npmjs.org/
           scope: '@workmate'
-      - run: yarn
+      - run: yarn install
       - run: yarn prepack
       - run: npx semantic-release
         env:
