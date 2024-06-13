@@ -181,6 +181,11 @@ export default defineNuxtPlugin(async () => {
       },
     );
 
+    let redirectUrl = redirectTo;
+    if (!redirectTo) {
+      redirectUrl = useRoute().query.redirect?.toString();
+    }
+
     if (expectUrlFromProviders.some((el) => el == provider)) {
       if (!response.url) return Promise.reject({ message: "Login failed" });
 
@@ -212,7 +217,7 @@ export default defineNuxtPlugin(async () => {
 
     if (!doesPageRequireAuth()) {
       navigateTo(
-        redirectTo ||
+        redirectUrl ||
           useRuntimeConfig().public.auth.redirects.redirectIfLoggedIn,
       );
     }

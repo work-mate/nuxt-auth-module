@@ -9,11 +9,9 @@ import {
 } from "#imports";
 
 //@ts-ignore
-export const authMiddleware: RouteMiddleware = () => {
+export const authMiddleware: RouteMiddleware = (to) => {
   const { loggedIn, logout, tokenNames } = useNuxtApp().$auth;
   const config = useRuntimeConfig().public.auth;
-
-  console.log("AuthModdleware");
 
   if (!loggedIn.value) {
     const redirectIfNotLoggedIn = config.redirects.redirectIfNotLoggedIn;
@@ -28,15 +26,18 @@ export const authMiddleware: RouteMiddleware = () => {
 
       return abortNavigation();
     } else {
-      return navigateTo(redirectIfNotLoggedIn);
+      return navigateTo({
+        path: redirectIfNotLoggedIn,
+        query: {
+          redirect: to.fullPath,
+        },
+      });
     }
   } else if (tokenNames.value) {
     const accessToken = useCookie(tokenNames.value.accessToken);
     const authProvider = useCookie(tokenNames.value.authProvider);
     console.log(tokenNames.value);
     if (!accessToken.value || !authProvider.value) {
-      console.log("From Auth moddleware");
-      console.log(accessToken.value);
       logout();
     }
   }
