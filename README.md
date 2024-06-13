@@ -16,21 +16,21 @@ Auth module for Nuxt 3 apps.
 
 ## Featured Auth Providers
 
-| Provider      | Provider Key  | Status         |
-| ------------- | ------------- | -------------- |
-| Local         | local         | :white_check_mark: |
-| Google        | google        | :x:            |
-| Github        | github        | :white_check_mark: |
-| Facebook      | facebook      | :x:            |
+| Provider | Provider Key | Status             |
+| -------- | ------------ | ------------------ |
+| Local    | local        | :white_check_mark: |
+| Google   | google       | :x:                |
+| Github   | github       | :white_check_mark: |
+| Facebook | facebook     | :x:                |
 
 ## Local Auth Features
 
-| Feature      | Status         |
-| ------------- | -------------- |
-| Login        | :white_check_mark: |
-| Logout       | :white_check_mark: |
-| User         | :white_check_mark: |
-| Refresh Token        | :white_check_mark:   |
+| Feature       | Status             |
+| ------------- | ------------------ |
+| Login         | :white_check_mark: |
+| Logout        | :white_check_mark: |
+| User          | :white_check_mark: |
+| Refresh Token | :white_check_mark: |
 
 <!-- :construction: -->
 
@@ -87,7 +87,7 @@ export default defineNuxtConfig({
         CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET || "",
         HASHING_SECRET: process.env.HASHING_SECRET || "secret",
         SCOPES: "user repo",
-      }
+      },
     },
     global: false,
     redirects: {
@@ -111,10 +111,6 @@ export default defineNuxtConfig({
   },
 });
 ```
-
-### While using github provider
-If you are using the github provider, you would need to add the callback `<baseUrl>/api/auth/callback/github` to your github app settings.
-
 
 ### Full List of Module Options
 
@@ -142,10 +138,10 @@ interface ModuleOptions {
 }
 
 type ModuleProvidersOptions = {
-  local?: LocalAuthInitializerOptions,
-  github?: GithubAuthInitializerOptions,
+  local?: LocalAuthInitializerOptions;
+  github?: GithubAuthInitializerOptions;
   // [key: string]: AuthProviderInterface
-}
+};
 
 type HttpMethod =
   | "GET"
@@ -173,16 +169,18 @@ type LocalAuthInitializerOptions = {
     signOut?: { path: string; method: HttpMethod } | false;
     signUp?: { path?: string; method?: HttpMethod } | false;
     user?: { path: string; userKey: string } | false;
-    refreshToken?: {
-      path: string;
-      method: HttpMethod;
-      tokenKey: string;
-      refreshTokenKey: string;
-      body: {
-        token: string;
-        refreshToken: string;
-      }
-    } | false;
+    refreshToken?:
+      | {
+          path: string;
+          method: HttpMethod;
+          tokenKey: string;
+          refreshTokenKey: string;
+          body: {
+            token: string;
+            refreshToken: string;
+          };
+        }
+      | false;
   };
 };
 
@@ -199,7 +197,16 @@ type GithubAuthInitializerOptions = {
 #### composables
 
 ```ts
-const { loggedIn,  user, token, refreshToken, login, logout, refreshUser, refreshTokens } = useAuth();
+const {
+  loggedIn,
+  user,
+  token,
+  refreshToken,
+  login,
+  logout,
+  refreshUser,
+  refreshTokens,
+} = useAuth();
 
 // state is of type AuthState
 type AuthPlugin = {
@@ -212,7 +219,7 @@ type AuthPlugin = {
   login: (
     provider: string | SupportedAuthProvider,
     data?: Record<string, string>,
-    redirectTo?: string
+    redirectTo?: string,
   ) => Promise<
     | {
         tokens: AccessTokens;
@@ -268,7 +275,7 @@ login("local", {
 });
 
 // using github
-login("github")
+login("github");
 ```
 
 ## middlewares
@@ -327,10 +334,11 @@ definePageMeta({
 ```
 
 Example of nuxt.config.ts
+
 ```ts
 const BACKEND_URL = "http://localhost:8080/api/v1";
 export default defineNuxtConfig({
-  modules: ['@workmate/nuxt-auth'],
+  modules: ["@workmate/nuxt-auth"],
   auth: {
     global: true,
     redirects: {
@@ -347,7 +355,7 @@ export default defineNuxtConfig({
             userKey: "user",
           },
           signIn: {
-            path:  BACKEND_URL + "/api/auth/login/password",
+            path: BACKEND_URL + "/api/auth/login/password",
             body: {
               principal: "email_address",
               password: "password",
@@ -364,8 +372,8 @@ export default defineNuxtConfig({
               token: "token",
               refreshToken: "refresh_token",
             },
-          }
-        }
+          },
+        },
       },
 
       github: {
@@ -373,9 +381,8 @@ export default defineNuxtConfig({
         CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET || "",
         HASHING_SECRET: process.env.HASHING_SECRET || "secret",
         SCOPES: "user repo",
-      }
-    }
+      },
+    },
   },
-})
-
+});
 ```
