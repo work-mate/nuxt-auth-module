@@ -37,8 +37,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 21
-          registry-url: https://registry.npmjs.org/
-          scope: '@workmate'
       - run: corepack enable
       - run: yarn install --frozen-lockfile
       - run: npx nuxt-module-build prepare
@@ -46,6 +44,4 @@ jobs:
       - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: npm publish --access public
-        env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

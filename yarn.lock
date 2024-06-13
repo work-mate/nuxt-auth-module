@@ -2401,7 +2401,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@semantic-release/npm@npm:^12.0.0":
+"@semantic-release/npm@npm:^12.0.0, @semantic-release/npm@npm:^12.0.1":
   version: 12.0.1
   resolution: "@semantic-release/npm@npm:12.0.1"
   dependencies:
@@ -3358,6 +3358,7 @@ __metadata:
     "@nuxt/test-utils": "npm:^3.12.0"
     "@semantic-release/git": "npm:^10.0.1"
     "@semantic-release/github": "npm:^10.0.6"
+    "@semantic-release/npm": "npm:^12.0.1"
     "@types/jsonwebtoken": "npm:^9"
     "@types/node": "npm:^20.12.4"
     changelogen: "npm:^0.5.5"
