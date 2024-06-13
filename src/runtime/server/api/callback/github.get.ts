@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
 
   const { tokens } = await GithubAuthProvider.getTokens(code, config);
 
-  await AuthProvider.setProviderTokensToCookies(event, config, tokens);
+  AuthProvider.setProviderTokensToCookies(event, config, tokens);
 
   await sendRedirect(
     event,
