@@ -35,27 +35,52 @@ export class GoogleAuthProvider implements AuthProviderInterface {
     return SupportedAuthProvider.GOOGLE;
   }
 
+  /**
+   * Verifies the authentication state received from the client.
+   *
+   * @param {string} state - The authentication state received from the client.
+   * @param {ModuleOptions} config - The module options.
+   * @returns {GoogleAuthState} The verified authentication state.
+   * @throws {Error} If the Google auth provider is not configured.
+   */
   static verifyAuthState(
     state: string,
     config: ModuleOptions,
   ): GoogleAuthState {
-    if (!config.providers.google)
+    // Check if the Google auth provider is configured
+    if (!config.providers.google) {
       throw new Error("Google auth provider not configured");
+    }
 
+    // Verify the authentication state using the provided hashing secret
     return jwt.verify(
       state,
       config.providers.google.HASHING_SECRET,
     ) as GoogleAuthState;
   } // end function verifyAuthState
 
+  /**
+   * Retrieves access tokens from the Google API using the authorization code and
+   * configuration.
+   *
+   * @param {AuthConfig} authConfig - The authentication configuration.
+   * @param {string} code - The authorization code.
+   * @param {ModuleOptions} config - The module options.
+   * @returns {Promise<{ tokens: AccessTokens }>} A promise that resolves to the
+   * access tokens.
+   * @throws {Error} If the Google auth provider is not configured.
+   */
   static getTokens(
     authConfig: AuthConfig,
     code: string,
     config: ModuleOptions,
   ): Promise<{ tokens: AccessTokens }> {
-    if (!config.providers.google)
+    // Check if the Google auth provider is configured
+    if (!config.providers.google) {
       throw new Error("Google auth provider not configured");
+    }
 
+    // Construct the form data for the API request
     const formData = new FormData();
     formData.set("client_id", config.providers.google.CLIENT_ID);
     formData.set("client_secret", config.providers.google.CLIENT_SECRET);
@@ -66,6 +91,7 @@ export class GoogleAuthProvider implements AuthProviderInterface {
       `${authConfig.baseURL}/api/auth/callback/google`,
     );
 
+    // Send the API request and return the access tokens
     return ofetch(`https://oauth2.googleapis.com/token`, {
       method: "POST",
       body: formData,
@@ -85,51 +111,80 @@ export class GoogleAuthProvider implements AuthProviderInterface {
     return new GoogleAuthProvider(options);
   }
 
+  /**
+   * Generates the login URL for the Google auth provider.
+   *
+   * @param {AuthConfig} authConfig - The auth configuration.
+   * @param {GoogleAuthLoginData} [authData] - Optional data for the login.
+   * @returns {Promise<{ url: string }>} The login URL.
+   */
   async login(
     authConfig: AuthConfig,
     authData?: GoogleAuthLoginData,
   ): Promise<{ url: string }> {
+    // Create URL search params for the request
     const params = new URLSearchParams();
+
+    // Set the client ID and generate a state for the request
     const authState: GoogleAuthState = {
       redirectUrl: authData?.redirectUrl,
     };
     const state = jwt.sign(authState, this.options.HASHING_SECRET, {
       expiresIn: "1h",
     });
+
+    // Set the redirect URI for the request
     const redirectUri = `${authConfig.baseURL}/api/auth/callback/google`;
 
+    // Set the parameters for the request
     params.set("client_id", this.options.CLIENT_ID);
     params.set("response_type", "code");
     params.set("state", state);
     params.set("access_type", "offline");
     params.set("redirect_uri", redirectUri);
 
+    // Set the scopes for the request if provided
     if (this.options.SCOPES) {
       params.set("scope", this.options.SCOPES);
     }
 
+    // Return the login URL
     return {
       url: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`,
     };
-  } //end method login``
+  } //end method login
 
+  /**
+   * Refreshes the access token using the refresh token.
+   *
+   * @param {AccessTokens} tokens - The access tokens.
+   * @return {Promise<{ tokens: AccessTokens }>} The refreshed access tokens.
+   * @throws {Error} If no refresh token is found.
+   */
   refreshTokens(tokens: AccessTokens): Promise<{ tokens: AccessTokens }> {
+    // Create a new FormData object
     const formData = new FormData();
+
+    // Get the refresh token from the tokens
     const refreshToken = tokens.refreshToken;
 
+    // Throw an error if no refresh token is found
     if (!refreshToken) {
       throw new Error("No refresh token found");
     }
 
+    // Set the form data parameters for the request
     formData.set("client_id", this.options.CLIENT_ID);
     formData.set("client_secret", this.options.CLIENT_SECRET);
     formData.set("grant_type", "refresh_token");
     formData.set("refresh_token", refreshToken);
 
+    // Send a POST request to the Google OAuth2 token endpoint
     return ofetch(`https://oauth2.googleapis.com/token`, {
       method: "POST",
       body: formData,
     }).then((res) => {
+      // Create the new access tokens with the refreshed token and provider name
       const tokens = {
         accessToken: res.access_token,
         refreshToken: res.refresh_token || refreshToken,
@@ -137,11 +192,20 @@ export class GoogleAuthProvider implements AuthProviderInterface {
         provider: GoogleAuthProvider.getProviderName(),
       };
 
+      // Return the new access tokens
       return { tokens };
     });
   }
 
+  /**
+   * Fetches user data from the Google OAuth2 API.
+   *
+   * @param {any} tokens - The access tokens.
+   * @return {Promise<{ user: any }>} The user data.
+   */
   async fetchUserData(tokens: any): Promise<{ user: any }> {
+    // Send a GET request to the Google OAuth2 userinfo endpoint
+    // with the access token in the Authorization header
     const response = await ofetch(
       "https://www.googleapis.com/oauth2/v3/userinfo",
       {
@@ -152,16 +216,27 @@ export class GoogleAuthProvider implements AuthProviderInterface {
       },
     );
 
+    // Return the user data
     return {
       user: response,
     };
   } // end method fetchUserData
 
+  /**
+   * Logs out the user by revoking the access token.
+   *
+   * @param {AccessTokens} tokens - The access tokens of the user.
+   * @return {Promise<any>} - A promise that resolves when the logout is complete.
+   */
   async logout(tokens: AccessTokens): Promise<any> {
+    // Create URL search parameters with the access token
     const params = new URLSearchParams();
     params.set("token", tokens.accessToken);
 
+    // Construct the URL to revoke the access token
     const url = `https://oauth2.googleapis.com/revoke?${params.toString()}`;
+
+    // Send a POST request to the URL with the access token in the request body
     return ofetch(url, {
       method: "POST",
     });

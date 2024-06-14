@@ -88,6 +88,14 @@ export default defineNuxtConfig({
         HASHING_SECRET: process.env.HASHING_SECRET || "secret",
         SCOPES: "user repo",
       },
+
+      google: {
+        CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "",
+        CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || "",
+        HASHING_SECRET: process.env.HASHING_SECRET || "secret",
+        SCOPES:
+          "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
+      },
     },
     global: false,
     redirects: {
@@ -140,7 +148,7 @@ interface ModuleOptions {
 type ModuleProvidersOptions = {
   local?: LocalAuthInitializerOptions;
   github?: GithubAuthInitializerOptions;
-  // [key: string]: AuthProviderInterface
+  google?: GoogleAuthInitializerOptions;
 };
 
 type HttpMethod =
@@ -190,9 +198,21 @@ type GithubAuthInitializerOptions = {
   HASHING_SECRET: string;
   SCOPES?: string;
 };
+
+type GoogleAuthInitializerOptions = {
+  CLIENT_ID: string;
+  CLIENT_SECRET: string;
+  HASHING_SECRET: string;
+  SCOPES?: string;
+}
 ```
 
+
+
 ## Usage
+
+#### While using the social auth (google, github)
+Add the callback URL to the auth provider configuration. For example: `<base url>/api/auth/callback/<provider>` for google it would be `<base url>/api/auth/callback/google`.
 
 #### composables
 
