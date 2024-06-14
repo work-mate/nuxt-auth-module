@@ -19,7 +19,7 @@ Auth module for Nuxt 3 apps.
 | Provider | Provider Key | Status             |
 | -------- | ------------ | ------------------ |
 | Local    | local        | :white_check_mark: |
-| Google   | google       | :x:                |
+| Google   | google       | :white_check_mark:                |
 | Github   | github       | :white_check_mark: |
 | Facebook | facebook     | :x:                |
 
