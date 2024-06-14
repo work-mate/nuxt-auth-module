@@ -15,7 +15,11 @@ export default defineEventHandler(async (event) => {
     const params = new URLSearchParams();
     params.set("error_message", "Unable to login with the GitHub provider");
 
-    await sendRedirect(event, `/login?${params.toString()}`, 302);
+    await sendRedirect(
+      event,
+      `${config.redirects.redirectIfNotLoggedIn}?${params.toString()}`,
+      302,
+    );
     return;
   }
 

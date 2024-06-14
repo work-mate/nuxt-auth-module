@@ -3,6 +3,7 @@ import type { AccessTokens } from "./providers/AuthProvider";
 export enum SupportedAuthProvider {
   LOCAL = "local",
   GITHUB = "github",
+  GOOGLE = "google",
 }
 
 export interface AuthLoginData {}

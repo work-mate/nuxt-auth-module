@@ -162,7 +162,10 @@ export default defineNuxtPlugin(async () => {
     data: Record<string, string> = {},
     redirectTo?: string,
   ): Promise<{ message: string; tokens?: AccessTokens }> {
-    const expectUrlFromProviders = [SupportedAuthProvider.GITHUB];
+    const expectUrlFromProviders = [
+      SupportedAuthProvider.GITHUB,
+      SupportedAuthProvider.GOOGLE,
+    ];
 
     if (state.value.loggedIn) {
       return {

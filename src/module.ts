@@ -10,17 +10,21 @@ import {
 import defu from "defu";
 import type { LocalAuthInitializerOptions } from "./runtime/providers/LocalAuthProvider";
 import type { GithubAuthInitializerOptions } from "./runtime/providers/GithubAuthProvider";
+import type { GoogleAuthInitializerOptions } from "./runtime/providers/GoogleAuthProvider";
 export { LocalAuthProvider } from "./runtime/providers/LocalAuthProvider";
 export { AuthProvider } from "./runtime/providers/AuthProvider";
 
 export type ModuleProvidersOptions = {
-  local?: LocalAuthInitializerOptions,
-  github?: GithubAuthInitializerOptions,
+  local?: LocalAuthInitializerOptions;
+  github?: GithubAuthInitializerOptions;
+  google?: GoogleAuthInitializerOptions;
   // [key: string]: AuthProviderInterface
-}
+};
 
 export type DeepRequired<T> = Required<{
-  [P in keyof T]: T[P] extends object | undefined ? DeepRequired<Required<T[P]>> : T[P];
+  [P in keyof T]: T[P] extends object | undefined
+    ? DeepRequired<Required<T[P]>>
+    : T[P];
 }>;
 
 export interface ModuleOptions {
@@ -30,20 +34,20 @@ export interface ModuleOptions {
   redirects: {
     redirectIfNotLoggedIn?: string;
     redirectIfLoggedIn?: string;
-  },
+  };
   apiClient: {
     baseURL: string;
-  },
+  };
   token: {
-    type: string,
-    maxAge: number,
+    type: string;
+    maxAge: number;
     cookiesNames: {
       accessToken: string;
       refreshToken: string;
       authProvider: string;
       tokenType: string;
     };
-  }
+  };
 }
 
 export default defineNuxtModule<ModuleOptions>({
@@ -73,8 +77,8 @@ export default defineNuxtModule<ModuleOptions>({
         refreshToken: "auth:refreshToken",
         authProvider: "auth:provider",
         tokenType: "auth:tokenType",
-      }
-    }
+      },
+    },
   },
   async setup(options, nuxt) {
     logger.log("@workmate/nuxt-auth:: installing module");
@@ -82,7 +86,7 @@ export default defineNuxtModule<ModuleOptions>({
 
     nuxt.options.runtimeConfig.auth = defu(
       nuxt.options.runtimeConfig.auth,
-      options
+      options,
     );
 
     nuxt.options.runtimeConfig.public.auth = defu(
@@ -91,13 +95,13 @@ export default defineNuxtModule<ModuleOptions>({
         redirects: options.redirects,
         global: options.global,
         apiClient: options.apiClient,
-      }
+      },
     );
 
     addImportsDir(resolver.resolve("runtime/composables"));
     addPlugin(resolver.resolve("./runtime/plugin/auth"));
     addPlugin(resolver.resolve("./runtime/plugin/auth-fetch"), {
-      append: true
+      append: true,
     });
 
     addServerHandler({
@@ -106,46 +110,52 @@ export default defineNuxtModule<ModuleOptions>({
     });
 
     addServerHandler({
-      route: '/api/auth/login',
-      handler: resolver.resolve('./runtime/server/api/login.post'),
-    })
-
-    addServerHandler({
-      route: '/api/auth/logout',
-      handler: resolver.resolve('./runtime/server/api/logout.post'),
-    })
-
-    addServerHandler({
-      route: '/api/auth/user',
-      handler: resolver.resolve('./runtime/server/api/user'),
+      route: "/api/auth/login",
+      handler: resolver.resolve("./runtime/server/api/login.post"),
     });
 
     addServerHandler({
-      route: '/api/auth/refresh',
-      handler: resolver.resolve('./runtime/server/api/refresh.post'),
+      route: "/api/auth/logout",
+      handler: resolver.resolve("./runtime/server/api/logout.post"),
     });
 
-    if(nuxt.options.runtimeConfig.auth.providers.github) {
+    addServerHandler({
+      route: "/api/auth/user",
+      handler: resolver.resolve("./runtime/server/api/user"),
+    });
+
+    addServerHandler({
+      route: "/api/auth/refresh",
+      handler: resolver.resolve("./runtime/server/api/refresh.post"),
+    });
+
+    if (nuxt.options.runtimeConfig.auth.providers.github) {
       addServerHandler({
-        route: '/api/auth/callback/github',
-        handler: resolver.resolve('./runtime/server/api/callback/github.get'),
-      })
+        route: "/api/auth/callback/github",
+        handler: resolver.resolve("./runtime/server/api/callback/github.get"),
+      });
     }
 
+    if (nuxt.options.runtimeConfig.auth.providers.google) {
+      addServerHandler({
+        route: "/api/auth/callback/google",
+        handler: resolver.resolve("./runtime/server/api/callback/google.get"),
+      });
+    }
     addRouteMiddleware({
-      name: 'auth',
-      path: resolver.resolve('./runtime/middleware/auth'),
+      name: "auth",
+      path: resolver.resolve("./runtime/middleware/auth"),
     });
 
     addRouteMiddleware({
-      name: 'auth-guest',
-      path: resolver.resolve('./runtime/middleware/auth-guest'),
+      name: "auth-guest",
+      path: resolver.resolve("./runtime/middleware/auth-guest"),
     });
 
-    if(nuxt.options.runtimeConfig.auth.global) {
+    if (nuxt.options.runtimeConfig.auth.global) {
       addRouteMiddleware({
-        name: 'auth-global',
-        path: resolver.resolve('./runtime/middleware/auth.global'),
+        name: "auth-global",
+        path: resolver.resolve("./runtime/middleware/auth.global"),
         global: true,
       });
     }
@@ -163,7 +173,7 @@ declare module "@nuxt/schema" {
     auth: {
       redirects: ModuleOptions["redirects"];
       global: ModuleOptions["global"];
-      apiClient: ModuleOptions["apiClient"]
-    }
+      apiClient: ModuleOptions["apiClient"];
+    };
   }
 }
