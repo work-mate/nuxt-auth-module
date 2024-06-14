@@ -61,7 +61,6 @@ export class GoogleAuthProvider implements AuthProviderInterface {
     formData.set("client_secret", config.providers.google.CLIENT_SECRET);
     formData.set("code", code);
     formData.set("grant_type", "authorization_code");
-
     formData.set(
       "redirect_uri",
       `${authConfig.baseURL}/api/auth/callback/google`,
@@ -70,7 +69,7 @@ export class GoogleAuthProvider implements AuthProviderInterface {
     return ofetch(`https://oauth2.googleapis.com/token`, {
       method: "POST",
       body: formData,
-    }).then((res) => {
+    }).then(async (res) => {
       const tokens = {
         accessToken: res.access_token,
         refreshToken: res.refresh_token,
@@ -94,20 +93,16 @@ export class GoogleAuthProvider implements AuthProviderInterface {
     const authState: GoogleAuthState = {
       redirectUrl: authData?.redirectUrl,
     };
+    const state = jwt.sign(authState, this.options.HASHING_SECRET, {
+      expiresIn: "1h",
+    });
+    const redirectUri = `${authConfig.baseURL}/api/auth/callback/google`;
 
     params.set("client_id", this.options.CLIENT_ID);
     params.set("response_type", "code");
-    params.set(
-      "state",
-      jwt.sign(authState, this.options.HASHING_SECRET, {
-        expiresIn: "1h",
-      }),
-    );
+    params.set("state", state);
     params.set("access_type", "offline");
-    params.set(
-      "redirect_uri",
-      `${authConfig.baseURL}/api/auth/callback/google`,
-    );
+    params.set("redirect_uri", redirectUri);
 
     if (this.options.SCOPES) {
       params.set("scope", this.options.SCOPES);
@@ -118,22 +113,18 @@ export class GoogleAuthProvider implements AuthProviderInterface {
     };
   } //end method login``
 
-  //TODO: Implement refresh tokens for google
   refreshTokens(tokens: AccessTokens): Promise<{ tokens: AccessTokens }> {
-    return ofetch(`https://github.com/login/oauth/access_token`, {
+    const formData = new FormData();
+    formData.set("client_id", this.options.CLIENT_ID);
+    formData.set("client_secret", this.options.CLIENT_SECRET);
+    formData.set("grant_type", "refresh_token");
+    formData.set("refresh_token", tokens.refreshToken || "");
+
+    return ofetch(`https://oauth2.googleapis.com/token`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "Accept-Encoding": "application/json",
-      },
-      params: {
-        client_id: this.options.CLIENT_ID,
-        client_secret: this.options.CLIENT_SECRET,
-        grant_type: "refresh_token",
-        refresh_token: tokens.refreshToken,
-      },
+      body: formData,
     }).then((res) => {
+      console.log("Google Refresh tokens: ", res);
       const tokens = {
         accessToken: res.access_token,
         refreshToken: res.refresh_token,
