@@ -1,5 +1,5 @@
 export default defineNuxtConfig({
-  modules: ['../src/module'],
+  modules: ["../src/module"],
   auth: {
     global: true,
     redirects: {
@@ -16,9 +16,9 @@ export default defineNuxtConfig({
             userKey: "user",
           },
           signIn: {
-            path:  "http://localhost:8080/api/auth/login/password",
+            path: "http://localhost:8080/api/auth/login/password",
             body: {
-              principal: "email_address"
+              principal: "email_address",
             },
             tokenKey: "token",
             refreshTokenKey: "refresh_token",
@@ -32,16 +32,23 @@ export default defineNuxtConfig({
               token: "token",
               refreshToken: "refresh_token",
             },
-          }
-        }
+          },
+        },
       },
       github: {
         CLIENT_ID: process.env.GITHUB_CLIENT_ID || "",
         CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET || "",
         HASHING_SECRET: process.env.HASHING_SECRET || "secret",
         SCOPES: "user repo",
-      }
-    }
+      },
+      google: {
+        CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "",
+        CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || "",
+        HASHING_SECRET: process.env.HASHING_SECRET || "secret",
+        SCOPES:
+          "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
+      },
+    },
   },
-  devtools: { enabled: true }
-})
+  devtools: { enabled: true },
+});

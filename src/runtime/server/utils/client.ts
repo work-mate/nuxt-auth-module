@@ -3,6 +3,7 @@ import { AuthProvider } from "../../providers/AuthProvider";
 import { LocalAuthProvider } from "../../providers/LocalAuthProvider";
 import type { AuthProviderInterface } from "../../models";
 import { GithubAuthProvider } from "../../providers/GithubAuthProvider";
+import { GoogleAuthProvider } from "../../providers/GoogleAuthProvider";
 
 let authClient: AuthProvider;
 
@@ -32,6 +33,9 @@ export const getAuthClient = (): AuthProvider => {
     providers.github = GithubAuthProvider.create(config.providers.github);
   }
 
+  if (config.providers.google) {
+    providers.google = GoogleAuthProvider.create(config.providers.google);
+  }
   /**
    * Create a new auth client with the config
    */

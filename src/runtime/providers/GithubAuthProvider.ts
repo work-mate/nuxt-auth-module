@@ -1,8 +1,9 @@
-import type { ModuleOptions } from "~/src/module";
-import type {
-  AuthConfig,
-  AuthLoginData,
-  AuthProviderInterface,
+import type { ModuleOptions } from "../../module";
+import {
+  SupportedAuthProvider,
+  type AuthConfig,
+  type AuthLoginData,
+  type AuthProviderInterface,
 } from "../models";
 import jwt from "jsonwebtoken";
 import { ofetch } from "ofetch";
@@ -27,7 +28,7 @@ export class GithubAuthProvider implements AuthProviderInterface {
   } // end constructor method
 
   static getProviderName(): string {
-    return "github";
+    return SupportedAuthProvider.GITHUB;
   }
 
   static verifyGithubState(state: string, config: ModuleOptions): boolean {
