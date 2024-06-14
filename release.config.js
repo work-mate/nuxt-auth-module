@@ -4,6 +4,13 @@ export default {
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
     [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "CHANGELOG.md"
+      }
+    ],
+    "@semantic-release/npm",
+    [
       "@semantic-release/git",
       {
         assets: [
@@ -16,6 +23,6 @@ export default {
       },
     ],
     "@semantic-release/github",
-    "@semantic-release/npm",
+
   ],
 };
