@@ -115,19 +115,24 @@ export class GoogleAuthProvider implements AuthProviderInterface {
 
   refreshTokens(tokens: AccessTokens): Promise<{ tokens: AccessTokens }> {
     const formData = new FormData();
+    const refreshToken = tokens.refreshToken;
+
+    if (!refreshToken) {
+      throw new Error("No refresh token found");
+    }
+
     formData.set("client_id", this.options.CLIENT_ID);
     formData.set("client_secret", this.options.CLIENT_SECRET);
     formData.set("grant_type", "refresh_token");
-    formData.set("refresh_token", tokens.refreshToken || "");
+    formData.set("refresh_token", refreshToken);
 
     return ofetch(`https://oauth2.googleapis.com/token`, {
       method: "POST",
       body: formData,
     }).then((res) => {
-      console.log("Google Refresh tokens: ", res);
       const tokens = {
         accessToken: res.access_token,
-        refreshToken: res.refresh_token,
+        refreshToken: res.refresh_token || refreshToken,
         tokenType: res.token_type,
         provider: GoogleAuthProvider.getProviderName(),
       };
@@ -152,8 +157,14 @@ export class GoogleAuthProvider implements AuthProviderInterface {
     };
   } // end method fetchUserData
 
-  async logout(): Promise<any> {
-    return Promise.resolve();
+  async logout(tokens: AccessTokens): Promise<any> {
+    const params = new URLSearchParams();
+    params.set("token", tokens.accessToken);
+
+    const url = `https://oauth2.googleapis.com/revoke?${params.toString()}`;
+    return ofetch(url, {
+      method: "POST",
+    });
   } // end method logout
 
   validateRequestBody(): boolean {
