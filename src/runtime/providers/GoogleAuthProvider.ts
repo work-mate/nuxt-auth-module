@@ -8,7 +8,6 @@ import {
 import jwt from "jsonwebtoken";
 import { ofetch } from "ofetch";
 import type { AccessTokens } from "./AuthProvider";
-import { google } from "googleapis";
 
 export type GoogleAuthInitializerOptions = {
   CLIENT_ID: string;
