@@ -136,6 +136,12 @@ export default defineNuxtModule<ModuleOptions>({
       });
     }
 
+    if (nuxt.options.runtimeConfig.auth.providers.google) {
+      addServerHandler({
+        route: "/api/auth/callback/google",
+        handler: resolver.resolve("./runtime/server/api/callback/google.get"),
+      });
+    }
     addRouteMiddleware({
       name: "auth",
       path: resolver.resolve("./runtime/middleware/auth"),

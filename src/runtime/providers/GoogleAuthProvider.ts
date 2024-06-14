@@ -8,6 +8,7 @@ import {
 import jwt from "jsonwebtoken";
 import { ofetch } from "ofetch";
 import type { AccessTokens } from "./AuthProvider";
+import { google } from "googleapis";
 
 export type GoogleAuthInitializerOptions = {
   CLIENT_ID: string;
@@ -49,24 +50,27 @@ export class GoogleAuthProvider implements AuthProviderInterface {
   } // end function verifyAuthState
 
   static getTokens(
+    authConfig: AuthConfig,
     code: string,
     config: ModuleOptions,
   ): Promise<{ tokens: AccessTokens }> {
     if (!config.providers.google)
       throw new Error("Google auth provider not configured");
 
-    return ofetch(`https://github.com/login/oauth/access_token`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "Accept-Encoding": "application/json",
-      },
-      params: {
-        client_id: config.providers.google.CLIENT_ID,
-        client_secret: config.providers.google.CLIENT_SECRET,
-        code,
-      },
+    const formData = new FormData();
+    formData.set("client_id", config.providers.google.CLIENT_ID);
+    formData.set("client_secret", config.providers.google.CLIENT_SECRET);
+    formData.set("code", code);
+    formData.set("grant_type", "authorization_code");
+
+    formData.set(
+      "redirect_uri",
+      `${authConfig.baseURL}/api/auth/callback/google`,
+    );
+
+    return ofetch(`https://oauth2.googleapis.com/token`, {
+      method: "POST",
+      body: formData,
     }).then((res) => {
       const tokens = {
         accessToken: res.access_token,
@@ -93,28 +97,29 @@ export class GoogleAuthProvider implements AuthProviderInterface {
     };
 
     params.set("client_id", this.options.CLIENT_ID);
-    params.set("response_type", "token");
+    params.set("response_type", "code");
     params.set(
       "state",
       jwt.sign(authState, this.options.HASHING_SECRET, {
         expiresIn: "1h",
       }),
     );
-
-    if (this.options.SCOPES) {
-      params.set("scope", this.options.SCOPES);
-    }
-
+    params.set("access_type", "offline");
     params.set(
       "redirect_uri",
       `${authConfig.baseURL}/api/auth/callback/google`,
     );
+
+    if (this.options.SCOPES) {
+      params.set("scope", this.options.SCOPES);
+    }
 
     return {
       url: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`,
     };
   } //end method login``
 
+  //TODO: Implement refresh tokens for google
   refreshTokens(tokens: AccessTokens): Promise<{ tokens: AccessTokens }> {
     return ofetch(`https://github.com/login/oauth/access_token`, {
       method: "POST",
@@ -142,12 +147,15 @@ export class GoogleAuthProvider implements AuthProviderInterface {
   }
 
   async fetchUserData(tokens: any): Promise<{ user: any }> {
-    const response = await ofetch("https://api.github.com/user", {
-      method: "GET",
-      headers: {
-        Authorization: `${tokens.tokenType} ${tokens.accessToken}`,
+    const response = await ofetch(
+      "https://www.googleapis.com/oauth2/v3/userinfo",
+      {
+        method: "GET",
+        headers: {
+          Authorization: `${tokens.tokenType} ${tokens.accessToken}`,
+        },
       },
-    });
+    );
 
     return {
       user: response,

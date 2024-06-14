@@ -45,7 +45,8 @@ export default defineNuxtConfig({
         CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "",
         CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || "",
         HASHING_SECRET: process.env.HASHING_SECRET || "secret",
-        SCOPES: "user repo",
+        SCOPES:
+          "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
       },
     },
   },
