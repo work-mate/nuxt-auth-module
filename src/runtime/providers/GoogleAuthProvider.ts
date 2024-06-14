@@ -1,4 +1,4 @@
-import type { ModuleOptions } from "~/src/module";
+import type { ModuleOptions } from "../../module";
 import {
   SupportedAuthProvider,
   type AuthConfig,

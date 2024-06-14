@@ -7,7 +7,7 @@ import type {
   HttpMethod,
 } from "../models";
 import type { AccessTokens } from "./AuthProvider";
-import type { DeepRequired } from "~/src/module";
+import type { DeepRequired } from "../../module";
 import { getRecursiveProperty } from "../helpers";
 import { ofetch } from "ofetch";
 import type { ModuleOptions } from "@nuxt/schema";
