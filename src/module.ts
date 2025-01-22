@@ -18,7 +18,7 @@ export {
   type AccessTokensNames,
   type AuthProviderContructorOptions,
 } from "./runtime/providers/AuthProvider";
-export type { AuthPlugin } from "./runtime/plugin/auth";
+// export type { AuthPlugin } from "./runtime/plugin/auth";
 export type { AuthState, AuthUser } from "./runtime/models";
 
 export type ModuleProvidersOptions = {

@@ -1,9 +1,10 @@
-import type { AuthUser, ModuleOptions } from "../../module";
+import type { ModuleOptions } from "../../module";
 import {
   SupportedAuthProvider,
   type AuthConfig,
   type AuthLoginData,
   type AuthProviderInterface,
+  type AuthUser,
 } from "../models";
 import jwt from "jsonwebtoken";
 import { ofetch } from "ofetch";
@@ -161,7 +162,7 @@ export class GoogleAuthProvider implements AuthProviderInterface {
    * @return {Promise<{ tokens: AccessTokens }>} The refreshed access tokens.
    * @throws {Error} If no refresh token is found.
    */
-  refreshTokens(tokens: AccessTokens): Promise<{ tokens: AccessTokens }> {
+  async refreshTokens(tokens: AccessTokens): Promise<{ tokens: AccessTokens }> {
     // Create a new FormData object
     const formData = new FormData();
 
