@@ -7,6 +7,7 @@ export enum SupportedAuthProvider {
 }
 
 export interface AuthLoginData {}
+
 export interface AuthConfig {
   baseURL: string;
 }
