@@ -21,8 +21,8 @@ Auth module for Nuxt 3 apps.
 | Local    | local        | :white_check_mark: |
 | Google   | google       | :white_check_mark: |
 | Github   | github       | :white_check_mark: |
-| Facebook | facebook     | :construction: |
-| LinkedIn | linkedin     | :construction: |
+| Facebook | facebook     | :construction:     |
+| LinkedIn | linkedin     | :construction:     |
 
 ## Local Auth Features
 
@@ -205,14 +205,13 @@ type GoogleAuthInitializerOptions = {
   CLIENT_SECRET: string;
   HASHING_SECRET: string;
   SCOPES?: string;
-}
+};
 ```
-
-
 
 ## Usage
 
 #### While using the social auth (google, github)
+
 Add the callback URL to the auth provider configuration. For example: `<base url>/api/auth/callback/<provider>` for google it would be `<base url>/api/auth/callback/google`.
 
 #### composables
@@ -229,10 +228,12 @@ const {
   refreshTokens,
 } = useAuth();
 
+type AuthUser = any;
+
 // state is of type AuthState
 type AuthPlugin = {
   loggedIn: ComputedRef<boolean>;
-  user: ComputedRef<any | null | undefined>;
+  user: ComputedRef<AuthUser | null | undefined>;
   token: ComputedRef<string | undefined>;
   refreshToken: ComputedRef<string | undefined>;
   tokenType: ComputedRef<string | undefined>;

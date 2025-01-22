@@ -11,7 +11,11 @@ import {
   type Ref,
 } from "#imports";
 import { ofetch } from "ofetch";
-import { SupportedAuthProvider, type AuthState } from "../models";
+import {
+  SupportedAuthProvider,
+  type AuthState,
+  type AuthUser,
+} from "../models";
 import type {
   AccessTokens,
   AccessTokensNames,
@@ -19,7 +23,7 @@ import type {
 
 export type AuthPlugin = {
   loggedIn: ComputedRef<boolean>;
-  user: ComputedRef<any | null | undefined>;
+  user: ComputedRef<AuthState["user"] | null | undefined>;
   token: ComputedRef<string | undefined>;
   refreshToken: ComputedRef<string | undefined>;
   tokenType: ComputedRef<string | undefined>;
@@ -129,15 +133,15 @@ export default defineNuxtPlugin(async () => {
    * authenticated. The user's access token is automatically added to the
    * request headers.
    *
-   * @returns {Promise<{ user: any }>} The user data returned by the server
+   * @returns {Promise<{ user: AuthUser }>} The user data returned by the server
    */
-  async function fetchUserDataWithToken(): Promise<{ user: any }> {
+  async function fetchUserDataWithToken(): Promise<{ user: AuthUser }> {
     /**
      * Fetches the user data from the server using the user's access token.
      *
-     * @returns {Promise<{ user: any }>} The user data returned by the server
+     * @returns {Promise<{ user: AuthUser }>} The user data returned by the server
      */
-    const response: { user: any } = await ofetch("/api/auth/user", {
+    const response: { user: AuthUser } = await ofetch("/api/auth/user", {
       headers: {
         Accept: "application/json",
       },
@@ -211,7 +215,7 @@ export default defineNuxtPlugin(async () => {
 
     const tokens = response.tokens;
 
-    const user: { user: any } = await fetchUserDataWithToken();
+    const user: { user: AuthUser } = await fetchUserDataWithToken();
 
     state.value = {
       token: tokens.accessToken,

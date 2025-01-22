@@ -3,6 +3,7 @@ import type {
   AuthConfig,
   AuthLoginData,
   AuthProviderInterface,
+  AuthUser,
   ErrorResponse,
   HttpMethod,
 } from "../models";
@@ -128,7 +129,9 @@ export class LocalAuthProvider implements AuthProviderInterface {
     });
   }
 
-  async fetchUserData(tokens: AccessTokens): Promise<{ user: any }> {
+  async fetchUserData(
+    tokens: AccessTokens,
+  ): Promise<{ user: AuthUser | null }> {
     if (!this.options.endpoints.user) return { user: null };
     const url = this.options.endpoints.user.path;
     const method = "GET";

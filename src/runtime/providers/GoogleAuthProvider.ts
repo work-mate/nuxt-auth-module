@@ -1,4 +1,4 @@
-import type { ModuleOptions } from "../../module";
+import type { AuthUser, ModuleOptions } from "../../module";
 import {
   SupportedAuthProvider,
   type AuthConfig,
@@ -201,9 +201,9 @@ export class GoogleAuthProvider implements AuthProviderInterface {
    * Fetches user data from the Google OAuth2 API.
    *
    * @param {any} tokens - The access tokens.
-   * @return {Promise<{ user: any }>} The user data.
+   * @return {Promise<{ user: AuthUser }>} The user data.
    */
-  async fetchUserData(tokens: any): Promise<{ user: any }> {
+  async fetchUserData(tokens: any): Promise<{ user: AuthUser }> {
     // Send a GET request to the Google OAuth2 userinfo endpoint
     // with the access token in the Authorization header
     const response = await ofetch(
