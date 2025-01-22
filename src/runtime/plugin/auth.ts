@@ -23,7 +23,7 @@ import type {
 
 export type AuthPlugin = {
   loggedIn: ComputedRef<boolean>;
-  user: ComputedRef<AuthState["user"] | null | undefined>;
+  user: ComputedRef<AuthUser | null | undefined>;
   token: ComputedRef<string | undefined>;
   refreshToken: ComputedRef<string | undefined>;
   tokenType: ComputedRef<string | undefined>;
