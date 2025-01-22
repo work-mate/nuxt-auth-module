@@ -12,7 +12,14 @@ import type { LocalAuthInitializerOptions } from "./runtime/providers/LocalAuthP
 import type { GithubAuthInitializerOptions } from "./runtime/providers/GithubAuthProvider";
 import type { GoogleAuthInitializerOptions } from "./runtime/providers/GoogleAuthProvider";
 export { LocalAuthProvider } from "./runtime/providers/LocalAuthProvider";
-export { AuthProvider } from "./runtime/providers/AuthProvider";
+export {
+  AuthProvider,
+  type AccessTokens,
+  type AccessTokensNames,
+  type AuthProviderContructorOptions,
+} from "./runtime/providers/AuthProvider";
+export type { AuthPlugin } from "./runtime/plugin/auth";
+export type { AuthState, AuthUser } from "./runtime/models";
 
 export type ModuleProvidersOptions = {
   local?: LocalAuthInitializerOptions;
