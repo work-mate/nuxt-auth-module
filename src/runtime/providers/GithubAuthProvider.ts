@@ -1,4 +1,4 @@
-import type { ModuleOptions } from "../../module";
+import type { AuthUser, ModuleOptions } from "../../module";
 import {
   SupportedAuthProvider,
   type AuthConfig,
@@ -103,7 +103,7 @@ export class GithubAuthProvider implements AuthProviderInterface {
     };
   }
 
-  refreshTokens(tokens: AccessTokens): Promise<{ tokens: AccessTokens }> {
+  async refreshTokens(tokens: AccessTokens): Promise<{ tokens: AccessTokens }> {
     return ofetch(`https://github.com/login/oauth/access_token`, {
       method: "POST",
       headers: {
@@ -129,7 +129,7 @@ export class GithubAuthProvider implements AuthProviderInterface {
     });
   }
 
-  async fetchUserData(tokens: any): Promise<{ user: any }> {
+  async fetchUserData(tokens: any): Promise<{ user: AuthUser }> {
     const response = await ofetch("https://api.github.com/user", {
       method: "GET",
       headers: {

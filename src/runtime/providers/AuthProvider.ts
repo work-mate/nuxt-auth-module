@@ -1,4 +1,4 @@
-import { type AuthProviderInterface } from "../models";
+import { type AuthProviderInterface, type AuthUser } from "../models";
 import { getCookie, setCookie, deleteCookie, type H3Event } from "h3";
 import type { ModuleOptions } from "@nuxt/schema";
 
@@ -162,9 +162,9 @@ export class AuthProvider {
   /**
    * Returns user from event
    * @param {H3Event} event
-   * @return {Promise<{user: any}>}
+   * @return {Promise<{user: AuthUser | null}>}
    */
-  async getUserFromEvent(event: H3Event): Promise<{ user: any }> {
+  async getUserFromEvent(event: H3Event): Promise<{ user: AuthUser | null }> {
     const emptyUser = { user: null };
 
     const tokens = AuthProvider.getTokensFromEvent(event, this.config);

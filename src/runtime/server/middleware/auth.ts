@@ -7,10 +7,11 @@ import {
   type AccessTokensNames,
 } from "../../providers/AuthProvider";
 import { useRuntimeConfig } from "#imports";
+import type { AuthUser } from "../../models";
 
 type AuthContext = {
   isAuthenticated: () => Promise<boolean>;
-  getUser: () => Promise<{ user: any }>;
+  getUser: () => Promise<{ user: AuthUser }>;
   getTokens: () => Promise<AccessTokens>;
   getTokenNames: () => AccessTokensNames;
   logout: () => Promise<void>;

@@ -16,7 +16,7 @@ export interface AuthProviderInterface {
     authConfig: AuthConfig,
     authData?: AuthLoginData,
   ): Promise<{ tokens?: AccessTokens; url?: string }>;
-  fetchUserData?(tokens: AccessTokens): Promise<{ user: any }>;
+  fetchUserData?(tokens: AccessTokens): Promise<{ user: AuthUser | null }>;
   logout(tokens: AccessTokens): Promise<void>;
   refreshTokens?(tokens: AccessTokens): Promise<{ tokens: AccessTokens }>;
   /**
@@ -26,12 +26,12 @@ export interface AuthProviderInterface {
   validateRequestBody(body: Record<string, any>): boolean;
 }
 
-export type AuthUser = { name: string; profilePicture: string };
+export type AuthUser = any;
 export type AuthState =
   | { loggedIn: false; user: null }
   | {
       loggedIn: true;
-      user: any;
+      user: AuthUser;
       token: string;
       refreshToken?: string;
       tokenType: string;
