@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/work-mate/nuxt-auth-module/compare/v1.3.2...v1.4.0) (2025-01-22)
+
+
+### Features
+
+* AuthUser as an interface ([03215e4](https://github.com/work-mate/nuxt-auth-module/commit/03215e4b0f4ffc489b8ed389a64f60993d45db4b))
+
 ## [1.3.2](https://github.com/work-mate/nuxt-auth-module/compare/v1.3.1...v1.3.2) (2025-01-22)
 
 
