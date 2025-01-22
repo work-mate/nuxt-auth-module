@@ -26,7 +26,8 @@ export interface AuthProviderInterface {
   validateRequestBody(body: Record<string, any>): boolean;
 }
 
-export type AuthUser = any;
+export interface AuthUser {}
+
 export type AuthState =
   | { loggedIn: false; user: null }
   | {
