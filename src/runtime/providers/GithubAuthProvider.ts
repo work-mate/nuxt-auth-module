@@ -1,9 +1,10 @@
-import type { AuthUser, ModuleOptions } from "../../module";
+import type { ModuleOptions } from "../../module";
 import {
   SupportedAuthProvider,
   type AuthConfig,
   type AuthLoginData,
   type AuthProviderInterface,
+  type AuthUser,
 } from "../models";
 import jwt from "jsonwebtoken";
 import { ofetch } from "ofetch";
