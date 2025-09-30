@@ -1,3 +1,4 @@
+import type { RouteMiddleware } from "#app";
 import {
   abortNavigation,
   createError,
@@ -8,7 +9,7 @@ import {
   useRuntimeConfig,
 } from "#imports";
 
-export const authMiddleware: RouteMiddleware = (to) => {
+export const authMiddleware: RouteMiddleware = (to, _from) => {
   const { loggedIn, logout, tokenNames } = useNuxtApp().$auth;
   const config = useRuntimeConfig().public.auth;
 
@@ -51,6 +52,4 @@ export const authMiddleware: RouteMiddleware = (to) => {
  *  middleware: ["auth"],
  * });
  */
-export default defineNuxtRouteMiddleware((...params) => {
-  return authMiddleware(...params);
-});
+export default defineNuxtRouteMiddleware(authMiddleware);
