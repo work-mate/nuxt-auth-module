@@ -6,17 +6,17 @@ export default defineNuxtConfig({
       redirectIfLoggedIn: "/protected",
     },
     apiClient: {
-      baseURL: "http://localhost:8080",
+      baseURL: "http://localhost:3000",
     },
     providers: {
       local: {
         endpoints: {
           user: {
-            path: "http://localhost:8080/api/auth/user",
+            path: "http://localhost:3000/api/auth/user",
             userKey: "user",
           },
           signIn: {
-            path: "http://localhost:8080/api/auth/login/password",
+            path: "http://localhost:3000/api/auth/login/password",
             body: {
               principal: "email_address",
             },
@@ -24,7 +24,7 @@ export default defineNuxtConfig({
             refreshTokenKey: "refresh_token",
           },
           refreshToken: {
-            path: "http://localhost:8080/api/auth/refresh",
+            path: "http://localhost:3000/api/auth/refresh",
             method: "POST",
             tokenKey: "token",
             refreshTokenKey: "refresh_token",
