@@ -4,15 +4,15 @@ Get your module up and running quickly.
 Find and replace all on all files (CMD+SHIFT+F):
 - Name: My Module
 - Package name: my-module
-- Description: My new Nuxt module
+- Description: Auth module for Nuxt 3 & 4 apps
 -->
 
-# Auth module for Nuxt 3 server apps
+# Auth module for Nuxt 3 & 4 server apps
 
 ![NPM](https://img.shields.io/npm/l/@workmate/nuxt-auth) ![npm](https://img.shields.io/npm/v/@workmate/nuxt-auth) ![GitHub last commit](https://img.shields.io/github/last-commit/work-mate/nuxt-auth-module)
 
 <br />
-Auth module for Nuxt 3 apps.
+Auth module for Nuxt 3 & 4 apps.
 
 ## Featured Auth Providers
 
