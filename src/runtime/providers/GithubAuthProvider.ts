@@ -36,12 +36,12 @@ export class GithubAuthProvider implements AuthProviderInterface {
     try {
       jwt.verify(state, config.providers.github?.HASHING_SECRET || "secret");
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
 
-  static getTokens(
+   static async getTokens(
     code: string,
     config: ModuleOptions,
   ): Promise<{ tokens: AccessTokens }> {

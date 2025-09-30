@@ -1,4 +1,5 @@
 import {
+  clearNuxtData,
   computed,
   defineNuxtPlugin,
   navigateTo,
@@ -226,6 +227,10 @@ export default defineNuxtPlugin(async () => {
       user: user.user,
     };
 
+    // Clear all useFetch cache after successful login
+    // This ensures cached data is refetched with new authentication context
+    clearNuxtData();
+
     if (!doesPageRequireAuth()) {
       navigateTo(
         redirectUrl ||
@@ -258,6 +263,10 @@ export default defineNuxtPlugin(async () => {
     });
 
     state.value = { loggedIn: false, user: null };
+
+    // Clear all useFetch cache after logout
+    // This ensures cached authenticated data is removed
+    clearNuxtData();
 
     if (doesPageRequireAuth()) {
       navigateTo(

@@ -15,14 +15,10 @@ export default defineNuxtPlugin(async () => {
         Authorization: loggedIn.value && accessToken ? accessToken : "",
       };
 
-      if (!options.headers) {
-        options.headers = headerAddition;
-      } else {
-        options.headers = {
-          ...options.headers,
-          ...headerAddition,
-        };
-      }
+      options.headers = {
+        ...(options.headers || {}),
+        ...headerAddition,
+      };
     },
     async onResponseError({ response }) {
       if (response.status === 401) {
