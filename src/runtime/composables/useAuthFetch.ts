@@ -21,19 +21,8 @@ export default function useAuthFetch<T = unknown>(
 ): UseFetchReturn<T> {
   const { $authFetch } = useNuxtApp();
 
-  // Generate a unique key for caching
-  const baseKey = typeof request === 'string' 
-    ? request 
-    : typeof request === 'function' 
-      ? 'dynamic-request'
-      : 'ref-request';
-
-  // Include serialized options in key for proper cache differentiation
-  const optionsKey = options ? `;options:${btoa(JSON.stringify(options))}` : '';
-
   // Delegate to useFetch with auth-specific configuration
   return useFetch(request, {
-    key: `auth:${baseKey}${optionsKey}`,
     ...options,
     // Override $fetch with our authenticated version
     // Type assertion needed due to complex Nuxt internal type constraints

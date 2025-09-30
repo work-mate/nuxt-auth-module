@@ -95,8 +95,9 @@ async function triggerRefreshUser() {
   await refreshUser();
 }
 
-function trigger() {
-  useAuthFetch("/api/auth/melting");
+async function trigger() {
+  const {data} = await useAuthFetch("/api/auth/melting");
+  console.log(data.value);
 }
 
 function triggerAlways401() {
