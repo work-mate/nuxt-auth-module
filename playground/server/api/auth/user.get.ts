@@ -1,4 +1,4 @@
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (_event) => {
   // In a real app, you'd extract and validate the JWT token from headers
   // const token = getCookie(event, 'auth:token') || getHeader(event, 'authorization');
   

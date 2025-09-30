@@ -12,13 +12,13 @@ export default defineEventHandler(async (event) => {
     timestamp: new Date().toISOString(),
     experimentId: generateRandomId(),
     properties: {
-      density: parseFloat((Math.random() * 10 + 1).toFixed(2)), // 1.00-11.00
+      density: Number.parseFloat((Math.random() * 10 + 1).toFixed(2)), // 1.00-11.00
       viscosity: Math.floor(Math.random() * 500) + 50, // 50-550
-      heatCapacity: parseFloat((Math.random() * 5 + 0.5).toFixed(3)), // 0.500-5.500
+      heatCapacity: Number.parseFloat((Math.random() * 5 + 0.5).toFixed(3)), // 0.500-5.500
     },
     measurements: Array.from({ length: 5 }, () => ({
       time: Math.floor(Math.random() * 3600), // 0-3600 seconds
-      value: parseFloat((Math.random() * 50 + 10).toFixed(1)), // 10.0-60.0
+      value: Number.parseFloat((Math.random() * 50 + 10).toFixed(1)), // 10.0-60.0
     })),
   };
 
