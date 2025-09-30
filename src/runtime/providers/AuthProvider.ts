@@ -48,7 +48,7 @@ export class AuthProvider {
     if (!this.providers[providerKey]) {
       const providerKeys = Object.keys(this.providers);
       if (providerKeys.length) {
-        providerKey = providerKeys[0];
+        providerKey = providerKeys[0]!;
       }
     }
   }

@@ -71,7 +71,7 @@ export class GoogleAuthProvider implements AuthProviderInterface {
    * access tokens.
    * @throws {Error} If the Google auth provider is not configured.
    */
-  static getTokens(
+  static async getTokens(
     authConfig: AuthConfig,
     code: string,
     config: ModuleOptions,

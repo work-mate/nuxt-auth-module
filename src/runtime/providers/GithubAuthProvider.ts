@@ -41,7 +41,7 @@ export class GithubAuthProvider implements AuthProviderInterface {
     }
   }
 
-  static getTokens(
+   static async getTokens(
     code: string,
     config: ModuleOptions,
   ): Promise<{ tokens: AccessTokens }> {
