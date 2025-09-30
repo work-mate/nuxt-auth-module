@@ -62,7 +62,7 @@ export default defineNuxtModule<ModuleOptions>({
     name: "@workmate/nuxt-auth",
     configKey: "auth",
     compatibility: {
-      nuxt: ">=4.0.0",
+      nuxt: ">=3.0.0",
     },
   },
   defaults: {
