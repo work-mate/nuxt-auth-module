@@ -8,7 +8,6 @@ import {
   useRuntimeConfig,
 } from "#imports";
 
-//@ts-ignore
 export const authMiddleware: RouteMiddleware = (to) => {
   const { loggedIn, logout, tokenNames } = useNuxtApp().$auth;
   const config = useRuntimeConfig().public.auth;
