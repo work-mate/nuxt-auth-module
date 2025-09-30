@@ -36,7 +36,7 @@ export class GithubAuthProvider implements AuthProviderInterface {
     try {
       jwt.verify(state, config.providers.github?.HASHING_SECRET || "secret");
       return true;
-    } catch (_e) {
+    } catch {
       return false;
     }
   }
