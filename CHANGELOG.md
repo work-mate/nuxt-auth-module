@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/work-mate/nuxt-auth-module/compare/v1.5.0...v1.5.1) (2025-10-12)
+
+
+### Bug Fixes
+
+* generate keys for useFetch when using useAuthFetch ([aa6ea8f](https://github.com/work-mate/nuxt-auth-module/commit/aa6ea8ff6160806af92a96a672c56ad10db040c4))
+
 # [1.5.0](https://github.com/work-mate/nuxt-auth-module/compare/v1.4.0...v1.5.0) (2025-09-30)
 
 
