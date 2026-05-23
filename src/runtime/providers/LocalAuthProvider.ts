@@ -99,9 +99,17 @@ export class LocalAuthProvider implements AuthProviderInterface {
     const password = this.options.endpoints.signIn.body.password;
     const tokenKey = this.options.endpoints.signIn.tokenKey;
     const refreshTokenKey = this.options.endpoints.signIn.refreshTokenKey;
+    const {
+      principal: principalValue,
+      password: passwordValue,
+      provider: _provider,
+      ...extraData
+    } = authData as any;
+
     const body = {
-      [principal]: authData.principal,
-      [password]: authData.password,
+      [principal]: principalValue,
+      [password]: passwordValue,
+      ...extraData,
     };
 
     return ofetch(url, {
