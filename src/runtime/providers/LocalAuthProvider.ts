@@ -165,6 +165,10 @@ export class LocalAuthProvider implements AuthProviderInterface {
    */
   validateRequestBody(body: Record<string, any>): boolean {
     const schema = endpointSchemas.get("signIn");
+
+    console.log("Body", body);
+    console.log("Schema", schema);
+
     if (!schema) return true;
 
     const result = schema.safeParse(body);

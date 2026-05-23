@@ -13,10 +13,9 @@ import { useRuntimeConfig } from "#imports";
 export default defineEventHandler(async (event) => {
   const baseURL = `${getRequestProtocol(event)}://${getRequestHost(event)}`;
 
-  const body = await readBody(event);
+  const { provider, ...body } = await readBody(event);
   const authConfig = useRuntimeConfig().auth;
 
-  const provider = body.provider;
   if (!provider) {
     setResponseStatus(event, 400);
     const error = {
