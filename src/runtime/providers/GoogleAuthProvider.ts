@@ -2,7 +2,6 @@ import type { ModuleOptions } from "../../module";
 import {
   SupportedAuthProvider,
   type AuthConfig,
-  type AuthLoginData,
   type AuthProviderInterface,
   type AuthUser,
 } from "../models";
@@ -17,7 +16,7 @@ export type GoogleAuthInitializerOptions = {
   SCOPES?: string;
 };
 
-export interface GoogleAuthLoginData extends AuthLoginData {
+export interface GoogleAuthLoginData {
   redirectUrl?: string;
 }
 

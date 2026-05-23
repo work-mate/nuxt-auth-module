@@ -6,8 +6,6 @@ export enum SupportedAuthProvider {
   GOOGLE = "google",
 }
 
-export interface AuthLoginData {}
-
 export interface AuthConfig {
   baseURL: string;
 }
@@ -15,7 +13,7 @@ export interface AuthConfig {
 export interface AuthProviderInterface {
   login(
     authConfig: AuthConfig,
-    authData?: AuthLoginData,
+    authData?: Record<string, any>,
   ): Promise<{ tokens?: AccessTokens; url?: string }>;
   fetchUserData?(tokens: AccessTokens): Promise<{ user: AuthUser | null }>;
   logout(tokens: AccessTokens): Promise<void>;

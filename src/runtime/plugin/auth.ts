@@ -32,7 +32,7 @@ export type AuthPlugin = {
   tokenNames: Readonly<Ref<AccessTokensNames | null>>;
   login: (
     provider: string | SupportedAuthProvider,
-    data?: Record<string, string>,
+    data?: Record<string, any>,
     redirectTo?: string,
   ) => Promise<
     | {
@@ -164,7 +164,7 @@ export default defineNuxtPlugin(async () => {
    */
   async function login(
     provider: string | SupportedAuthProvider,
-    data: Record<string, string> = {},
+    data: Record<string, any> = {},
     redirectTo?: string,
   ): Promise<{ message: string; tokens?: AccessTokens }> {
     const expectUrlFromProviders = [

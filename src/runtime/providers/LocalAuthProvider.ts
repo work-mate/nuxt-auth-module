@@ -1,7 +1,6 @@
 import defu from "defu";
 import type {
   AuthConfig,
-  AuthLoginData,
   AuthProviderInterface,
   AuthUser,
   ErrorResponse,
@@ -12,11 +11,8 @@ import type { DeepRequired } from "../../module";
 import { getRecursiveProperty } from "../helpers";
 import { ofetch } from "ofetch";
 import type { ModuleOptions } from "@nuxt/schema";
-
-export interface LocalAuthLoginData extends AuthLoginData {
-  principal: string;
-  password: string;
-}
+import { type ZodType, flattenError } from "zod";
+import { endpointSchemas } from "../endpoint-schemas";
 
 export type LocalAuthInitializerOptions = {
   endpoints?: {
@@ -25,13 +21,10 @@ export type LocalAuthInitializerOptions = {
       method?: HttpMethod;
       tokenKey?: string;
       refreshTokenKey?: string;
-      body?: {
-        principal?: string;
-        password?: string;
-      };
+      schema?: ZodType;
     };
     signOut?: { path: string; method: HttpMethod } | false;
-    signUp?: { path?: string; method?: HttpMethod } | false;
+    signUp?: { path?: string; method?: HttpMethod; schema?: ZodType } | false;
     user?: { path: string; userKey: string } | false;
     refreshToken?:
       | {
@@ -58,10 +51,7 @@ export class LocalAuthProvider implements AuthProviderInterface {
         method: "POST",
         tokenKey: "token",
         refreshTokenKey: "refresh_token",
-        body: {
-          principal: "username",
-          password: "password",
-        },
+        schema: undefined as any, // extracted by module.ts; never read from options
       },
       signOut: false,
       signUp: false,
@@ -90,27 +80,15 @@ export class LocalAuthProvider implements AuthProviderInterface {
   }
 
   async login(
-    _: AuthConfig,
-    authData: LocalAuthLoginData,
+    _authConfig: AuthConfig,
+    authData: Record<string, any> = {},
   ): Promise<{ tokens: AccessTokens }> {
     const url = this.options.endpoints.signIn.path;
     const method = this.options.endpoints.signIn.method;
-    const principal = this.options.endpoints.signIn.body.principal;
-    const password = this.options.endpoints.signIn.body.password;
     const tokenKey = this.options.endpoints.signIn.tokenKey;
     const refreshTokenKey = this.options.endpoints.signIn.refreshTokenKey;
-    const {
-      principal: principalValue,
-      password: passwordValue,
-      provider: _provider,
-      ...extraData
-    } = authData as any;
 
-    const body = {
-      [principal]: principalValue,
-      [password]: passwordValue,
-      ...extraData,
-    };
+    const { provider: _, ...body } = authData;
 
     return ofetch(url, {
       method,
@@ -186,23 +164,17 @@ export class LocalAuthProvider implements AuthProviderInterface {
    * @returns {boolean}
    */
   validateRequestBody(body: Record<string, any>): boolean {
-    const error = {
-      message: "Invalid request body: principal and password required",
-      data: {} as Record<string, string[]>,
-    } satisfies ErrorResponse;
+    const schema = endpointSchemas.get("signIn");
+    if (!schema) return true;
 
-    if (!body.principal) {
-      error.data["principal"] = ["principal is required"];
+    const result = schema.safeParse(body);
+
+    if (!result.success) {
+      throw {
+        message: "Invalid request body",
+        data: flattenError(result.error).fieldErrors,
+      } satisfies ErrorResponse;
     }
-
-    if (!body.password) {
-      error.data["password"] = ["password is required"];
-    }
-
-    if (Object.keys(error.data).length > 0) {
-      throw error;
-    }
-
     return true;
   }
 

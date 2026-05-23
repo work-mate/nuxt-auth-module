@@ -8,6 +8,7 @@ import {
   addRouteMiddleware,
 } from "@nuxt/kit";
 import defu from "defu";
+import { endpointSchemas } from "./runtime/endpoint-schemas";
 import type { LocalAuthInitializerOptions } from "./runtime/providers/LocalAuthProvider";
 import type { GithubAuthInitializerOptions } from "./runtime/providers/GithubAuthProvider";
 import type { GoogleAuthInitializerOptions } from "./runtime/providers/GoogleAuthProvider";
@@ -90,6 +91,16 @@ export default defineNuxtModule<ModuleOptions>({
   async setup(options, nuxt) {
     logger.log("@workmate/nuxt-auth:: installing module");
     const resolver = createResolver(import.meta.url);
+
+    // Extract Zod schemas before options reach runtimeConfig (which is JSON-serialized).
+    // The Map lives in module memory; server runtime imports the same reference (dev mode).
+    const localEndpoints = options.providers?.local?.endpoints ?? {};
+    for (const [key, endpoint] of Object.entries(localEndpoints)) {
+      if (endpoint && typeof endpoint === "object" && "schema" in endpoint && endpoint.schema) {
+        endpointSchemas.set(key, (endpoint as any).schema);
+        delete (endpoint as any).schema;
+      }
+    }
 
     nuxt.options.runtimeConfig.auth = defu(
       nuxt.options.runtimeConfig.auth,

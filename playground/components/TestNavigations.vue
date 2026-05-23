@@ -66,7 +66,7 @@ const state = computed(() => ({
 
 function triggerLogin() {
   login("local", {
-    principal: "david6@email.com",
+    email_address: "david6@email.com",
     password: "password",
   }).then((res) => {
     console.log(res);
