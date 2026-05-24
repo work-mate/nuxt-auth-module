@@ -2,73 +2,64 @@
 
 ---
 
-## Change 1 — Open Login Body (drop principal/password field-mapping config)
+## Change 1 — Open Login Body + Server-Plugin Schema Registration
 
 ### Problem
 
-`LocalAuthLoginData` locks callers to `principal` + `password`. Config has `endpoints.signIn.body.{ principal, password }` to remap field names. Rigid, unnecessary abstraction — callers should own their payload.
+`LocalAuthLoginData` locked callers to `principal` + `password`. Config had `endpoints.signIn.body.{ principal, password }` to remap field names. Rigid, unnecessary abstraction — callers should own their payload.
 
-### What changes
+Validation also needed an API change: schemas can't ride along in `nuxt.config` because Nuxt 4 runs Nitro in a **separate worker process** (confirmed via `.nuxt/nitro.json` socketPath). Zod schemas aren't JSON-serializable, so `runtimeConfig` strips them, and module-level state in the Nuxt process is invisible to the Nitro worker. Schemas must be registered inside the worker.
 
-**Remove entirely:**
+### What changed
 
-- `LocalAuthLoginData` interface (`LocalAuthProvider.ts:16-19`)
-- `AuthLoginData` base interface (`models.ts:9`) — empty marker, zero value
-- `endpoints.signIn.body` config section (`LocalAuthProvider.ts:28-31`)
-- `defaultOptions.endpoints.signIn.body` (`LocalAuthProvider.ts:65-68`)
-- `validateRequestBody` hard-coded `principal`/`password` checks (`LocalAuthProvider.ts:188-207`)
+**Removed entirely:**
 
-**`validateRequestBody` → schema-driven:**
-Each endpoint (`signIn`, `signUp`, etc.) accepts an optional `schema` in `nuxt.config`. If present, `validateRequestBody` parses the incoming body against it and throws a formatted `ErrorResponse` on failure. If absent, no validation — body passes through as-is.
+- `LocalAuthLoginData` interface (was in [src/runtime/providers/LocalAuthProvider.ts](src/runtime/providers/LocalAuthProvider.ts))
+- `AuthLoginData` base interface (was in [src/runtime/models.ts](src/runtime/models.ts))
+- `endpoints.signIn.body` config section
+- `defaultOptions.endpoints.signIn.body`
+- Hard-coded `principal`/`password` checks in `validateRequestBody`
+- Dead `schema?: ZodType` fields on `signIn` and `signUp` endpoint option types
+
+**New API — `defineAuthEndpointSchemas`:**
+
+Schemas are now declared in a Nitro server plugin. Both the plugin and `LocalAuthProvider.validateRequestBody` execute in the same Nitro worker, so they share a plain module-level `Map` in [src/runtime/endpoint-schemas.ts](src/runtime/endpoint-schemas.ts). The helper is auto-imported by the module via `addServerImports`, so user plugins don't need an explicit import path.
 
 ```typescript
-// nuxt.config.ts
-auth: {
-  providers: {
-    local: {
-      endpoints: {
-        signIn: {
-          path: '/api/login',
-          schema: z.object({
-            email: z.string().email(),
-            password: z.string().min(8),
-          }),
-        },
-        signUp: {
-          path: '/api/register',
-          schema: z.object({
-            email: z.string().email(),
-            password: z.string().min(8),
-            name: z.string(),
-          }),
-        },
-      },
-    },
-  },
-}
+// playground/server/plugins/auth-schemas.ts
+import { z } from "zod";
+
+export default defineNitroPlugin(() => {
+  defineAuthEndpointSchemas({
+    signIn: z.object({
+      email_address: z.email(),
+      password: z.string().min(8),
+    }),
+  });
+});
 ```
 
 ```typescript
-// LocalAuthProvider.validateRequestBody
+// src/runtime/providers/LocalAuthProvider.ts — validateRequestBody
 validateRequestBody(body: Record<string, any>): boolean {
-  const schema = this.options.endpoints.signIn.schema
-  if (!schema) return true
-  const result = schema.safeParse(body)
+  const schema = endpointSchemas.get("signIn");
+  if (!schema) return true;
+  const result = schema.safeParse(body);
   if (!result.success) {
     throw {
-      message: 'Invalid request body',
-      data: result.error.flatten().fieldErrors,
-    } satisfies ErrorResponse
+      message: "Invalid request body",
+      data: flattenError(result.error).fieldErrors,
+    } satisfies ErrorResponse;
   }
-  return true
+  return true;
 }
 ```
 
-Same pattern applies to `signUp` validation (and any future endpoint). The schema lives beside its endpoint config — collocated, not separate.
+Same pattern extends to `signUp` and any future endpoint — just add another key under `defineAuthEndpointSchemas({...})`.
 
-**Update:**
+**Updated:**
 
-- `AuthProviderInterface.login` signature (`models.ts:18`): `authData?: Record<string, any>`
+- `AuthProviderInterface.login` signature ([src/runtime/models.ts](src/runtime/models.ts)): `authData?: Record<string, any>`
 - `LocalAuthProvider.login` body construction: strip `provider` key, spread rest directly
 
   ```typescript
@@ -76,18 +67,21 @@ Same pattern applies to `signUp` validation (and any future endpoint). The schem
   // pass body to ofetch
   ```
 
-- Plugin `$auth.login()` signature already accepts `Record<string, string>` — widen to `Record<string, any>`
+- Plugin `$auth.login()` signature widened from `Record<string, string>` to `Record<string, any>`
 
 **Files touched:**
 
-- `src/runtime/providers/LocalAuthProvider.ts`
-- `src/runtime/models.ts`
-- `src/runtime/providers/GithubAuthProvider.ts` (import cleanup)
-- `src/runtime/providers/GoogleAuthProvider.ts` (import cleanup)
-- `src/runtime/plugin/auth.ts` (type widening)
-- `playground/nuxt.config.ts` (remove `body` config)
-- `playground/server/api/auth/login/password.post.ts` (use generic body fields)
-- `playground/components/TestNavigations.vue` (pass fields directly, no `principal` key)
+- [src/runtime/endpoint-schemas.ts](src/runtime/endpoint-schemas.ts) — new module-level Map + `defineAuthEndpointSchemas` export
+- [src/runtime/providers/LocalAuthProvider.ts](src/runtime/providers/LocalAuthProvider.ts) — drop `LocalAuthLoginData`, `body` config, dead `schema` option fields; reads from `endpointSchemas`
+- [src/module.ts](src/module.ts) — register `defineAuthEndpointSchemas` as a server auto-import; no longer attempts to extract schemas from options
+- [src/runtime/models.ts](src/runtime/models.ts)
+- [src/runtime/providers/GithubAuthProvider.ts](src/runtime/providers/GithubAuthProvider.ts) (import cleanup)
+- [src/runtime/providers/GoogleAuthProvider.ts](src/runtime/providers/GoogleAuthProvider.ts) (import cleanup)
+- [src/runtime/plugin/auth.ts](src/runtime/plugin/auth.ts) (type widening)
+- [playground/nuxt.config.ts](playground/nuxt.config.ts) (remove `body` config and inline `schema`)
+- [playground/server/plugins/auth-schemas.ts](playground/server/plugins/auth-schemas.ts) — new file demonstrating `defineAuthEndpointSchemas`
+- [playground/server/api/auth/login/password.post.ts](playground/server/api/auth/login/password.post.ts) (use generic body fields)
+- [playground/components/TestNavigations.vue](playground/components/TestNavigations.vue) (pass fields directly, no `principal` key)
 
 ---
 
@@ -184,19 +178,21 @@ If only one provider is configured, skip requiring `defaultProvider` — infer i
 
 ## File Inventory
 
-| File                                          | Changes                                                                             |
-| --------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `src/runtime/models.ts`                       | Remove `AuthLoginData`, update `AuthUser` to Zod-inferred                           |
-| `src/runtime/providers/LocalAuthProvider.ts`  | Drop `LocalAuthLoginData`, `body` config, open login body, schema-driven validation |
-| `src/runtime/providers/AuthProvider.ts`       | Thread `userSchema`, remove `AccessTokensNames`                                     |
-| `src/runtime/providers/GithubAuthProvider.ts` | Import cleanup, Zod user validation                                                 |
-| `src/runtime/providers/GoogleAuthProvider.ts` | Same                                                                                |
-| `src/module.ts`                               | Add `userSchema` to `ModuleOptions`; auto-infer `defaultProvider`                   |
-| `src/runtime/plugin/auth.ts`                  | Widen login param type                                                              |
-| `src/runtime/server/api/login.post.ts`        | No change (already generic)                                                         |
-| `playground/nuxt.config.ts`                   | Remove `body` config, add `userSchema` example                                      |
-| `playground/components/TestNavigations.vue`   | Pass fields directly                                                                |
-| `package.json`                                | Add `zod`                                                                           |
+| File                                                       | Changes                                                                              |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| [src/runtime/models.ts](src/runtime/models.ts)             | Remove `AuthLoginData`, update `AuthUser` to Zod-inferred                            |
+| [src/runtime/providers/LocalAuthProvider.ts](src/runtime/providers/LocalAuthProvider.ts) | Drop `LocalAuthLoginData`, `body` config, open login body; reads schema from `endpointSchemas` |
+| [src/runtime/endpoint-schemas.ts](src/runtime/endpoint-schemas.ts) | New: module-level Map + `defineAuthEndpointSchemas` helper                          |
+| [src/runtime/providers/AuthProvider.ts](src/runtime/providers/AuthProvider.ts) | Thread `userSchema`, remove `AccessTokensNames`                          |
+| [src/runtime/providers/GithubAuthProvider.ts](src/runtime/providers/GithubAuthProvider.ts) | Import cleanup, Zod user validation                                   |
+| [src/runtime/providers/GoogleAuthProvider.ts](src/runtime/providers/GoogleAuthProvider.ts) | Same                                                                  |
+| [src/module.ts](src/module.ts)                             | Add `userSchema` to `ModuleOptions`; auto-infer `defaultProvider`; `addServerImports` for `defineAuthEndpointSchemas` |
+| [src/runtime/plugin/auth.ts](src/runtime/plugin/auth.ts)   | Widen login param type                                                               |
+| [src/runtime/server/api/login.post.ts](src/runtime/server/api/login.post.ts) | No change (already generic)                                        |
+| [playground/nuxt.config.ts](playground/nuxt.config.ts)     | Remove `body` config and inline `schema`; add `userSchema` example                   |
+| [playground/server/plugins/auth-schemas.ts](playground/server/plugins/auth-schemas.ts) | New: registers schemas via `defineAuthEndpointSchemas`                  |
+| [playground/components/TestNavigations.vue](playground/components/TestNavigations.vue) | Pass fields directly                                                    |
+| [package.json](package.json)                               | Add `zod`                                                                            |
 
 ---
 
@@ -273,7 +269,7 @@ test/
 | POST `/api/auth/login` with valid creds → 200 + sets cookies                   | Happy path        |
 | POST `/api/auth/login` missing `provider` → 400                                | Validation        |
 | POST `/api/auth/login` arbitrary extra fields forwarded to external API        | Change 1          |
-| POST `/api/auth/login` with schema defined + invalid body → 400 + field errors | Schema validation |
+| POST `/api/auth/login` with schema registered via `defineAuthEndpointSchemas` + invalid body → 400 + field errors | Schema validation |
 | POST `/api/auth/logout` → clears auth cookies                                  | Logout            |
 | GET `/api/auth/user` with valid token → returns user                           | User fetch        |
 | GET `/api/auth/user` with no token → 401                                       | Unauthenticated   |
@@ -342,7 +338,7 @@ export default defineConfig({
 ## Verification (all stages)
 
 1. Playground login with arbitrary body fields (no `principal`/`password` keys) reaches external API.
-2. Login with schema defined + invalid body → 400 with field-level errors.
+2. Login with schema registered via [playground/server/plugins/auth-schemas.ts](playground/server/plugins/auth-schemas.ts) + invalid body → 400 with field-level errors from `flattenError`.
 3. `userSchema.parse()` throws on bad user response — server returns 500 with schema error.
 4. TypeScript: `$auth.user.value.email` resolves to `string` (not `any`) when schema provided.
 5. Single-provider config works without `defaultProvider`.
