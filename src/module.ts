@@ -5,10 +5,10 @@ import {
   addImportsDir,
   addPlugin,
   addServerHandler,
+  addServerImports,
   addRouteMiddleware,
 } from "@nuxt/kit";
 import defu from "defu";
-import { endpointSchemas } from "./runtime/endpoint-schemas";
 import type { LocalAuthInitializerOptions } from "./runtime/providers/LocalAuthProvider";
 import type { GithubAuthInitializerOptions } from "./runtime/providers/GithubAuthProvider";
 import type { GoogleAuthInitializerOptions } from "./runtime/providers/GoogleAuthProvider";
@@ -92,15 +92,16 @@ export default defineNuxtModule<ModuleOptions>({
     logger.log("@workmate/nuxt-auth:: installing module");
     const resolver = createResolver(import.meta.url);
 
-    // Extract Zod schemas before options reach runtimeConfig (which is JSON-serialized).
-    // The Map lives in module memory; server runtime imports the same reference (dev mode).
-    const localEndpoints = options.providers?.local?.endpoints ?? {};
-    for (const [key, endpoint] of Object.entries(localEndpoints)) {
-      if (endpoint && typeof endpoint === "object" && "schema" in endpoint && endpoint.schema) {
-        endpointSchemas.set(key, (endpoint as any).schema);
-        delete (endpoint as any).schema;
-      }
-    }
+    // Expose `defineAuthEndpointSchemas` as an auto-import for server plugins.
+    // Schemas must be registered inside the Nitro worker (not via nuxt.config),
+    // because Nitro runs as a separate process whose memory is isolated from the
+    // Nuxt module setup. See playground/server/plugins/auth-schemas.ts for usage.
+    addServerImports([
+      {
+        name: "defineAuthEndpointSchemas",
+        from: resolver.resolve("./runtime/endpoint-schemas"),
+      },
+    ]);
 
     nuxt.options.runtimeConfig.auth = defu(
       nuxt.options.runtimeConfig.auth,

@@ -11,7 +11,7 @@ import type { DeepRequired } from "../../module";
 import { getRecursiveProperty } from "../helpers";
 import { ofetch } from "ofetch";
 import type { ModuleOptions } from "@nuxt/schema";
-import { type ZodType, flattenError } from "zod";
+import { flattenError } from "zod";
 import { endpointSchemas } from "../endpoint-schemas";
 
 export type LocalAuthInitializerOptions = {
@@ -21,10 +21,9 @@ export type LocalAuthInitializerOptions = {
       method?: HttpMethod;
       tokenKey?: string;
       refreshTokenKey?: string;
-      schema?: ZodType;
     };
     signOut?: { path: string; method: HttpMethod } | false;
-    signUp?: { path?: string; method?: HttpMethod; schema?: ZodType } | false;
+    signUp?: { path?: string; method?: HttpMethod } | false;
     user?: { path: string; userKey: string } | false;
     refreshToken?:
       | {
@@ -51,7 +50,6 @@ export class LocalAuthProvider implements AuthProviderInterface {
         method: "POST",
         tokenKey: "token",
         refreshTokenKey: "refresh_token",
-        schema: undefined as any, // extracted by module.ts; never read from options
       },
       signOut: false,
       signUp: false,
@@ -165,9 +163,6 @@ export class LocalAuthProvider implements AuthProviderInterface {
    */
   validateRequestBody(body: Record<string, any>): boolean {
     const schema = endpointSchemas.get("signIn");
-
-    console.log("Body", body);
-    console.log("Schema", schema);
 
     if (!schema) return true;
 

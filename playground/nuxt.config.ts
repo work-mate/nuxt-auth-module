@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 export default defineNuxtConfig({
   modules: ["../src/module"],
   auth: {
@@ -21,10 +19,6 @@ export default defineNuxtConfig({
             path: "http://localhost:3000/api/auth/login/password",
             tokenKey: "token",
             refreshTokenKey: "refresh_token",
-            schema: z.object({
-              email_address: z.email(),
-              password: z.string().min(8),
-            }),
           },
           refreshToken: {
             path: "http://localhost:3000/api/auth/refresh",
