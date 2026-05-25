@@ -2,248 +2,126 @@
 
 ---
 
-## Change 1 — Open Login Body + Server-Plugin Schema Registration
+## Change 1 — Open Login Body + Build-Time Schema Pipeline ✅ DONE
 
 ### Problem
 
-`LocalAuthLoginData` locked callers to `principal` + `password`. Config had `endpoints.signIn.body.{ principal, password }` to remap field names. Rigid, unnecessary abstraction — callers should own their payload.
+`LocalAuthLoginData` locked callers to `principal` + `password`. Zod schemas can't be passed via `runtimeConfig` (Nuxt 4 runs Nitro in a separate worker; schemas aren't JSON-serializable). Callers should own their payload shape.
 
-Validation also needed an API change: schemas can't ride along in `nuxt.config` because Nuxt 4 runs Nitro in a **separate worker process** (confirmed via `.nuxt/nitro.json` socketPath). Zod schemas aren't JSON-serializable, so `runtimeConfig` strips them, and module-level state in the Nuxt process is invisible to the Nitro worker. Schemas must be registered inside the worker.
+### What was built
 
-### What changed
+**Approach:** schemas are defined in `nuxt.config.ts` per-provider, converted to JSON Schema at build time by `src/schema-utils.ts`, and written to a virtual `#auth-schemas` module. Both the Nuxt client and Nitro worker import from that module, reconstructing Zod schemas via `z.fromJSONSchema()`. No Nitro server plugin needed.
 
-**Removed entirely:**
-
-- `LocalAuthLoginData` interface (was in [src/runtime/providers/LocalAuthProvider.ts](src/runtime/providers/LocalAuthProvider.ts))
-- `AuthLoginData` base interface (was in [src/runtime/models.ts](src/runtime/models.ts))
-- `endpoints.signIn.body` config section
-- `defaultOptions.endpoints.signIn.body`
-- Hard-coded `principal`/`password` checks in `validateRequestBody`
-- Dead `schema?: ZodType` fields on `signIn` and `signUp` endpoint option types
-
-**New API — `defineAuthEndpointSchemas`:**
-
-Schemas are now declared in a Nitro server plugin. Both the plugin and `LocalAuthProvider.validateRequestBody` execute in the same Nitro worker, so they share a plain module-level `Map` in [src/runtime/endpoint-schemas.ts](src/runtime/endpoint-schemas.ts). The helper is auto-imported by the module via `addServerImports`, so user plugins don't need an explicit import path.
-
-```typescript
-// playground/server/plugins/auth-schemas.ts
-import { z } from "zod";
-
-export default defineNitroPlugin(() => {
-  defineAuthEndpointSchemas({
-    signIn: z.object({
-      email_address: z.email(),
-      password: z.string().min(8),
-    }),
-  });
-});
-```
-
-```typescript
-// src/runtime/providers/LocalAuthProvider.ts — validateRequestBody
-validateRequestBody(body: Record<string, any>): boolean {
-  const schema = endpointSchemas.get("signIn");
-  if (!schema) return true;
-  const result = schema.safeParse(body);
-  if (!result.success) {
-    throw {
-      message: "Invalid request body",
-      data: flattenError(result.error).fieldErrors,
-    } satisfies ErrorResponse;
-  }
-  return true;
-}
-```
-
-Same pattern extends to `signUp` and any future endpoint — just add another key under `defineAuthEndpointSchemas({...})`.
-
-**Updated:**
-
-- `AuthProviderInterface.login` signature ([src/runtime/models.ts](src/runtime/models.ts)): `authData?: Record<string, any>`
-- `LocalAuthProvider.login` body construction: strip `provider` key, spread rest directly
-
-  ```typescript
-  const { provider: _, ...body } = authData as Record<string, any>;
-  // pass body to ofetch
-  ```
-
-- Plugin `$auth.login()` signature widened from `Record<string, string>` to `Record<string, any>`
-
-**Files touched:**
-
-- [src/runtime/endpoint-schemas.ts](src/runtime/endpoint-schemas.ts) — new module-level Map + `defineAuthEndpointSchemas` export
-- [src/runtime/providers/LocalAuthProvider.ts](src/runtime/providers/LocalAuthProvider.ts) — drop `LocalAuthLoginData`, `body` config, dead `schema` option fields; reads from `endpointSchemas`
-- [src/module.ts](src/module.ts) — register `defineAuthEndpointSchemas` as a server auto-import; no longer attempts to extract schemas from options
-- [src/runtime/models.ts](src/runtime/models.ts)
-- [src/runtime/providers/GithubAuthProvider.ts](src/runtime/providers/GithubAuthProvider.ts) (import cleanup)
-- [src/runtime/providers/GoogleAuthProvider.ts](src/runtime/providers/GoogleAuthProvider.ts) (import cleanup)
-- [src/runtime/plugin/auth.ts](src/runtime/plugin/auth.ts) (type widening)
-- [playground/nuxt.config.ts](playground/nuxt.config.ts) (remove `body` config and inline `schema`)
-- [playground/server/plugins/auth-schemas.ts](playground/server/plugins/auth-schemas.ts) — new file demonstrating `defineAuthEndpointSchemas`
-- [playground/server/api/auth/login/password.post.ts](playground/server/api/auth/login/password.post.ts) (use generic body fields)
-- [playground/components/TestNavigations.vue](playground/components/TestNavigations.vue) (pass fields directly, no `principal` key)
-
----
-
-## Change 2 — Zod Schema for AuthUser
-
-### Problem
-
-`AuthUser` is an empty interface (`models.ts:30`). No runtime validation of user data from API. No TypeScript inference of actual user shape.
-
-### Approach
-
-Add `zod` as a dependency. Module options accept a Zod schema; `AuthUser` is inferred from it.
-
-**Module option (nuxt.config.ts usage):**
+**New config API (`playground/nuxt.config.ts`):**
 
 ```typescript
 import { z } from "zod";
 
 auth: {
-  userSchema: z.object({
-    id: z.string(),
-    email: z.string().email(),
-    name: z.string().optional(),
-  });
+  providers: {
+    local: {
+      schemas: {
+        login: z.object({ email_address: z.email(), password: z.string().min(8) }),
+        user: z.object({ id: z.string(), email: z.email(), name: z.string().optional() }),
+      },
+      endpoints: { ... },
+    },
+    github: { schemas: { user: userSchema }, ... },
+    google: { schemas: { user: userSchema }, ... },
+  }
 }
 ```
 
-**Type inference:**
+**Key files added/changed:**
+
+| File | Role |
+| ---- | ---- |
+| [src/schema-utils.ts](src/schema-utils.ts) | Build-time: collect schemas from provider options, convert to JSON Schema, strip from serializable options, render `#auth-schemas` runtime + type files |
+| [src/runtime/auth-schemas.ts](src/runtime/auth-schemas.ts) | Internal nested Map (provider → key → ZodType) + `defineAuthSchemas()` used by generated runtime |
+| `#auth-schemas` (generated) | Auto-generated virtual module exporting `loginSchemas` and `userSchemas` keyed by provider |
+| [src/runtime/composables/useAuthLogin.ts](src/runtime/composables/useAuthLogin.ts) | New composable with typed `local()`, `github()`, `google()` login functions using `LoginData` type |
+| [src/runtime/providers/LocalAuthProvider.ts](src/runtime/providers/LocalAuthProvider.ts) | `validateRequestBody` reads `loginSchemas.local`; `fetchUserData` reads `userSchemas.local`; `LocalAuthLoginData` removed; open body (`Record<string, any>`) |
+| [src/runtime/providers/GithubAuthProvider.ts](src/runtime/providers/GithubAuthProvider.ts) | `fetchUserData` reads `userSchemas.github` |
+| [src/runtime/providers/GoogleAuthProvider.ts](src/runtime/providers/GoogleAuthProvider.ts) | `fetchUserData` reads `userSchemas.google` |
+| [src/module.ts](src/module.ts) | Runs `collectSchemas`, writes `auth-schemas.gen.mjs` + `.d.ts` via `addTemplate`, sets `#auth-schemas` alias for both Nuxt and Nitro, strips schemas before `runtimeConfig` |
+| [src/runtime/models.ts](src/runtime/models.ts) | `AuthUser` widened; `AuthLoginData` removed |
+| [src/runtime/plugin/auth.ts](src/runtime/plugin/auth.ts) | Login param type widened |
+
+**Generated type file exports:**
 
 ```typescript
-// module.ts — generic on schema
-export interface ModuleOptions<TSchema extends z.ZodTypeAny = z.ZodTypeAny> {
-  userSchema?: TSchema;
-  // ...
-}
-
-// AuthUser becomes z.infer<TSchema>
-export type AuthUser<TSchema extends z.ZodTypeAny = z.ZodObject<any>> =
-  z.infer<TSchema>;
+// #auth-schemas (types)
+export type LoginData = {
+  local: { email_address: string; password: string };
+  github: { redirectUrl?: string };
+  google: { redirectUrl?: string };
+};
+export type UserDataByProvider = {
+  local: { id: string; email: string; name?: string };
+  github: { id: string; email: string; name?: string };
+  google: { id: string; email: string; name?: string };
+};
 ```
 
-**Runtime validation** — in `fetchUserData` of each provider, after extracting user object:
+**`useAuthLogin` usage:**
 
 ```typescript
-if (this.userSchema) {
-  return { user: this.userSchema.parse(user) };
-}
-return { user };
+const { local } = useAuthLogin();
+// local() is typed as (opts: LoginData["local"], redirectTo?: string) => ...
+await local({ email_address: "me@example.com", password: "secret123" });
 ```
-
-**Files touched:**
-
-- `package.json` — add `zod`
-- `src/runtime/models.ts` — update `AuthUser` type
-- `src/module.ts` — add `userSchema` to `ModuleOptions`
-- `src/runtime/providers/LocalAuthProvider.ts` — validate in `fetchUserData`
-- `src/runtime/providers/GithubAuthProvider.ts` — same
-- `src/runtime/providers/GoogleAuthProvider.ts` — same
-- `src/runtime/providers/AuthProvider.ts` — thread schema through constructor
 
 ---
 
-## Suggested Additional Simplifications
+## Change 2 — Zod User Schema Validation ✅ DONE
 
-### 3 — Flatten endpoint config
-
-Current nesting is verbose. Proposal — shorthand strings for simple cases:
+Covered by the same pipeline as Change 1. Per-provider `schemas.user` is converted to JSON Schema at build time, reconstructed at runtime in `#auth-schemas`, and used in each provider's `fetchUserData`:
 
 ```typescript
-// before
-signIn: { path: '/api/login', method: 'POST', tokenKey: 'data.token' }
-
-// after (string shorthand = POST, tokenKey defaults to 'token')
-signIn: '/api/login'
-// or full object when needed
-signIn: { path: '/api/login', tokenKey: 'data.token' }
+// All three providers follow this pattern:
+const schema = userSchemas.local; // | .github | .google
+if (!schema) return { user };
+const result = schema.safeParse(user);
+if (!result.success) throw { message: "Invalid user response", data: flattenError(result.error).fieldErrors };
+return { user: result.data };
 ```
 
-`defu` already handles partial merge — just add string-detection logic in provider constructor.
-
-### 4 — Remove `tokenType` from per-provider config
-
-Currently `tokenType` lives in `ModuleOptions.token.type` (global). No provider needs to override it individually. Already global — remove any per-provider duplication and always read from `this.config.token.type`.
-
-### 5 — Single `defaultProvider` auto-inference
-
-If only one provider is configured, skip requiring `defaultProvider` — infer it automatically. Only require explicit config when multiple providers exist.
-
-### 6 — Remove `AccessTokensNames` type
-
-`AccessTokensNames` (`AuthProvider.ts:18-23`) is a near-duplicate of `AccessTokens` with renamed keys. Used only for cookie key naming. Replace with a `getCookieNames()` helper that derives names from `AccessTokens` shape — no separate type needed.
-
 ---
 
-## File Inventory
-
-| File                                                       | Changes                                                                              |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| [src/runtime/models.ts](src/runtime/models.ts)             | Remove `AuthLoginData`, update `AuthUser` to Zod-inferred                            |
-| [src/runtime/providers/LocalAuthProvider.ts](src/runtime/providers/LocalAuthProvider.ts) | Drop `LocalAuthLoginData`, `body` config, open login body; reads schema from `endpointSchemas` |
-| [src/runtime/endpoint-schemas.ts](src/runtime/endpoint-schemas.ts) | New: module-level Map + `defineAuthEndpointSchemas` helper                          |
-| [src/runtime/providers/AuthProvider.ts](src/runtime/providers/AuthProvider.ts) | Thread `userSchema`, remove `AccessTokensNames`                          |
-| [src/runtime/providers/GithubAuthProvider.ts](src/runtime/providers/GithubAuthProvider.ts) | Import cleanup, Zod user validation                                   |
-| [src/runtime/providers/GoogleAuthProvider.ts](src/runtime/providers/GoogleAuthProvider.ts) | Same                                                                  |
-| [src/module.ts](src/module.ts)                             | Add `userSchema` to `ModuleOptions`; auto-infer `defaultProvider`; `addServerImports` for `defineAuthEndpointSchemas` |
-| [src/runtime/plugin/auth.ts](src/runtime/plugin/auth.ts)   | Widen login param type                                                               |
-| [src/runtime/server/api/login.post.ts](src/runtime/server/api/login.post.ts) | No change (already generic)                                        |
-| [playground/nuxt.config.ts](playground/nuxt.config.ts)     | Remove `body` config and inline `schema`; add `userSchema` example                   |
-| [playground/server/plugins/auth-schemas.ts](playground/server/plugins/auth-schemas.ts) | New: registers schemas via `defineAuthEndpointSchemas`                  |
-| [playground/components/TestNavigations.vue](playground/components/TestNavigations.vue) | Pass fields directly                                                    |
-| [package.json](package.json)                               | Add `zod`                                                                            |
-
----
-
-## Stage 3 — Documentation Update (Nuxt 4)
+## Stage 3 — Documentation Update ⬜ TODO
 
 ### Problem
 
-`src/module.ts` declares `compatibility: { nuxt: ">=3.0.0" }` but `package.json` already requires `@nuxt/kit ^4.1.2`, `@nuxt/schema ^4.1.2`, `nuxt ^4.1.2`. Module only works on Nuxt 4. README says "Nuxt 3 & 4" — that's incorrect.
+README still references `principal`/`password` body config and `defineAuthEndpointSchemas` server plugin — neither is part of the actual implementation.
 
-### What changes
-
-**`src/module.ts`** — fix compatibility declaration:
-
-```typescript
-compatibility: {
-  nuxt: "^4.0.0",
-}
-```
+### What to change
 
 **`README.md`** — update throughout:
+- Config examples: use `schemas.login`/`schemas.user` per-provider instead of old `body: { principal, password }`
+- Add `useAuthLogin` composable docs
+- Remove `defineAuthEndpointSchemas` server plugin (not shipped)
 
-- Header: "Auth module for Nuxt 4 server apps"
-- Installation section: note minimum Nuxt version is 4.0
-- Add a "Nuxt 4 Compatibility" callout section
-- Update config examples to reflect Change 1 (no `body` config) and Change 2 (Zod `userSchema`)
-- Remove or mark deprecated the `body: { principal, password }` config docs
-
-**`CHANGELOG.md`** — add entry for this release describing all changes.
+**`CHANGELOG.md`** — add release entry for all changes.
 
 **`AGENTS.md`** — remove outdated principal/password config notes.
 
-### Files touched
+### Files
 
-| File            | Change                                   |
-| --------------- | ---------------------------------------- |
-| `src/module.ts` | Fix `compatibility.nuxt` to `^4.0.0`     |
-| `README.md`     | Nuxt 4 only, new config API, Zod example |
-| `CHANGELOG.md`  | Release entry                            |
-| `AGENTS.md`     | Remove outdated config notes             |
+| File | Change |
+| ---- | ------ |
+| `README.md` | New schema config API; `useAuthLogin` docs; remove stale examples |
+| `CHANGELOG.md` | Release entry |
+| `AGENTS.md` | Remove stale config notes |
 
 ---
 
-## Stage 4 — Test Plan
+## Stage 4 — Test Plan ⬜ TODO
 
 ### Current state
 
-One E2E test (`test/basic.test.ts`) — only verifies module boots. Zero functional coverage. Framework: Vitest + `@nuxt/test-utils` (full SSR E2E).
+One E2E test (`test/basic.test.ts`) — only verifies module boots. Framework: Vitest + `@nuxt/test-utils`.
 
 ### Test structure
-
-Add a `test/fixtures/auth/` fixture (Nuxt app with auth module configured) to support functional E2E tests.
 
 ```
 test/
@@ -254,93 +132,76 @@ test/
       nuxt.config.ts
       server/api/            ← mock login/user/refresh endpoints
   local-auth.test.ts         ← new
-  middleware.test.ts          ← new
-  composables.test.ts         ← new
-  token.test.ts               ← new
-  zod-schema.test.ts          ← new (after Change 2)
+  middleware.test.ts         ← new
+  composables.test.ts        ← new
+  token.test.ts              ← new
+  schema.test.ts             ← new (covers login + user schema validation)
 ```
 
 ### Test cases
 
-#### `local-auth.test.ts` — LocalAuthProvider
+#### `local-auth.test.ts`
 
-| Test                                                                           | Scenario          |
-| ------------------------------------------------------------------------------ | ----------------- |
-| POST `/api/auth/login` with valid creds → 200 + sets cookies                   | Happy path        |
-| POST `/api/auth/login` missing `provider` → 400                                | Validation        |
-| POST `/api/auth/login` arbitrary extra fields forwarded to external API        | Change 1          |
-| POST `/api/auth/login` with schema registered via `defineAuthEndpointSchemas` + invalid body → 400 + field errors | Schema validation |
-| POST `/api/auth/logout` → clears auth cookies                                  | Logout            |
-| GET `/api/auth/user` with valid token → returns user                           | User fetch        |
-| GET `/api/auth/user` with no token → 401                                       | Unauthenticated   |
-| POST `/api/auth/refresh` with valid refresh token → new tokens in cookies      | Token refresh     |
-| POST `/api/auth/refresh` with expired token → 401                              | Refresh failure   |
+| Test | Scenario |
+| ---- | -------- |
+| POST `/api/auth/login` valid creds → 200 + sets cookies | Happy path |
+| POST `/api/auth/login` missing `provider` → 400 | Validation |
+| POST `/api/auth/login` arbitrary extra fields forwarded | Open body |
+| POST `/api/auth/login` invalid body (schema) → 400 + field errors | Schema validation |
+| POST `/api/auth/logout` → clears cookies | Logout |
+| GET `/api/auth/user` valid token → returns user | User fetch |
+| GET `/api/auth/user` no token → 401 | Unauthenticated |
+| POST `/api/auth/refresh` valid refresh token → new tokens | Token refresh |
+| POST `/api/auth/refresh` expired token → 401 | Refresh failure |
 
-#### `middleware.test.ts` — Route middleware
+#### `schema.test.ts`
 
-| Test                                                         | Scenario                |
-| ------------------------------------------------------------ | ----------------------- |
-| Protected route without token → redirect to login            | `auth` middleware       |
-| Protected route with valid token → renders page              | `auth` middleware pass  |
-| Guest route with valid token → redirect away                 | `auth-guest` middleware |
-| Global middleware attaches `event.context.auth`              | Server middleware       |
-| `event.context.auth.isAuthenticated()` returns correct value | Context API             |
+| Test | Scenario |
+| ---- | -------- |
+| Valid login body passes schema → forwarded | Happy path |
+| Invalid login body → 400 + `fieldErrors` | Schema rejection |
+| Valid user response passes schema → typed user | User schema pass |
+| Invalid user response (missing field) → server error | User schema fail |
+| No schema configured → body forwarded as-is | No schema |
+| TypeScript: `LoginData["local"]` infers schema shape | Type check |
 
-#### `composables.test.ts` — useAuth, useAuthFetch
+#### `middleware.test.ts`
 
-| Test                                              | Scenario          |
-| ------------------------------------------------- | ----------------- |
-| `$auth.loggedIn` is false before login            | Initial state     |
-| `$auth.loggedIn` is true after login              | Post-login state  |
-| `$auth.user` matches user API response            | User data         |
-| `$auth.logout()` clears state + cookies           | Logout composable |
-| `useAuthFetch` auto-attaches Authorization header | Fetch interceptor |
-| `useAuthFetch` retries after token refresh on 401 | Refresh flow      |
+| Test | Scenario |
+| ---- | -------- |
+| Protected route without token → redirect to login | `auth` middleware |
+| Protected route with valid token → renders | `auth` pass |
+| Guest route with valid token → redirect away | `auth-guest` |
+| `event.context.auth.isAuthenticated()` correct | Context API |
 
-#### `token.test.ts` — Token management
+#### `composables.test.ts`
 
-| Test                                                      | Scenario        |
-| --------------------------------------------------------- | --------------- |
-| Tokens stored as cookies with correct names               | Cookie naming   |
-| Token expiry respected in cookie `maxAge`                 | Cookie lifetime |
-| `getTokensFromEvent` reads correct cookies                | Read tokens     |
-| `deleteProviderTokensFromCookies` clears all auth cookies | Cleanup         |
+| Test | Scenario |
+| ---- | -------- |
+| `$auth.loggedIn` false before login | Initial state |
+| `$auth.loggedIn` true after login | Post-login |
+| `$auth.user` matches user API response | User data |
+| `$auth.logout()` clears state + cookies | Logout |
+| `useAuthFetch` attaches Authorization header | Fetch interceptor |
+| `useAuthFetch` retries after refresh on 401 | Refresh flow |
+| `useAuthLogin.local()` validates with `loginSchemas.local` | Composable schema |
 
-#### `zod-schema.test.ts` — Zod user schema (after Change 2)
+#### `token.test.ts`
 
-| Test                                                          | Scenario                     |
-| ------------------------------------------------------------- | ---------------------------- |
-| Valid user response passes schema → typed user object         | Happy path                   |
-| Invalid user response (missing required field) → server error | Schema violation             |
-| No schema provided → user returned as-is (no validation)      | Backward compat              |
-| TypeScript: `$auth.user.value` infers schema type             | Type inference (build check) |
-
-### Vitest config
-
-Add `vitest.config.ts` at root:
-
-```typescript
-import { defineConfig } from "vitest/config";
-
-export default defineConfig({
-  test: {
-    testTimeout: 30_000,
-    coverage: {
-      include: ["src/runtime/**"],
-      reporter: ["text", "lcov"],
-    },
-  },
-});
-```
+| Test | Scenario |
+| ---- | -------- |
+| Tokens stored as cookies with correct names | Cookie naming |
+| Token expiry respected in cookie `maxAge` | Cookie lifetime |
+| `getTokensFromEvent` reads correct cookies | Read tokens |
+| `deleteProviderTokensFromCookies` clears all | Cleanup |
 
 ---
 
 ## Verification (all stages)
 
-1. Playground login with arbitrary body fields (no `principal`/`password` keys) reaches external API.
-2. Login with schema registered via [playground/server/plugins/auth-schemas.ts](playground/server/plugins/auth-schemas.ts) + invalid body → 400 with field-level errors from `flattenError`.
-3. `userSchema.parse()` throws on bad user response — server returns 500 with schema error.
-4. TypeScript: `$auth.user.value.email` resolves to `string` (not `any`) when schema provided.
-5. Single-provider config works without `defaultProvider`.
-6. `npm test` passes all new tests.
+1. Playground login with `{ email_address, password }` (no `principal` key) works end-to-end.
+2. Invalid login body → 400 with `fieldErrors` from `flattenError`.
+3. Bad user API response → server error with schema field errors.
+4. TypeScript: `useAuthLogin().local()` param infers `{ email_address: string; password: string }`.
+5. `npm test` passes all new tests.
 7. README examples match actual module API.
