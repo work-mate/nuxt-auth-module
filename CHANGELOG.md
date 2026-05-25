@@ -1,3 +1,22 @@
+# [1.6.0](https://github.com/work-mate/nuxt-auth-module/compare/v1.5.1...v1.6.0) (2026-05-25)
+
+
+### Bug Fixes
+
+* update semantic-release branches to main and v1 ([3f3660a](https://github.com/work-mate/nuxt-auth-module/commit/3f3660a8d1571f5a607fd9e93d8bf4dd758aad88))
+
+
+### Features
+
+* add data from the login function ([f405ea3](https://github.com/work-mate/nuxt-auth-module/commit/f405ea32e66e9f8c7ec208b4b091e272bc3b49f3))
+* add debug logs ([8bc0c31](https://github.com/work-mate/nuxt-auth-module/commit/8bc0c3124899f3f7e296339ce5c1bbed14c8b546))
+* endpoint schemas ([9e480bc](https://github.com/work-mate/nuxt-auth-module/commit/9e480bc9aeb6edec867bab1b9e6f98fa73189a5f))
+* remove strict types for signin and introduce schema ([cb7a277](https://github.com/work-mate/nuxt-auth-module/commit/cb7a27707900bcb364196eb7a282a3740fc94c39))
+* rename functions and add useAuthToken and useAuthUser ([a0e0307](https://github.com/work-mate/nuxt-auth-module/commit/a0e0307abbd78fc04da68593e1f80f3014702e30))
+* update build ([11fb963](https://github.com/work-mate/nuxt-auth-module/commit/11fb963a2878596d8e075da14144cd911d8580ca))
+* update types to have hints ([6884375](https://github.com/work-mate/nuxt-auth-module/commit/6884375abf89fa7f5ce3511e8caf2e20a3e8174d))
+* zod schema validations ([8972b17](https://github.com/work-mate/nuxt-auth-module/commit/8972b17a0ebfed77dc9b533c33859ac53490f1d5))
+
 ## [1.5.1](https://github.com/work-mate/nuxt-auth-module/compare/v1.5.0...v1.5.1) (2025-10-12)
 
 
