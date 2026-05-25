@@ -9,7 +9,7 @@ Auth module for Nuxt 3 & 4 apps. Supports local credentials, GitHub OAuth, and G
 | Provider | Key      | Status |
 | -------- | -------- | ------ |
 | Local    | local    | ✅     |
-| GitHub   | github   | ✅     |
+| GitHub   | github.  | ✅     |
 | Google   | google   | ✅     |
 | Facebook | facebook | 🚧     |
 | LinkedIn | linkedin | 🚧     |
