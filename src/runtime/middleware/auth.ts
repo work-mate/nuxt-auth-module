@@ -10,10 +10,10 @@ import {
 } from "#imports";
 
 export const authMiddleware: RouteMiddleware = (to, _from) => {
-  const { loggedIn, logout, tokenNames } = useNuxtApp().$auth;
+  const { isLoggedIn, logout, tokenNames } = useNuxtApp().$auth;
   const config = useRuntimeConfig().public.auth;
 
-  if (!loggedIn.value) {
+  if (!isLoggedIn.value) {
     const redirectIfNotLoggedIn = config.redirects.redirectIfNotLoggedIn;
 
     if (!redirectIfNotLoggedIn) {

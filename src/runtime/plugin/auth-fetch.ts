@@ -2,7 +2,7 @@ import { defineNuxtPlugin, useNuxtApp, useRuntimeConfig } from "#app";
 import { type $Fetch } from "ofetch";
 
 export default defineNuxtPlugin(async () => {
-  const { loggedIn, token, tokenType, refreshTokens, logout } = useNuxtApp().$auth;
+  const { isLoggedIn, token, tokenType, refreshTokens, logout } = useNuxtApp().$auth;
   const authConfig = useRuntimeConfig().public.auth;
 
   const authFetch = $fetch.create({
@@ -12,7 +12,7 @@ export default defineNuxtPlugin(async () => {
     onRequest({ options }) {
       const accessToken = tokenType.value ? `${tokenType.value} ${token.value}` : token.value;
       const headerAddition = {
-        Authorization: loggedIn.value && accessToken ? accessToken : "",
+        Authorization: isLoggedIn.value && accessToken ? accessToken : "",
       };
 
       options.headers = {

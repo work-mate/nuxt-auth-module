@@ -1,4 +1,4 @@
-import type { z, ZodTypeAny, ZodObject } from "zod";
+import type { z, ZodType, ZodObject } from "zod";
 import type { AccessTokens } from "./providers/AuthProvider";
 
 export enum SupportedAuthProvider {
@@ -26,13 +26,13 @@ export interface AuthProviderInterface {
   validateRequestBody(body: Record<string, any>): boolean;
 }
 
-export type AuthUser<TSchema extends ZodTypeAny = ZodObject<any>> =
+export type AuthUser<TSchema extends ZodType = ZodObject<any>> =
   z.infer<TSchema>;
 
 export type AuthState =
-  | { loggedIn: false; user: null }
+  | { isLoggedIn: false; user: null }
   | {
-      loggedIn: true;
+      isLoggedIn: true;
       user: AuthUser;
       token: string;
       refreshToken?: string;
