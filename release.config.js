@@ -1,5 +1,5 @@
 export default {
-  branches: ["release"],
+  branches: [{ name: "v1", channel: "v1" }, "main"],
   plugins: [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
