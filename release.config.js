@@ -1,3 +1,5 @@
+const isMainBranch = process.env.GITHUB_REF_NAME === "main";
+
 export default {
   branches: [{ name: "v1", channel: "v1", range: "1.x" }, "main"],
   plugins: [
@@ -27,6 +29,6 @@ export default {
           "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
       },
     ],
-    "@semantic-release/github",
+    ["@semantic-release/github", { makeLatest: isMainBranch ? "true" : "false" }],
   ],
 };
