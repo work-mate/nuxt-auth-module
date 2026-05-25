@@ -1,112 +1,61 @@
-<!--
-Get your module up and running quickly.
-
-Find and replace all on all files (CMD+SHIFT+F):
-- Name: My Module
-- Package name: my-module
-- Description: Auth module for Nuxt 3 & 4 apps
--->
-
-# Auth module for Nuxt 3 & 4 server apps
+# @workmate/nuxt-auth
 
 ![NPM](https://img.shields.io/npm/l/@workmate/nuxt-auth) ![npm](https://img.shields.io/npm/v/@workmate/nuxt-auth) ![GitHub last commit](https://img.shields.io/github/last-commit/work-mate/nuxt-auth-module)
 
-<br />
-Auth module for Nuxt 3 & 4 apps.
+Auth module for Nuxt 3 & 4 apps. Supports local credentials, GitHub OAuth, and Google OAuth with Zod schema validation.
 
-## Featured Auth Providers
+## Providers
 
-| Provider | Provider Key | Status             |
-| -------- | ------------ | ------------------ |
-| Local    | local        | :white_check_mark: |
-| Google   | google       | :white_check_mark: |
-| Github   | github       | :white_check_mark: |
-| Facebook | facebook     | :construction:     |
-| LinkedIn | linkedin     | :construction:     |
-
-## Local Auth Features
-
-| Feature       | Status             |
-| ------------- | ------------------ |
-| Login         | :white_check_mark: |
-| Logout        | :white_check_mark: |
-| User          | :white_check_mark: |
-| Refresh Token | :white_check_mark: |
-
-<!-- :construction: -->
+| Provider | Key      | Status |
+| -------- | -------- | ------ |
+| Local    | local    | ✅     |
+| GitHub   | github   | ✅     |
+| Google   | google   | ✅     |
+| Facebook | facebook | 🚧     |
+| LinkedIn | linkedin | 🚧     |
 
 ## Installation
 
-#### Package Manager
-
 ```bash
-# using npm
-npm install --save @workmate/nuxt-auth
-
-# using yarn
-yarn add @workmate/nuxt-auth
+npm install @workmate/nuxt-auth zod
+# or
+yarn add @workmate/nuxt-auth zod
 ```
 
-## Setup
-
-### Add to modules
+Add to `nuxt.config.ts`:
 
 ```ts
-// nuxt.config.ts
 export default defineNuxtConfig({
-  modules: [
-    "@workmate/nuxt-auth"
-  ],
-  ...
+  modules: ["@workmate/nuxt-auth"],
 });
 ```
 
-### Configure Auth
+---
+
+## Configuration
 
 ```ts
 // nuxt.config.ts
+import { z } from "zod";
+
+const userSchema = z.object({
+  id: z.string(),
+  email: z.email(),
+  name: z.string().optional(),
+});
+
 export default defineNuxtConfig({
   modules: ["@workmate/nuxt-auth"],
   auth: {
-    providers: {
-      local: {
-        endpoints: {
-          signIn: {
-            path: "/signin",
-            method: "POST",
-            tokenKey: "token",
-            body: {
-              principal: "username",
-              password: "password",
-            },
-          },
-        },
-      },
-
-      github: {
-        CLIENT_ID: process.env.GITHUB_CLIENT_ID || "",
-        CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET || "",
-        HASHING_SECRET: process.env.HASHING_SECRET || "secret",
-        SCOPES: "user repo",
-      },
-
-      google: {
-        CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "",
-        CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || "",
-        HASHING_SECRET: process.env.HASHING_SECRET || "secret",
-        SCOPES:
-          "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
-      },
-    },
     global: false,
+    defaultProvider: "local",
     redirects: {
       redirectIfNotLoggedIn: "/login",
       redirectIfLoggedIn: "/",
     },
     apiClient: {
-      baseURL: "",
+      baseURL: "http://localhost:8080",
     },
-    defaultProvider: "local",
     token: {
       type: "Bearer",
       maxAge: 1000 * 60 * 60 * 24 * 30,
@@ -117,15 +66,59 @@ export default defineNuxtConfig({
         tokenType: "auth:tokenType",
       },
     },
+    providers: {
+      local: {
+        endpoints: {
+          signIn: {
+            path: "/api/auth/login/password",
+            method: "POST",
+            tokenKey: "token",
+            refreshTokenKey: "refresh_token",
+          },
+          signOut: { path: "/api/auth/logout", method: "POST" },
+          user: { path: "/api/auth/user", userKey: "user" },
+          refreshToken: {
+            path: "/api/auth/refresh",
+            method: "POST",
+            tokenKey: "token",
+            refreshTokenKey: "refresh_token",
+            body: { token: "token", refreshToken: "refresh_token" },
+          },
+        },
+        schemas: {
+          login: z.object({
+            email_address: z.email(),
+            password: z.string().min(8),
+          }),
+          user: userSchema,
+        },
+      },
+
+      github: {
+        CLIENT_ID: process.env.GITHUB_CLIENT_ID || "",
+        CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET || "",
+        HASHING_SECRET: process.env.HASHING_SECRET || "",
+        SCOPES: "user repo",
+        schemas: { user: userSchema },
+      },
+
+      google: {
+        CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "",
+        CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || "",
+        HASHING_SECRET: process.env.HASHING_SECRET || "",
+        SCOPES:
+          "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
+        schemas: { user: userSchema },
+      },
+    },
   },
 });
 ```
 
-### Full List of Module Options
+### Module options reference
 
 ```ts
 interface ModuleOptions {
-  providers: ModuleProvidersOptions;
   global: boolean;
   defaultProvider?: string;
   redirects: {
@@ -142,15 +135,15 @@ interface ModuleOptions {
       accessToken: string;
       refreshToken: string;
       authProvider: string;
+      tokenType: string;
     };
   };
+  providers: {
+    local?: LocalAuthInitializerOptions;
+    github?: GithubAuthInitializerOptions;
+    google?: GoogleAuthInitializerOptions;
+  };
 }
-
-type ModuleProvidersOptions = {
-  local?: LocalAuthInitializerOptions;
-  github?: GithubAuthInitializerOptions;
-  google?: GoogleAuthInitializerOptions;
-};
 
 type HttpMethod =
   | "GET"
@@ -170,10 +163,6 @@ type LocalAuthInitializerOptions = {
       method?: HttpMethod;
       tokenKey?: string;
       refreshTokenKey?: string;
-      body?: {
-        principal?: string;
-        password?: string;
-      };
     };
     signOut?: { path: string; method: HttpMethod } | false;
     signUp?: { path?: string; method?: HttpMethod } | false;
@@ -184,12 +173,13 @@ type LocalAuthInitializerOptions = {
           method: HttpMethod;
           tokenKey: string;
           refreshTokenKey: string;
-          body: {
-            token: string;
-            refreshToken: string;
-          };
+          body: { token: string; refreshToken: string };
         }
       | false;
+  };
+  schemas?: {
+    login?: ZodType;
+    user?: ZodType;
   };
 };
 
@@ -198,6 +188,7 @@ type GithubAuthInitializerOptions = {
   CLIENT_SECRET: string;
   HASHING_SECRET: string;
   SCOPES?: string;
+  schemas?: { user?: ZodType };
 };
 
 type GoogleAuthInitializerOptions = {
@@ -205,206 +196,369 @@ type GoogleAuthInitializerOptions = {
   CLIENT_SECRET: string;
   HASHING_SECRET: string;
   SCOPES?: string;
+  schemas?: { user?: ZodType };
 };
 ```
 
-## Usage
+---
 
-#### While using the social auth (google, github)
+## Server routes
 
-Add the callback URL to the auth provider configuration. For example: `<base url>/api/auth/callback/<provider>` for google it would be `<base url>/api/auth/callback/google`.
+The module registers these routes on your Nuxt server:
 
-#### composables
+| Method | Path                      | Description                           |
+| ------ | ------------------------- | ------------------------------------- |
+| POST   | /api/auth/login           | Login with any provider               |
+| POST   | /api/auth/logout          | Clear session and cookies             |
+| GET    | /api/auth/user            | Get the current authenticated user    |
+| POST   | /api/auth/refresh         | Refresh access token                  |
+| GET    | /api/auth/callback/github | GitHub OAuth callback (if configured) |
+| GET    | /api/auth/callback/google | Google OAuth callback (if configured) |
+
+### POST /api/auth/login
+
+```ts
+// Request body
+{
+  provider: string;          // "local" | "github" | "google"
+  [key: string]: any;        // provider-specific fields (e.g. email_address, password)
+}
+
+// Response — local provider
+{
+  tokens: {
+    accessToken: string;
+    refreshToken?: string;
+    tokenType: string;
+    provider: string;
+  };
+}
+
+// Response — OAuth providers
+{
+  url: string;               // redirect to this URL to begin OAuth flow
+}
+```
+
+### POST /api/auth/logout
+
+No request body. Clears all auth cookies and calls the provider's logout endpoint if configured.
+
+### GET /api/auth/user
+
+No request body. Reads token from cookies.
+
+```ts
+// Response
+{
+  user: AuthUser | null;
+}
+```
+
+### POST /api/auth/refresh
+
+No request body. Reads tokens from cookies, calls the provider's refresh endpoint.
+
+```ts
+// Response
+{
+  tokens: {
+    accessToken: string;
+    refreshToken?: string;
+    tokenType: string;
+    provider: string;
+  };
+}
+```
+
+### OAuth callbacks
+
+Add `<base_url>/api/auth/callback/github` and `<base_url>/api/auth/callback/google` as the callback URLs in your OAuth app settings.
+
+---
+
+## Composables
+
+All composables are auto-imported.
+
+### `useAuth()`
+
+Low-level access to the full auth plugin. Prefer the focused composables below for most use cases.
 
 ```ts
 const {
-  loggedIn,
+  isLoggedIn,
   user,
   token,
   refreshToken,
+  tokenType,
+  provider,
+  tokenNames,
   login,
   logout,
   refreshUser,
   refreshTokens,
 } = useAuth();
 
-type AuthUser = any;
+// login(provider, data?, redirectTo?)
+await login("local", { email_address: "me@example.com", password: "secret" });
+await login("github");
 
-// state is of type AuthState
-type AuthPlugin = {
-  loggedIn: ComputedRef<boolean>;
-  user: ComputedRef<AuthUser | null | undefined>;
-  token: ComputedRef<string | undefined>;
-  refreshToken: ComputedRef<string | undefined>;
-  tokenType: ComputedRef<string | undefined>;
-  provider: ComputedRef<string | undefined>;
-  login: (
-    provider: string | SupportedAuthProvider,
-    data?: Record<string, string>,
-    redirectTo?: string,
-  ) => Promise<
-    | {
-        tokens: AccessTokens;
-      }
-    | {
-        message: string;
-      }
-  >;
-  logout: (redirectTo?: string) => Promise<unknown>;
-  refreshUser: () => Promise<void>;
-  refreshTokens: () => Promise<void>;
-};
+// logout(redirectTo?)
+await logout("/login");
 ```
 
-To use useFetch with the authorization header, use `useAuthFetch`, and instead of using $fetch use $authFetch
+### `useAuthLogin()`
+
+Typed login functions. The local provider accepts any object — whatever you pass is sent directly to your `signIn` endpoint. If `schemas.login` is configured, the object is validated against it first; if not, it is forwarded as-is. You control the field names.
 
 ```ts
-useAuthFetch("/api/auth/melting", options);
+const { localLogin, googleLogin, githubLogin } = useAuthLogin();
 
-// instead of $fetch,
-$fetch("/api/auth/melting", options);
+// localLogin(opts, redirectTo?)
+// opts shape comes entirely from your schemas.login Zod schema (or Record<string, any> if no schema)
+await localLogin({ email_address: "me@example.com", password: "secret123" });
+await localLogin({ username: "alice", pin: "1234" }); // different backend, different fields
+await localLogin(
+  { email_address: "me@example.com", password: "secret123" },
+  "/dashboard",
+);
 
-// use,
-const { $authFetch } = useNuxtApp();
-$authFetch("/api/auth/melting", options);
+// googleLogin(opts?, redirectTo?)
+await googleLogin();
+await googleLogin({ redirectUrl: "/dashboard" });
+
+// githubLogin(opts?, redirectTo?)
+await githubLogin();
 ```
 
-to change the base URI of the authFetch client, update the nuxt.config.ts
+### `useAuthUser()`
 
 ```ts
-// nuxt.config.ts
-export default defineNuxtConfig({
-  auth: {
-    ...
-    apiClient: {
-      baseURL: "http://localhost:8080/v1",
-    },
-    ...
-  },
-})
+const { user, isLoggedIn, refreshUser } = useAuthUser();
 
+// user: ComputedRef<AuthUser | null | undefined>
+// isLoggedIn: ComputedRef<boolean>
+
+if (isLoggedIn.value) {
+  console.log(user.value);
+}
+
+await refreshUser(); // re-fetches user from the server
 ```
 
-#### Logging in
+### `useAuthToken()`
 
 ```ts
-const { login } = useAuth();
+const { token, refreshToken, tokenType, provider, tokenNames, refreshTokens } =
+  useAuthToken();
 
-// to login
-login("local", {
-  principal,
-  password,
+// All values are computed refs
+console.log(token.value); // current access token
+console.log(provider.value); // "local" | "github" | "google"
+
+await refreshTokens(); // exchange refresh token for new tokens
+```
+
+### `useAuthFetch()`
+
+Wrapper around Nuxt's `useFetch` that automatically injects the Authorization header. Retries once on 401 after refreshing tokens.
+
+```ts
+const { data, error } = await useAuthFetch("/api/profile");
+
+// Supports all useFetch options
+const { data } = await useAuthFetch<User>("/api/profile", {
+  method: "POST",
+  body: { name: "Alice" },
 });
-
-// using github
-login("github");
 ```
 
-## middlewares
+---
+
+## Plugins
+
+### `$auth`
+
+The full auth plugin, same as `useAuth()`.
+
+```ts
+const { $auth } = useNuxtApp();
+
+if ($auth.isLoggedIn.value) {
+  await $auth.logout();
+}
+```
+
+### `$authFetch`
+
+An `ofetch` instance pre-configured with your `apiClient.baseURL`, the current Authorization header, and automatic token refresh on 401. Use this instead of `$fetch` for authenticated requests.
+
+```ts
+const { $authFetch } = useNuxtApp();
+
+const data = await $authFetch("/api/protected");
+```
+
+To set the base URL:
+
+```ts
+auth: {
+  apiClient: {
+    baseURL: "http://localhost:8080/v1",
+  },
+}
+```
+
+---
+
+## Middlewares
 
 ### Route middleware
 
-To protect a page
+Protect a page (requires login):
 
 ```ts
-// pages/index.vue
+// pages/dashboard.vue
 definePageMeta({
   middleware: "auth",
 });
-
-// or if adding it to a list of middlewares
-definePageMeta({
-  middleware: [..., "auth", ...],
-});
 ```
 
-To make sure a page is only accessible if you are not logged in. Eg. a login page
+Guest-only page (redirect away if logged in):
 
 ```ts
 // pages/login.vue
 definePageMeta({
   middleware: "auth-guest",
 });
-
-// or if adding it to a list of middlewares
-definePageMeta({
-  middleware: [..., "auth-guest", ...],
-});
 ```
 
 ### Global middleware
 
-For a global middleware, set the the `auth.global` to true in the `nuxt.config.ts` file
+Apply auth to all routes:
 
 ```ts
-export default defineNuxtConfig({
-  ...
-  auth: {
-    global: true,
-    ...
-  },
-})
+// nuxt.config.ts
+auth: {
+  global: true,
+}
 ```
 
-To prevent a page from being protected from auth, set the auth meta to false
+Opt a page out when global is enabled:
 
 ```ts
-// pages/index.vue
 definePageMeta({
   auth: false,
 });
 ```
 
-Example of nuxt.config.ts
+Redirects are configured under `auth.redirects`:
+
+- `redirectIfNotLoggedIn` — where `auth` middleware sends unauthenticated users (default: `"/login"`)
+- `redirectIfLoggedIn` — where `auth-guest` middleware sends authenticated users (default: `"/"`)
+
+---
+
+## Schema validation
+
+Schemas are defined in `nuxt.config.ts` per provider using Zod 4. They are converted to JSON Schema at build time and reconstructed at runtime — no serialization issues.
 
 ```ts
-const BACKEND_URL = "http://localhost:8080/api/v1";
-export default defineNuxtConfig({
-  modules: ["@workmate/nuxt-auth"],
-  auth: {
-    global: true,
-    redirects: {
-      redirectIfLoggedIn: "/protected",
-    },
-    apiClient: {
-      baseURL: BACKEND_URL,
-    },
-    providers: {
-      local: {
-        endpoints: {
-          user: {
-            path: BACKEND_URL + "/api/auth/user",
-            userKey: "user",
-          },
-          signIn: {
-            path: BACKEND_URL + "/api/auth/login/password",
-            body: {
-              principal: "email_address",
-              password: "password",
-            },
-            tokenKey: "token",
-            refreshTokenKey: "refresh_token",
-          },
-          refreshToken: {
-            path: BACKEND_URL + "/api/auth/refresh",
-            method: "POST",
-            tokenKey: "token",
-            refreshTokenKey: "refresh_token",
-            body: {
-              token: "token",
-              refreshToken: "refresh_token",
-            },
-          },
-        },
-      },
+// nuxt.config.ts
+import { z } from "zod";
 
-      github: {
-        CLIENT_ID: process.env.GITHUB_CLIENT_ID || "",
-        CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET || "",
-        HASHING_SECRET: process.env.HASHING_SECRET || "secret",
-        SCOPES: "user repo",
+local: {
+  schemas: {
+    login: z.object({ email_address: z.email(), password: z.string().min(8) }),
+    user: z.object({ id: z.string(), email: z.email(), name: z.string().optional() }),
+  },
+}
+```
+
+**`schemas.login`** — the local provider sends whatever object you pass directly to your `signIn` endpoint. There are no fixed field names — use whatever your backend expects (`email_address`, `username`, `phone`, etc.). If `schemas.login` is configured, the body is validated server-side before being forwarded. Invalid bodies return HTTP 400 with field errors:
+
+```json
+{
+  "message": "Validation error",
+  "data": { "email_address": ["Invalid email"] }
+}
+```
+
+If `schemas.login` is not configured, the body is forwarded as-is with no validation.
+
+**`schemas.user`** — validated server-side when your backend returns user data. Mismatches throw a server error with field-level detail. Optional — omit to skip validation.
+
+TypeScript infers the login payload type from your schema — `localLogin(opts)` is typed as the Zod output of `schemas.login`, or `Record<string, any>` if no schema is set.
+
+---
+
+## Migration: v1 → v2 (breaking changes in v2.0.0)
+
+### Configuration
+
+In v1, `signIn.body` mapped fixed field names (`principal`, `password`) onto the request. In v2 the body is open — you pass any object and it is sent as-is to your endpoint. Remove `signIn.body` entirely and add `schemas.login` to describe the shape your backend expects.
+
+**Before:**
+
+```ts
+local: {
+  endpoints: {
+    signIn: {
+      path: "/api/auth/login",
+      tokenKey: "token",
+      body: {
+        principal: "email_address",
+        password: "password",
       },
     },
   },
-});
+}
 ```
+
+**After:**
+
+```ts
+import { z } from "zod";
+
+local: {
+  endpoints: {
+    signIn: {
+      path: "/api/auth/login",
+      tokenKey: "token",
+    },
+  },
+  schemas: {
+    login: z.object({
+      email_address: z.email(),
+      password: z.string().min(8),
+    }),
+  },
+}
+```
+
+### Login call
+
+**Before:**
+
+```ts
+const { login } = useAuth();
+await login("local", { principal: values.email, password: values.password });
+```
+
+**After:**
+
+```ts
+const { localLogin } = useAuthLogin();
+await localLogin({ email_address: values.email, password: values.password });
+```
+
+### Peer dependency
+
+Zod 4 is now required (`zod@^4.0.0`). If you were on Zod 3, upgrade:
+
+```bash
+npm install zod@^4.0.0
+```
+
+`z.toJSONSchema` and `z.fromJSONSchema` do not exist on Zod 3.
