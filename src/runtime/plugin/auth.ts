@@ -23,7 +23,7 @@ import type {
 } from "../providers/AuthProvider";
 
 export type AuthPlugin = {
-  loggedIn: ComputedRef<boolean>;
+  isLoggedIn: ComputedRef<boolean>;
   user: ComputedRef<AuthUser | null | undefined>;
   token: ComputedRef<string | undefined>;
   refreshToken: ComputedRef<string | undefined>;
@@ -32,7 +32,7 @@ export type AuthPlugin = {
   tokenNames: Readonly<Ref<AccessTokensNames | null>>;
   login: (
     provider: string | SupportedAuthProvider,
-    data?: Record<string, string>,
+    data?: Record<string, any>,
     redirectTo?: string,
   ) => Promise<
     | {
@@ -49,7 +49,7 @@ export type AuthPlugin = {
 
 export default defineNuxtPlugin(async () => {
   const state = useState<AuthState>("auth", () => ({
-    loggedIn: false,
+    isLoggedIn: false,
     user: null,
   }));
   const route = useRoute();
@@ -68,7 +68,7 @@ export default defineNuxtPlugin(async () => {
       try {
         const userResponse = await auth.getUser();
         state.value = {
-          loggedIn: true,
+          isLoggedIn: true,
           user: userResponse.user,
           token: tokens.accessToken,
           refreshToken: tokens.refreshToken,
@@ -89,7 +89,7 @@ export default defineNuxtPlugin(async () => {
         }
       }
     } else {
-      state.value = { loggedIn: false, user: null };
+      state.value = { isLoggedIn: false, user: null };
     }
   }
 
@@ -164,7 +164,7 @@ export default defineNuxtPlugin(async () => {
    */
   async function login(
     provider: string | SupportedAuthProvider,
-    data: Record<string, string> = {},
+    data: Record<string, any> = {},
     redirectTo?: string,
   ): Promise<{ message: string; tokens?: AccessTokens }> {
     const expectUrlFromProviders = [
@@ -172,7 +172,7 @@ export default defineNuxtPlugin(async () => {
       SupportedAuthProvider.GOOGLE,
     ];
 
-    if (state.value.loggedIn) {
+    if (state.value.isLoggedIn) {
       return {
         message: "User already logged in",
       };
@@ -223,7 +223,7 @@ export default defineNuxtPlugin(async () => {
       refreshToken: tokens.refreshToken,
       provider: tokens.provider,
       tokenType: tokens.tokenType,
-      loggedIn: true,
+      isLoggedIn: true,
       user: user.user,
     };
 
@@ -252,7 +252,7 @@ export default defineNuxtPlugin(async () => {
    * @throws {ErrorResponse} If the user was not logged in
    */
   async function logout(redirectTo?: string): Promise<unknown> {
-    if (!state.value.loggedIn) {
+    if (!state.value.isLoggedIn) {
       return {
         message: "User not logged in",
       };
@@ -262,7 +262,7 @@ export default defineNuxtPlugin(async () => {
       method: "POST",
     });
 
-    state.value = { loggedIn: false, user: null };
+    state.value = { isLoggedIn: false, user: null };
 
     // Clear all useFetch cache after logout
     // This ensures cached authenticated data is removed
@@ -286,7 +286,7 @@ export default defineNuxtPlugin(async () => {
    * @returns {Promise<void>}
    */
   async function refreshUser(): Promise<void> {
-    if (!state.value.loggedIn) {
+    if (!state.value.isLoggedIn) {
       throw {
         message: "User not logged in",
       };
@@ -300,7 +300,7 @@ export default defineNuxtPlugin(async () => {
   }
 
   async function refreshTokens() {
-    if (!state.value.loggedIn) {
+    if (!state.value.isLoggedIn) {
       return {
         message: "User not logged in",
       };
@@ -311,7 +311,7 @@ export default defineNuxtPlugin(async () => {
         Accept: "application/json",
       },
     }).then((res: { tokens: AccessTokens }) => {
-      if (!state.value.loggedIn) return;
+      if (!state.value.isLoggedIn) return;
 
       state.value = {
         ...state.value,
@@ -324,20 +324,20 @@ export default defineNuxtPlugin(async () => {
   return {
     provide: {
       auth: {
-        loggedIn: computed(() => state.value.loggedIn),
+        isLoggedIn: computed(() => state.value.isLoggedIn),
         tokenNames: readonly(tokenNames),
         user: computed(() => state.value.user),
         token: computed(() =>
-          state.value.loggedIn ? state.value.token : undefined,
+          state.value.isLoggedIn ? state.value.token : undefined,
         ),
         refreshToken: computed(() =>
-          state.value.loggedIn ? state.value.refreshToken : undefined,
+          state.value.isLoggedIn ? state.value.refreshToken : undefined,
         ),
         provider: computed(() =>
-          state.value.loggedIn ? state.value.provider : undefined,
+          state.value.isLoggedIn ? state.value.provider : undefined,
         ),
         tokenType: computed(() =>
-          state.value.loggedIn ? state.value.tokenType : undefined,
+          state.value.isLoggedIn ? state.value.tokenType : undefined,
         ),
         login,
         logout,

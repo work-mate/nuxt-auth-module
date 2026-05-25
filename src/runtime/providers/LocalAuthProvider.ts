@@ -1,7 +1,6 @@
 import defu from "defu";
 import type {
   AuthConfig,
-  AuthLoginData,
   AuthProviderInterface,
   AuthUser,
   ErrorResponse,
@@ -12,11 +11,8 @@ import type { DeepRequired } from "../../module";
 import { getRecursiveProperty } from "../helpers";
 import { ofetch } from "ofetch";
 import type { ModuleOptions } from "@nuxt/schema";
-
-export interface LocalAuthLoginData extends AuthLoginData {
-  principal: string;
-  password: string;
-}
+import { flattenError, type ZodType } from "zod";
+import { loginSchemas, userSchemas } from "#auth-schemas";
 
 export type LocalAuthInitializerOptions = {
   endpoints?: {
@@ -25,10 +21,6 @@ export type LocalAuthInitializerOptions = {
       method?: HttpMethod;
       tokenKey?: string;
       refreshTokenKey?: string;
-      body?: {
-        principal?: string;
-        password?: string;
-      };
     };
     signOut?: { path: string; method: HttpMethod } | false;
     signUp?: { path?: string; method?: HttpMethod } | false;
@@ -46,6 +38,10 @@ export type LocalAuthInitializerOptions = {
         }
       | false;
   };
+  schemas?: {
+    login?: ZodType;
+    user?: ZodType;
+  };
 };
 
 export class LocalAuthProvider implements AuthProviderInterface {
@@ -58,17 +54,14 @@ export class LocalAuthProvider implements AuthProviderInterface {
         method: "POST",
         tokenKey: "token",
         refreshTokenKey: "refresh_token",
-        body: {
-          principal: "username",
-          password: "password",
-        },
       },
       signOut: false,
       signUp: false,
       user: false,
       refreshToken: false,
     },
-  };
+    schemas: {},
+  } as DeepRequired<LocalAuthInitializerOptions>;
 
   constructor(options: LocalAuthInitializerOptions, config: ModuleOptions) {
     this.config = config;
@@ -90,19 +83,15 @@ export class LocalAuthProvider implements AuthProviderInterface {
   }
 
   async login(
-    _: AuthConfig,
-    authData: LocalAuthLoginData,
+    _authConfig: AuthConfig,
+    authData: Record<string, any> = {},
   ): Promise<{ tokens: AccessTokens }> {
     const url = this.options.endpoints.signIn.path;
     const method = this.options.endpoints.signIn.method;
-    const principal = this.options.endpoints.signIn.body.principal;
-    const password = this.options.endpoints.signIn.body.password;
     const tokenKey = this.options.endpoints.signIn.tokenKey;
     const refreshTokenKey = this.options.endpoints.signIn.refreshTokenKey;
-    const body = {
-      [principal]: authData.principal,
-      [password]: authData.password,
-    };
+
+    const { provider: _, ...body } = authData;
 
     return ofetch(url, {
       method,
@@ -150,7 +139,17 @@ export class LocalAuthProvider implements AuthProviderInterface {
       let user = res;
       if (userKey) user = getRecursiveProperty(res, userKey);
 
-      return { user };
+      const schema = userSchemas.local;
+      if (!schema) return { user };
+
+      const result = schema.safeParse(user);
+      if (!result.success) {
+        throw {
+          message: "Invalid user response",
+          data: flattenError(result.error).fieldErrors,
+        } satisfies ErrorResponse;
+      }
+      return { user: result.data as AuthUser };
     });
   }
 
@@ -178,23 +177,17 @@ export class LocalAuthProvider implements AuthProviderInterface {
    * @returns {boolean}
    */
   validateRequestBody(body: Record<string, any>): boolean {
-    const error = {
-      message: "Invalid request body: principal and password required",
-      data: {} as Record<string, string[]>,
-    } satisfies ErrorResponse;
+    const schema = loginSchemas.local;
+    if (!schema) return true;
 
-    if (!body.principal) {
-      error.data["principal"] = ["principal is required"];
+    const result = schema.safeParse(body);
+
+    if (!result.success) {
+      throw {
+        message: "Invalid request body",
+        data: flattenError(result.error).fieldErrors,
+      } satisfies ErrorResponse;
     }
-
-    if (!body.password) {
-      error.data["password"] = ["password is required"];
-    }
-
-    if (Object.keys(error.data).length > 0) {
-      throw error;
-    }
-
     return true;
   }
 

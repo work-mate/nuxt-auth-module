@@ -2,22 +2,28 @@ import type { ModuleOptions } from "../../module";
 import {
   SupportedAuthProvider,
   type AuthConfig,
-  type AuthLoginData,
   type AuthProviderInterface,
   type AuthUser,
+  type ErrorResponse,
 } from "../models";
 import jwt from "jsonwebtoken";
 import { ofetch } from "ofetch";
+import { flattenError, type ZodType } from "zod";
 import type { AccessTokens } from "./AuthProvider";
+import { userSchemas } from "#auth-schemas";
 
 export type GithubAuthInitializerOptions = {
   CLIENT_ID: string;
   CLIENT_SECRET: string;
   HASHING_SECRET: string;
   SCOPES?: string;
+  schemas?: {
+    login?: ZodType;
+    user?: ZodType;
+  };
 };
 
-export interface GithubAuthLoginData extends AuthLoginData {
+export interface GithubAuthLoginData {
   redirectUrl?: string;
 }
 
@@ -138,9 +144,17 @@ export class GithubAuthProvider implements AuthProviderInterface {
       },
     });
 
-    return {
-      user: response,
-    };
+    const schema = userSchemas.github;
+    if (!schema) return { user: response };
+
+    const result = schema.safeParse(response);
+    if (!result.success) {
+      throw {
+        message: "Invalid user response",
+        data: flattenError(result.error).fieldErrors,
+      } satisfies ErrorResponse;
+    }
+    return { user: result.data as AuthUser };
   } // end method fetchUserData
 
   async logout(): Promise<any> {

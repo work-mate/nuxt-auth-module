@@ -19,10 +19,10 @@ import {
  * });
  */
 export default defineNuxtRouteMiddleware(function authGuest() {
-  const {loggedIn} = useNuxtApp().$auth;
+  const {isLoggedIn} = useNuxtApp().$auth;
   const config = useRuntimeConfig().public.auth;
 
-  if (loggedIn.value) {
+  if (isLoggedIn.value) {
     const redirectIfLoggedIn = config.redirects.redirectIfLoggedIn;
 
     if (!redirectIfLoggedIn) {

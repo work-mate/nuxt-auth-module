@@ -26,7 +26,7 @@ export default createConfigForNuxt({
     // Allow any component names in playground
     'vue/multi-word-component-names': 'off',
     // Allow unused variables with underscore prefix
-    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     // Allow any types in certain contexts (auth module complexity)
     '@typescript-eslint/no-explicit-any': 'off',
     // Allow empty interfaces for extensibility

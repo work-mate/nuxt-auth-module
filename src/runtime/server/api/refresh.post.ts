@@ -1,7 +1,8 @@
-import { defineEventHandler } from "h3";
+import { defineEventHandler, setResponseStatus } from "h3";
 import { getAuthClient } from "../utils/client";
 import { useRuntimeConfig } from "#imports";
 import { AuthProvider } from "../../providers/AuthProvider";
+import type { ErrorResponse } from "../../models";
 
 export default defineEventHandler(async (event) => {
   const authConfig = useRuntimeConfig().auth;
@@ -9,14 +10,19 @@ export default defineEventHandler(async (event) => {
   const providerKey = AuthProvider.getProviderKeyFromEvent(event, authConfig);
 
   if (!providerKey) {
-    return Promise.reject("provider is required");
+    setResponseStatus(event, 401);
+    return {
+      message: "provider is required",
+      data: { provider: ["provider is required"] },
+    } satisfies ErrorResponse;
   }
 
   const provider = authClient.provider(providerKey);
   if (!provider || !provider.refreshTokens) {
-    return Promise.reject(
-      "refresh tokens is not implemented for this provider"
-    );
+    setResponseStatus(event, 400);
+    return {
+      message: "refresh tokens is not implemented for this provider",
+    } satisfies ErrorResponse;
   }
 
   const { tokens } = await authClient

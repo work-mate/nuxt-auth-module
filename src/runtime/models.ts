@@ -1,3 +1,4 @@
+import type { z, ZodType, ZodObject } from "zod";
 import type { AccessTokens } from "./providers/AuthProvider";
 
 export enum SupportedAuthProvider {
@@ -6,8 +7,6 @@ export enum SupportedAuthProvider {
   GOOGLE = "google",
 }
 
-export interface AuthLoginData {}
-
 export interface AuthConfig {
   baseURL: string;
 }
@@ -15,7 +14,7 @@ export interface AuthConfig {
 export interface AuthProviderInterface {
   login(
     authConfig: AuthConfig,
-    authData?: AuthLoginData,
+    authData?: Record<string, any>,
   ): Promise<{ tokens?: AccessTokens; url?: string }>;
   fetchUserData?(tokens: AccessTokens): Promise<{ user: AuthUser | null }>;
   logout(tokens: AccessTokens): Promise<void>;
@@ -27,12 +26,13 @@ export interface AuthProviderInterface {
   validateRequestBody(body: Record<string, any>): boolean;
 }
 
-export interface AuthUser {}
+export type AuthUser<TSchema extends ZodType = ZodObject<any>> =
+  z.infer<TSchema>;
 
 export type AuthState =
-  | { loggedIn: false; user: null }
+  | { isLoggedIn: false; user: null }
   | {
-      loggedIn: true;
+      isLoggedIn: true;
       user: AuthUser;
       token: string;
       refreshToken?: string;

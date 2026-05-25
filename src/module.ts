@@ -6,12 +6,18 @@ import {
   addPlugin,
   addServerHandler,
   addRouteMiddleware,
+  addTemplate,
 } from "@nuxt/kit";
 import defu from "defu";
-import type { LocalAuthInitializerOptions } from "./runtime/providers/LocalAuthProvider";
-import type { GithubAuthInitializerOptions } from "./runtime/providers/GithubAuthProvider";
-import type { GoogleAuthInitializerOptions } from "./runtime/providers/GoogleAuthProvider";
-export { LocalAuthProvider } from "./runtime/providers/LocalAuthProvider";
+import {
+  collectSchemas,
+  stripSchemasFromProviders,
+  renderAuthSchemasRuntime,
+  renderAuthSchemasTypes,
+  type ModuleProvidersOptions,
+} from "./schema-utils";
+export type { ModuleProvidersOptions } from "./schema-utils";
+export type { LocalAuthProvider } from "./runtime/providers/LocalAuthProvider";
 export {
   AuthProvider,
   type AccessTokens,
@@ -20,13 +26,6 @@ export {
 } from "./runtime/providers/AuthProvider";
 // export type { AuthPlugin } from "./runtime/plugin/auth";
 export type { AuthState, AuthUser } from "./runtime/models";
-
-export type ModuleProvidersOptions = {
-  local?: LocalAuthInitializerOptions;
-  github?: GithubAuthInitializerOptions;
-  google?: GoogleAuthInitializerOptions;
-  // [key: string]: AuthProviderInterface
-};
 
 export type DeepRequired<T> = Required<{
   [P in keyof T]: T[P] extends object | undefined
@@ -91,10 +90,35 @@ export default defineNuxtModule<ModuleOptions>({
     logger.log("@workmate/nuxt-auth:: installing module");
     const resolver = createResolver(import.meta.url);
 
+    const collected = collectSchemas(options.providers);
+
+    const runtimeTemplate = addTemplate({
+      filename: "auth-schemas.gen.mjs",
+      write: true,
+      getContents: () => renderAuthSchemasRuntime(collected),
+    });
+
+    addTemplate({
+      filename: "auth-schemas.gen.d.ts",
+      write: true,
+      getContents: () => renderAuthSchemasTypes(collected),
+    });
+
+    nuxt.options.alias = nuxt.options.alias || {};
+    nuxt.options.alias["#auth-schemas"] = runtimeTemplate.dst;
+    nuxt.options.nitro = nuxt.options.nitro || {};
+    nuxt.options.nitro.alias = nuxt.options.nitro.alias || {};
+    nuxt.options.nitro.alias["#auth-schemas"] = runtimeTemplate.dst;
+
+    const serializableOptions: ModuleOptions = {
+      ...options,
+      providers: stripSchemasFromProviders(options.providers),
+    };
+
     nuxt.options.runtimeConfig.auth = defu(
       nuxt.options.runtimeConfig.auth,
-      options,
-    );
+      serializableOptions,
+    ) as ModuleOptions;
 
     nuxt.options.runtimeConfig.public.auth = defu(
       nuxt.options.runtimeConfig.public.auth,
