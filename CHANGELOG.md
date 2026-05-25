@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/work-mate/nuxt-auth-module/compare/v1.5.2...v1.6.0) (2026-05-25)
+
+
+### Features
+
+* allow passthrough fields for local login ([ec3dab7](https://github.com/work-mate/nuxt-auth-module/commit/ec3dab7590aca2d4d007a009ee95831336fd89a4))
+
 ## [1.5.2](https://github.com/work-mate/nuxt-auth-module/compare/v1.5.1...v1.5.2) (2026-05-25)
 
 
