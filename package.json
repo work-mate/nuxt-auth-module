@@ -72,6 +72,11 @@
   "files": [
     "dist"
   ],
+  "vitest": {
+    "sequence": {
+      "concurrent": false
+    }
+  },
   "scripts": {
     "prepack": "nuxt-module-build build",
     "dev": "nuxi dev playground",

@@ -30,7 +30,16 @@ export default defineEventHandler(async (event) => {
 
   const authClient = getAuthClient();
 
-  const authProvider = authClient.provider(provider);
+  let authProvider;
+  try {
+    authProvider = authClient.provider(provider);
+  } catch (e: any) {
+    setResponseStatus(event, 400);
+    return {
+      message: e.message ?? "Unknown provider",
+      data: { provider: [e.message ?? "Unknown provider"] },
+    } satisfies ErrorResponse;
+  }
 
   try {
     authProvider.validateRequestBody(body);
