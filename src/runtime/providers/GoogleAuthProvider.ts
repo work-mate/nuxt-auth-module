@@ -4,16 +4,23 @@ import {
   type AuthConfig,
   type AuthProviderInterface,
   type AuthUser,
+  type ErrorResponse,
 } from "../models";
 import jwt from "jsonwebtoken";
 import { ofetch } from "ofetch";
+import { flattenError, type ZodType } from "zod";
 import type { AccessTokens } from "./AuthProvider";
+import { userSchemas } from "#auth-schemas";
 
 export type GoogleAuthInitializerOptions = {
   CLIENT_ID: string;
   CLIENT_SECRET: string;
   HASHING_SECRET: string;
   SCOPES?: string;
+  schemas?: {
+    login?: ZodType;
+    user?: ZodType;
+  };
 };
 
 export interface GoogleAuthLoginData {
@@ -204,8 +211,6 @@ export class GoogleAuthProvider implements AuthProviderInterface {
    * @return {Promise<{ user: AuthUser }>} The user data.
    */
   async fetchUserData(tokens: any): Promise<{ user: AuthUser }> {
-    // Send a GET request to the Google OAuth2 userinfo endpoint
-    // with the access token in the Authorization header
     const response = await ofetch(
       "https://www.googleapis.com/oauth2/v3/userinfo",
       {
@@ -216,10 +221,17 @@ export class GoogleAuthProvider implements AuthProviderInterface {
       },
     );
 
-    // Return the user data
-    return {
-      user: response,
-    };
+    const schema = userSchemas.google;
+    if (!schema) return { user: response };
+
+    const result = schema.safeParse(response);
+    if (!result.success) {
+      throw {
+        message: "Invalid user response",
+        data: flattenError(result.error).fieldErrors,
+      } satisfies ErrorResponse;
+    }
+    return { user: result.data as AuthUser };
   } // end method fetchUserData
 
   /**

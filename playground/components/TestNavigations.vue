@@ -1,40 +1,20 @@
 <template>
   <div>
     <div style="margin-bottom: 56px">
-      <NuxtLink to="/protected">
-        Protected
-      </NuxtLink>
-      <br>
-      <NuxtLink to="/only-guest">
-        Only Guest Page
-      </NuxtLink>
-      <br>
-      <NuxtLink to="/implicit-protected">
-        Implicit Protected
-      </NuxtLink>
+      <NuxtLink to="/protected"> Protected </NuxtLink>
+      <br />
+      <NuxtLink to="/only-guest"> Only Guest Page </NuxtLink>
+      <br />
+      <NuxtLink to="/implicit-protected"> Implicit Protected </NuxtLink>
     </div>
 
-    <button @click="triggerLogin">
-      Login
-    </button>
-    <button @click="triggerLoginWithGithub">
-      Github login
-    </button>
-    <button @click="triggerLoginWithGoogle">
-      Google login
-    </button>
-    <button @click="triggerLogout">
-      Logout
-    </button>
-    <button @click="triggerRefreshUser">
-      Refresh User
-    </button>
-    <button @click="trigger">
-      use auth fetch
-    </button>
-    <button @click="triggerAlways401">
-      Always 401
-    </button>
+    <button @click="triggerLogin">Login</button>
+    <button @click="triggerLoginWithGithub">Github login</button>
+    <button @click="triggerLoginWithGoogle">Google login</button>
+    <button @click="triggerLogout">Logout</button>
+    <button @click="triggerRefreshUser">Refresh User</button>
+    <button @click="trigger">use auth fetch</button>
+    <button @click="triggerAlways401">Always 401</button>
 
     <pre>
       {{ state }}
@@ -96,7 +76,7 @@ async function triggerRefreshUser() {
 }
 
 async function trigger() {
-  const {data} = await useAuthFetch("/api/auth/melting");
+  const { data } = await useAuthFetch("/api/auth/melting");
   console.log(data.value);
 }
 

@@ -11,8 +11,8 @@ import type { DeepRequired } from "../../module";
 import { getRecursiveProperty } from "../helpers";
 import { ofetch } from "ofetch";
 import type { ModuleOptions } from "@nuxt/schema";
-import { flattenError } from "zod";
-import { endpointSchemas } from "../endpoint-schemas";
+import { flattenError, type ZodType } from "zod";
+import { loginSchemas, userSchemas } from "#auth-schemas";
 
 export type LocalAuthInitializerOptions = {
   endpoints?: {
@@ -38,6 +38,10 @@ export type LocalAuthInitializerOptions = {
         }
       | false;
   };
+  schemas?: {
+    login?: ZodType;
+    user?: ZodType;
+  };
 };
 
 export class LocalAuthProvider implements AuthProviderInterface {
@@ -56,7 +60,8 @@ export class LocalAuthProvider implements AuthProviderInterface {
       user: false,
       refreshToken: false,
     },
-  };
+    schemas: {},
+  } as DeepRequired<LocalAuthInitializerOptions>;
 
   constructor(options: LocalAuthInitializerOptions, config: ModuleOptions) {
     this.config = config;
@@ -134,7 +139,17 @@ export class LocalAuthProvider implements AuthProviderInterface {
       let user = res;
       if (userKey) user = getRecursiveProperty(res, userKey);
 
-      return { user };
+      const schema = userSchemas.local;
+      if (!schema) return { user };
+
+      const result = schema.safeParse(user);
+      if (!result.success) {
+        throw {
+          message: "Invalid user response",
+          data: flattenError(result.error).fieldErrors,
+        } satisfies ErrorResponse;
+      }
+      return { user: result.data as AuthUser };
     });
   }
 
@@ -162,8 +177,7 @@ export class LocalAuthProvider implements AuthProviderInterface {
    * @returns {boolean}
    */
   validateRequestBody(body: Record<string, any>): boolean {
-    const schema = endpointSchemas.get("signIn");
-
+    const schema = loginSchemas.local;
     if (!schema) return true;
 
     const result = schema.safeParse(body);
