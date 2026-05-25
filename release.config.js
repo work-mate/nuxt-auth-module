@@ -1,18 +1,13 @@
 export default {
   branches: [{ name: "v1", channel: "v1" }, "main"],
   plugins: [
-    [
-      "@semantic-release/commit-analyzer",
-      {
-        preset: "conventionalcommits", // 👈 Add this
+    ["@semantic-release/commit-analyzer", {
+      parserOpts: {
+        headerPattern: /^(\w*)(?:\((.*)\))?!?: (.*)$/,
+        breakingHeaderPattern: /^(\w*)(?:\((.*)\))?!: (.*)$/,
+        headerCorrespondence: ["type", "scope", "subject"],
       },
-    ],
-    [
-      "@semantic-release/release-notes-generator",
-      {
-        preset: "conventionalcommits", // 👈 Add this for consistent notes
-      },
-    ],
+    }],
     "@semantic-release/release-notes-generator",
     [
       "@semantic-release/changelog",
