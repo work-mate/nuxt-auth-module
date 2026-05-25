@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { createApp, defineEventHandler, toWebHandler } from 'h3'
 import { AuthProvider } from '../../src/runtime/providers/AuthProvider'
 import type { AuthProviderInterface } from '../../src/runtime/models'
@@ -30,15 +30,6 @@ function makeRequest(cookieHeader = '') {
 
 const AUTH_COOKIES =
   'auth:token=mock-token; auth:refreshToken=mock-refresh; auth:tokenType=Bearer; auth:provider=local'
-
-function makeAuthCookies(override: Partial<Record<'token' | 'refresh' | 'type' | 'provider', string>> = {}) {
-  return [
-    `auth:token=${override.token ?? 'mock-token'}`,
-    `auth:refreshToken=${override.refresh ?? 'mock-refresh'}`,
-    `auth:tokenType=${override.type ?? 'Bearer'}`,
-    `auth:provider=${override.provider ?? 'local'}`,
-  ].join('; ')
-}
 
 // ─── provider() ──────────────────────────────────────────────────────────────
 

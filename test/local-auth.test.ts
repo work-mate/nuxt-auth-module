@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { fileURLToPath } from 'node:url'
 import { setup, fetch } from '@nuxt/test-utils/e2e'
 
@@ -131,7 +131,7 @@ describe('local auth API routes', async () => {
     expect(res.status).toBe(200)
     const tokenCookie = setCookies.find((c) => c.startsWith('auth:token='))
     expect(tokenCookie).toBeDefined()
-    expect(tokenCookie).toMatch(/auth:token=;|auth:token=\s*;|Max-Age=0/)
+    expect(tokenCookie).toMatch(/auth:token=\s*;|Max-Age=0/)
   })
 
   it('GET /api/auth/user with valid cookie returns user', async () => {

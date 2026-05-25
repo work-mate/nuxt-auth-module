@@ -2,9 +2,9 @@
   <div>
     <div style="margin-bottom: 56px">
       <NuxtLink to="/protected"> Protected </NuxtLink>
-      <br />
+      <br >
       <NuxtLink to="/only-guest"> Only Guest Page </NuxtLink>
-      <br />
+      <br >
       <NuxtLink to="/implicit-protected"> Implicit Protected </NuxtLink>
     </div>
 

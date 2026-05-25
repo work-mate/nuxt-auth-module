@@ -2,10 +2,6 @@ import { describe, it, expect } from 'vitest'
 import { fileURLToPath } from 'node:url'
 import { setup, fetch } from '@nuxt/test-utils/e2e'
 
-function extractCookies(res: Response): string {
-  return res.headers.getSetCookie().map((c) => c.split(';')[0]).join('; ')
-}
-
 describe('schema validation', async () => {
   process.env.TEST_BASE_URL = 'http://localhost:4001'
 

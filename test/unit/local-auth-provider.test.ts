@@ -1,10 +1,7 @@
 import { vi, describe, it, expect } from 'vitest'
-import { z } from 'zod'
 
 // Mock #auth-schemas BEFORE importing LocalAuthProvider.
 // vi.mock is hoisted to the top of the module by Vitest.
-const loginSchema = z.object({ email_address: z.email(), password: z.string().min(8) })
-
 vi.mock('#auth-schemas', async () => {
   const { z: zod } = await import('zod')
   return {
