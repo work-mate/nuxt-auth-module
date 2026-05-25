@@ -1,5 +1,5 @@
 export default {
-  branches: [{ name: "v1", channel: "v1" }, "main"],
+  branches: [{ name: "v1", channel: "v1" }, { name: "main", channel: false }],
   plugins: [
     ["@semantic-release/commit-analyzer", {
       parserOpts: {
