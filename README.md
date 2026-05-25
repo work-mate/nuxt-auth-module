@@ -296,9 +296,18 @@ login("local", {
   password,
 });
 
+// pass extra fields — forwarded verbatim to the sign-in request body
+login("local", {
+  principal,
+  password,
+  type: "admin",
+});
+
 // using github
 login("github");
 ```
+
+Any fields beyond `principal` and `password` are spread into the request body as-is. This is useful when your backend expects additional fields (e.g. `type`, `tenant`, `otp`) alongside the credentials.
 
 ## middlewares
 
