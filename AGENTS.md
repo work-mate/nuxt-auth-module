@@ -16,7 +16,8 @@ Nuxt module package (`@workmate/nuxt-auth`). Published artifact is `dist/module.
 
 - Providers accept `schemas: { login?, user? }` (Zod). These cannot survive `runtimeConfig` — Nuxt 4 runs Nitro in a separate worker and Zod instances aren't JSON-serializable.
 - `collectSchemas` converts them to JSON Schema at build time; `stripSchemasFromProviders` removes them before defu-merge into `runtimeConfig.auth`. At runtime the generated `#auth-schemas` module rebuilds Zod via `z.fromJSONSchema()`.
-- Providers read `loginSchemas[name]` / `userSchemas[name]` from `#auth-schemas` for validation. Never read schemas from `runtimeConfig` — they won't be there.
+- Providers and `src/runtime/composables/useAuthLogin.ts` read `loginSchemas[name]` / `userSchemas[name]` from `#auth-schemas` for validation. Never read schemas from `runtimeConfig` — they won't be there.
+- Generated type file exports `LoginData` and `UserDataByProvider` (keyed by `local | github | google`). `useAuthLogin().local()` is typed off `LoginData["local"]`, which is derived from the user's Zod schema in `nuxt.config.ts` — so changing that schema changes public types.
 - This depends on **Zod 4** (`zod@4.x`). `z.toJSONSchema` / `z.fromJSONSchema` do not exist on Zod 3. Do not downgrade.
 - After changing schemas in `playground/nuxt.config.ts`, the generated files in `.nuxt/` need a regen — re-run `dev` / `dev:prepare`.
 
