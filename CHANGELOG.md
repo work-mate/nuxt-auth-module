@@ -1,3 +1,10 @@
+## [1.6.2](https://github.com/work-mate/nuxt-auth-module/compare/v1.6.1...v1.6.2) (2026-05-25)
+
+
+### Bug Fixes
+
+* trigger 1.6.3 ([88b5a37](https://github.com/work-mate/nuxt-auth-module/commit/88b5a37f58a86d777100dc410f54ceb22cfd8d96))
+
 ## [1.6.1](https://github.com/work-mate/nuxt-auth-module/compare/v1.6.0...v1.6.1) (2026-05-25)
 
 
