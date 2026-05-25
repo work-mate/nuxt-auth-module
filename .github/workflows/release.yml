@@ -12,9 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: npm
       - run: npm ci
       - run: npm run lint
       - run: npx nuxt-module-build prepare
@@ -32,9 +33,10 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: 21
+          node-version: 24
+          cache: npm
       - run: npm ci
       - run: npx nuxt-module-build prepare
       - run: npm run prepack
