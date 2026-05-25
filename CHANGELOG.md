@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/work-mate/nuxt-auth-module/compare/v2.0.0...v2.0.1) (2026-05-25)
+
+
+### Bug Fixes
+
+* trigger latest release to version 2 ([4dbe28e](https://github.com/work-mate/nuxt-auth-module/commit/4dbe28e1e14d96f02d7d181959fb4c5402abaaa9))
+
 # [2.0.0](https://github.com/work-mate/nuxt-auth-module/compare/v1.6.0...v2.0.0) (2026-05-25)
 
 
