@@ -1,3 +1,11 @@
+## [1.5.2](https://github.com/work-mate/nuxt-auth-module/compare/v1.5.1...v1.5.2) (2026-05-25)
+
+
+### Bug Fixes
+
+* support feat! breaking change notation in semantic-release ([8e230c2](https://github.com/work-mate/nuxt-auth-module/commit/8e230c2b8950bcd3d7a1fa3ac19ccf6a383e8696))
+* update semantic-release branches to main and v1 ([4452e7d](https://github.com/work-mate/nuxt-auth-module/commit/4452e7d20386ebeed6c8fe77c4b8c7991c75d05a))
+
 ## [1.5.1](https://github.com/work-mate/nuxt-auth-module/compare/v1.5.0...v1.5.1) (2025-10-12)
 
 
