@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/work-mate/nuxt-auth-module/compare/v2.0.1...v2.1.0) (2026-09-29)
+
+
+### Features
+
+* include credentials on the ohmyfetch instance ([6865747](https://github.com/work-mate/nuxt-auth-module/commit/686574731db36fd7f14a16ecc550019c60127aad))
+
 ## [2.0.1](https://github.com/work-mate/nuxt-auth-module/compare/v2.0.0...v2.0.1) (2026-05-25)
 
 
