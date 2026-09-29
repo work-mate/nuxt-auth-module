@@ -7,6 +7,7 @@ export default defineNuxtPlugin(async () => {
 
   const authFetch = $fetch.create({
     baseURL: authConfig.apiClient.baseURL,
+    credentials: authConfig.apiClient.credentials,
     retry: 1,
     retryStatusCodes: [401],
     onRequest({ options }) {

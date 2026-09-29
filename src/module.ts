@@ -43,6 +43,7 @@ export interface ModuleOptions {
   };
   apiClient: {
     baseURL: string;
+    credentials?: RequestCredentials;
   };
   token: {
     type: string;

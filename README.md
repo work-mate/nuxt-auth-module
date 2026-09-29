@@ -127,6 +127,7 @@ interface ModuleOptions {
   };
   apiClient: {
     baseURL: string;
+    credentials?: RequestCredentials;
   };
   token: {
     type: string;
@@ -406,6 +407,17 @@ To set the base URL:
 auth: {
   apiClient: {
     baseURL: "http://localhost:8080/v1",
+  },
+}
+```
+
+Set `apiClient.credentials` to `"include"` when the API is on another origin and requests must carry cookies (for example load-balancer sticky-session cookies). The API must then respond with `Access-Control-Allow-Credentials: true` and an exact `Access-Control-Allow-Origin` — a `*` wildcard is rejected by browsers for credentialed requests.
+
+```ts
+auth: {
+  apiClient: {
+    baseURL: "https://api.example.com",
+    credentials: "include",
   },
 }
 ```
