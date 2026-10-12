@@ -1,3 +1,5 @@
+# [3.0.0](https://github.com/work-mate/nuxt-auth-module/compare/v2.2.0...v3.0.0) (2026-10-12)
+
 # [3.0.0](https://github.com/work-mate/nuxt-auth-module/compare/v2.1.0...v3.0.0) (2026-10-12)
 
 ### Features
