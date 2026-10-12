@@ -1,6 +1,7 @@
 # AGENTS.md
 
 Nuxt module package (`@workmate/nuxt-auth`). Published artifact is `dist/module.mjs` built by `@nuxt/module-builder`. There is no host app — `playground/` is the dev harness and `test/fixtures/` holds the test apps.
+.
 
 ## Layout that matters
 
