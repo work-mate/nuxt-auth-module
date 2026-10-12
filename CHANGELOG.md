@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/work-mate/nuxt-auth-module/compare/v2.1.0...v2.2.0) (2026-10-12)
+
+
+### Features
+
+* update zod and docs ([e6ffea3](https://github.com/work-mate/nuxt-auth-module/commit/e6ffea371bf0c979f5df3f9bcbcf0c4e7bac8367))
+
 # [2.1.0](https://github.com/work-mate/nuxt-auth-module/compare/v2.0.1...v2.1.0) (2026-09-29)
 
 
