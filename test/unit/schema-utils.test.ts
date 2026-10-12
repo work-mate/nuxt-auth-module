@@ -21,7 +21,7 @@ describe('collectSchemas', () => {
     const result = collectSchemas({
       local: {
         schemas: {
-          login: z.object({ email: z.email(), password: z.string() }),
+          login: () => z.object({ email: z.email(), password: z.string() }),
         },
       },
     })
@@ -33,7 +33,7 @@ describe('collectSchemas', () => {
     const result = collectSchemas({
       local: {
         schemas: {
-          user: z.object({ id: z.string(), email: z.email() }),
+          user: () => z.object({ id: z.string(), email: z.email() }),
         },
       },
     })
@@ -45,8 +45,8 @@ describe('collectSchemas', () => {
     const result = collectSchemas({
       local: {
         schemas: {
-          login: z.object({ email: z.email() }),
-          user: z.object({ id: z.string() }),
+          login: () => z.object({ email: z.email() }),
+          user: () => z.object({ id: z.string() }),
         },
       },
     })
@@ -57,13 +57,21 @@ describe('collectSchemas', () => {
   it('collects schemas for multiple providers', () => {
     const userSchema = z.object({ id: z.string() })
     const result = collectSchemas({
-      local: { schemas: { user: userSchema } },
-      github: { schemas: { user: userSchema } },
-      google: { schemas: { user: userSchema } },
+      local: { schemas: { user: () => userSchema } },
+      github: { schemas: { user: () => userSchema } },
+      google: { schemas: { user: () => userSchema } },
     })
     expect(result.user.local).toBeDefined()
     expect(result.user.github).toBeDefined()
     expect(result.user.google).toBeDefined()
+  })
+
+  it('rejects a schema that is not a function', () => {
+    expect(() =>
+      collectSchemas({
+        local: { schemas: { login: z.object({ email: z.email() }) as any } },
+      }),
+    ).toThrow('local.login must be a function that returns a Zod schema')
   })
 
   it('skips a provider with no schemas property', () => {
@@ -78,7 +86,7 @@ describe('collectSchemas', () => {
     const result = collectSchemas({
       local: {
         schemas: {
-          login: z.object({ email: z.email(), password: z.string() }),
+          login: () => z.object({ email: z.email(), password: z.string() }),
         },
       },
     })
@@ -94,7 +102,7 @@ describe('stripSchemasFromProviders', () => {
   it('removes the schemas key from the local provider', () => {
     const input = {
       local: {
-        schemas: { login: z.object({ email: z.email() }) },
+        schemas: { login: () => z.object({ email: z.email() }) },
         endpoints: { signIn: { path: '/login' } },
       },
     } as any
@@ -107,7 +115,7 @@ describe('stripSchemasFromProviders', () => {
   it('preserves other provider options after stripping', () => {
     const input = {
       local: {
-        schemas: { login: z.object({ email: z.email() }) },
+        schemas: { login: () => z.object({ email: z.email() }) },
         endpoints: { signIn: { path: '/custom-login', method: 'POST' } },
       },
     } as any
@@ -136,9 +144,9 @@ describe('stripSchemasFromProviders', () => {
   it('strips schemas from all three providers independently', () => {
     const schema = z.object({ id: z.string() })
     const input = {
-      local: { schemas: { user: schema }, endpoints: { signIn: { path: '/l' } } },
-      github: { schemas: { user: schema }, CLIENT_ID: 'gid', CLIENT_SECRET: 'gsec', HASHING_SECRET: 'h', SCOPES: 'user' },
-      google: { schemas: { user: schema }, CLIENT_ID: 'goid', CLIENT_SECRET: 'gosec', HASHING_SECRET: 'h', SCOPES: 'email' },
+      local: { schemas: { user: () => schema }, endpoints: { signIn: { path: '/l' } } },
+      github: { schemas: { user: () => schema }, CLIENT_ID: 'gid', CLIENT_SECRET: 'gsec', HASHING_SECRET: 'h', SCOPES: 'user' },
+      google: { schemas: { user: () => schema }, CLIENT_ID: 'goid', CLIENT_SECRET: 'gosec', HASHING_SECRET: 'h', SCOPES: 'email' },
     } as any
 
     const result = stripSchemasFromProviders(input)

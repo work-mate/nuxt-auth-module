@@ -3,12 +3,13 @@ import {
   SupportedAuthProvider,
   type AuthConfig,
   type AuthProviderInterface,
+  type AuthSchema,
   type AuthUser,
   type ErrorResponse,
 } from "../models";
 import jwt from "jsonwebtoken";
 import { ofetch } from "ofetch";
-import { flattenError, type ZodType } from "zod";
+import { flattenError } from "zod";
 import type { AccessTokens } from "./AuthProvider";
 import { userSchemas } from "#auth-schemas";
 
@@ -18,8 +19,8 @@ export type GithubAuthInitializerOptions = {
   HASHING_SECRET: string;
   SCOPES?: string;
   schemas?: {
-    login?: ZodType;
-    user?: ZodType;
+    login?: AuthSchema;
+    user?: AuthSchema;
   };
 };
 

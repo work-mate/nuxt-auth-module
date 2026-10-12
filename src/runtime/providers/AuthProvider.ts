@@ -4,7 +4,6 @@ import type { ModuleOptions } from "@nuxt/schema";
 
 export type AuthProviderContructorOptions = {
   providers: Record<string, AuthProviderInterface>;
-  defaultProviderKey?: string;
   config: ModuleOptions;
 };
 
@@ -36,21 +35,9 @@ export class AuthProvider {
   /**
    * @param {AuthProviderContructorOptions} options
    */
-  constructor({
-    providers,
-    defaultProviderKey,
-    config,
-  }: AuthProviderContructorOptions) {
+  constructor({ providers, config }: AuthProviderContructorOptions) {
     this.config = config;
     this.providers = providers;
-    let providerKey = defaultProviderKey || "local";
-
-    if (!this.providers[providerKey]) {
-      const providerKeys = Object.keys(this.providers);
-      if (providerKeys.length) {
-        providerKey = providerKeys[0]!;
-      }
-    }
   }
 
   /**

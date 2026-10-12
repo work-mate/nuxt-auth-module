@@ -1,13 +1,14 @@
 import { defineNuxtPlugin, useNuxtApp, useRuntimeConfig } from "#app";
 import { type $Fetch } from "ofetch";
+import type { ModuleOptions } from "../../module";
 
 export default defineNuxtPlugin(async () => {
   const { isLoggedIn, token, tokenType, refreshTokens, logout } = useNuxtApp().$auth;
-  const authConfig = useRuntimeConfig().public.auth;
+  const apiClient: ModuleOptions["apiClient"] = useRuntimeConfig().public.auth.apiClient;
 
   const authFetch = $fetch.create({
-    baseURL: authConfig.apiClient.baseURL,
-    credentials: authConfig.apiClient.credentials,
+    baseURL: apiClient.baseURL,
+    credentials: apiClient.credentials,
     retry: 1,
     retryStatusCodes: [401],
     onRequest({ options }) {

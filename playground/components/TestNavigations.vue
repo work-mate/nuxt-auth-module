@@ -24,7 +24,7 @@
 
 <script setup>
 const {
-  loggedIn,
+  isLoggedIn,
   user,
   token,
   refreshToken,
@@ -36,7 +36,7 @@ const {
 } = useAuth();
 
 const state = computed(() => ({
-  loggedIn: loggedIn.value,
+  loggedIn: isLoggedIn.value,
   user: user.value,
   token: token.value,
   refreshToken: refreshToken.value,

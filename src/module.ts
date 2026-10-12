@@ -36,7 +36,6 @@ export type DeepRequired<T> = Required<{
 export interface ModuleOptions {
   global: boolean;
   providers: ModuleProvidersOptions;
-  defaultProvider?: string;
   redirects: {
     redirectIfNotLoggedIn?: string;
     redirectIfLoggedIn?: string;
@@ -75,7 +74,6 @@ export default defineNuxtModule<ModuleOptions>({
     apiClient: {
       baseURL: "",
     },
-    defaultProvider: "local",
     token: {
       type: "Bearer",
       maxAge: 1000 * 60 * 60 * 24 * 30,
@@ -119,7 +117,7 @@ export default defineNuxtModule<ModuleOptions>({
     nuxt.options.runtimeConfig.auth = defu(
       nuxt.options.runtimeConfig.auth,
       serializableOptions,
-    ) as ModuleOptions;
+    );
 
     nuxt.options.runtimeConfig.public.auth = defu(
       nuxt.options.runtimeConfig.public.auth,

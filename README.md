@@ -9,7 +9,7 @@ Auth module for Nuxt 3 & 4 apps. Supports local credentials, GitHub OAuth, and G
 | Provider | Key      | Status |
 | -------- | -------- | ------ |
 | Local    | local    | ✅     |
-| GitHub   | github.  | ✅     |
+| GitHub   | github   | ✅     |
 | Google   | google   | ✅     |
 | Facebook | facebook | 🚧     |
 | LinkedIn | linkedin | 🚧     |
@@ -21,6 +21,8 @@ npm install @workmate/nuxt-auth zod
 # or
 yarn add @workmate/nuxt-auth zod
 ```
+
+`zod` is a peer dependency. The module needs `zod@^4.2.0`.
 
 Add to `nuxt.config.ts`:
 
@@ -48,7 +50,6 @@ export default defineNuxtConfig({
   modules: ["@workmate/nuxt-auth"],
   auth: {
     global: false,
-    defaultProvider: "local",
     redirects: {
       redirectIfNotLoggedIn: "/login",
       redirectIfLoggedIn: "/",
@@ -86,11 +87,11 @@ export default defineNuxtConfig({
           },
         },
         schemas: {
-          login: z.object({
+          login: () => z.object({
             email_address: z.email(),
             password: z.string().min(8),
           }),
-          user: userSchema,
+          user: () => userSchema,
         },
       },
 
@@ -99,7 +100,7 @@ export default defineNuxtConfig({
         CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET || "",
         HASHING_SECRET: process.env.HASHING_SECRET || "",
         SCOPES: "user repo",
-        schemas: { user: userSchema },
+        schemas: { user: () => userSchema },
       },
 
       google: {
@@ -108,7 +109,7 @@ export default defineNuxtConfig({
         HASHING_SECRET: process.env.HASHING_SECRET || "",
         SCOPES:
           "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
-        schemas: { user: userSchema },
+        schemas: { user: () => userSchema },
       },
     },
   },
@@ -120,7 +121,6 @@ export default defineNuxtConfig({
 ```ts
 interface ModuleOptions {
   global: boolean;
-  defaultProvider?: string;
   redirects: {
     redirectIfNotLoggedIn?: string;
     redirectIfLoggedIn?: string;
@@ -179,8 +179,8 @@ type LocalAuthInitializerOptions = {
       | false;
   };
   schemas?: {
-    login?: ZodType;
-    user?: ZodType;
+    login?: () => ZodType;
+    user?: () => ZodType;
   };
 };
 
@@ -189,7 +189,7 @@ type GithubAuthInitializerOptions = {
   CLIENT_SECRET: string;
   HASHING_SECRET: string;
   SCOPES?: string;
-  schemas?: { user?: ZodType };
+  schemas?: { user?: () => ZodType };
 };
 
 type GoogleAuthInitializerOptions = {
@@ -197,7 +197,7 @@ type GoogleAuthInitializerOptions = {
   CLIENT_SECRET: string;
   HASHING_SECRET: string;
   SCOPES?: string;
-  schemas?: { user?: ZodType };
+  schemas?: { user?: () => ZodType };
 };
 ```
 
@@ -363,7 +363,7 @@ await refreshTokens(); // exchange refresh token for new tokens
 
 ### `useAuthFetch()`
 
-Wrapper around Nuxt's `useFetch` that automatically injects the Authorization header. Retries once on 401 after refreshing tokens.
+Wrapper around Nuxt's `useFetch` that automatically injects the Authorization header. Retries once on 401 after refreshing tokens. It has the same arguments and return type as `useFetch`.
 
 ```ts
 const { data, error } = await useAuthFetch("/api/profile");
@@ -474,7 +474,9 @@ Redirects are configured under `auth.redirects`:
 
 ## Schema validation
 
-Schemas are defined in `nuxt.config.ts` per provider using Zod 4. They are converted to JSON Schema at build time and reconstructed at runtime — no serialization issues.
+Schemas are defined in `nuxt.config.ts` per provider using Zod 4.2 or later. They are converted to JSON Schema at build time and reconstructed at runtime — no serialization issues.
+
+Each schema is a function that returns the Zod schema. Nuxt 4.5 and later deep-clone `nuxt.config.ts`, and a Zod schema that is put directly in the config stops the build with `Cannot read properties of undefined (reading 'checks')`.
 
 ```ts
 // nuxt.config.ts
@@ -482,8 +484,8 @@ import { z } from "zod";
 
 local: {
   schemas: {
-    login: z.object({ email_address: z.email(), password: z.string().min(8) }),
-    user: z.object({ id: z.string(), email: z.email(), name: z.string().optional() }),
+    login: () => z.object({ email_address: z.email(), password: z.string().min(8) }),
+    user: () => z.object({ id: z.string(), email: z.email(), name: z.string().optional() }),
   },
 }
 ```
@@ -492,8 +494,8 @@ local: {
 
 ```json
 {
-  "message": "Validation error",
-  "data": { "email_address": ["Invalid email"] }
+  "message": "Invalid request body",
+  "data": { "password": ["Too small: expected string to have >=8 characters"] }
 }
 ```
 
@@ -501,7 +503,51 @@ If `schemas.login` is not configured, the body is forwarded as-is with no valida
 
 **`schemas.user`** — validated server-side when your backend returns user data. Mismatches throw a server error with field-level detail. Optional — omit to skip validation.
 
+A schema must be representable as JSON Schema. A schema with `.transform()` or `z.date()` stops the build. A `.refine()` check is not kept, because JSON Schema cannot hold a function.
+
 TypeScript infers the login payload type from your schema — `localLogin(opts)` is typed as the Zod output of `schemas.login`, or `Record<string, any>` if no schema is set.
+
+---
+
+## Migration: v2 → v3 (breaking changes in v3.0.0)
+
+### Schemas are functions
+
+Each schema in `nuxt.config.ts` is a function that returns the Zod schema. A schema that is not a function stops the build.
+
+**Before:**
+
+```ts
+schemas: {
+  login: z.object({ email_address: z.email(), password: z.string().min(8) }),
+  user: userSchema,
+}
+```
+
+**After:**
+
+```ts
+schemas: {
+  login: () => z.object({ email_address: z.email(), password: z.string().min(8) }),
+  user: () => userSchema,
+}
+```
+
+### Zod is a peer dependency
+
+The module uses the `zod` package of your app. Install `zod@^4.2.0` in your app:
+
+```bash
+npm install zod@^4.2.0
+```
+
+### `defaultProvider` is removed
+
+The `defaultProvider` option had no effect. Remove it from the `auth` config.
+
+### `useAuthFetch` has the type of `useFetch`
+
+`useAuthFetch` accepts the same arguments as `useFetch` and returns the same type. When you give no type argument, the type of `data` comes from the server route, as it does for `useFetch`.
 
 ---
 
@@ -541,7 +587,7 @@ local: {
     },
   },
   schemas: {
-    login: z.object({
+    login: () => z.object({
       email_address: z.email(),
       password: z.string().min(8),
     }),
@@ -567,10 +613,10 @@ await localLogin({ email_address: values.email, password: values.password });
 
 ### Peer dependency
 
-Zod 4 is now required (`zod@^4.0.0`). If you were on Zod 3, upgrade:
+Zod 4.2 or later is required (`zod@^4.2.0`). If you were on Zod 3, upgrade:
 
 ```bash
-npm install zod@^4.0.0
+npm install zod@^4.2.0
 ```
 
-`z.toJSONSchema` and `z.fromJSONSchema` do not exist on Zod 3.
+`z.fromJSONSchema` does not exist before Zod 4.2.

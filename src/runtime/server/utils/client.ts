@@ -44,11 +44,6 @@ export const getAuthClient = (): AuthProvider => {
      * The available auth providers from Nuxt runtime config
      */
     providers,
-    /**
-     * The default provider key to use from Nuxt runtime config,
-     * or fallback to "local" if not specified
-     */
-    defaultProviderKey: config.defaultProvider || "local",
     config,
   });
 

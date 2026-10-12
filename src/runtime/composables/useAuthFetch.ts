@@ -1,8 +1,5 @@
 import { useFetch, useNuxtApp, unref } from "#imports";
 
-// Re-export the parameter types from useFetch for consistency
-type UseFetchReturn<T> = ReturnType<typeof useFetch<T>>;
-type UseFetchOptions<T> = Parameters<typeof useFetch<T>>[1];
 type UseFetchRequest = Parameters<typeof useFetch>[0];
 
 /**
@@ -15,10 +12,7 @@ type UseFetchRequest = Parameters<typeof useFetch>[0];
  * @param options - Same options as useFetch  
  * @returns Same return type as useFetch
  */
-export default function useAuthFetch<T = unknown>(
-  request: UseFetchRequest,
-  options?: UseFetchOptions<T>
-): UseFetchReturn<T> {
+function useAuthFetch(request: UseFetchRequest, options?: Record<string, any>) {
   const { $authFetch } = useNuxtApp();
 
   // Generate a stable key to prevent hydration errors
@@ -33,8 +27,11 @@ export default function useAuthFetch<T = unknown>(
     // Override $fetch with our authenticated version
     // Type assertion needed due to complex Nuxt internal type constraints
     $fetch: $authFetch as any,
-  }) as UseFetchReturn<T>;
+  });
 }
+
+// The public type is useFetch's own, so it follows the installed Nuxt version.
+export default useAuthFetch as typeof useFetch;
 
 /**
  * Generate a stable key for caching that prevents hydration errors

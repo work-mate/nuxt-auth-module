@@ -2,6 +2,7 @@ import defu from "defu";
 import type {
   AuthConfig,
   AuthProviderInterface,
+  AuthSchema,
   AuthUser,
   ErrorResponse,
   HttpMethod,
@@ -11,7 +12,7 @@ import type { DeepRequired } from "../../module";
 import { getRecursiveProperty } from "../helpers";
 import { ofetch } from "ofetch";
 import type { ModuleOptions } from "@nuxt/schema";
-import { flattenError, type ZodType } from "zod";
+import { flattenError } from "zod";
 import { loginSchemas, userSchemas } from "#auth-schemas";
 
 export type LocalAuthInitializerOptions = {
@@ -39,8 +40,8 @@ export type LocalAuthInitializerOptions = {
       | false;
   };
   schemas?: {
-    login?: ZodType;
-    user?: ZodType;
+    login?: AuthSchema;
+    user?: AuthSchema;
   };
 };
 

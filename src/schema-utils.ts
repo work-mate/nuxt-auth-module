@@ -1,4 +1,5 @@
-import { z, type ZodType } from "zod";
+import { z } from "zod";
+import type { AuthSchema } from "./runtime/models";
 import type { LocalAuthInitializerOptions } from "./runtime/providers/LocalAuthProvider";
 import type { GithubAuthInitializerOptions } from "./runtime/providers/GithubAuthProvider";
 import type { GoogleAuthInitializerOptions } from "./runtime/providers/GoogleAuthProvider";
@@ -20,13 +21,22 @@ export type CollectedSchemas = {
 function zodToJson(
   provider: ProviderName,
   kind: SchemaKind,
-  schema: ZodType,
+  schema: AuthSchema,
 ): Record<string, unknown> {
+  if (typeof schema !== "function") {
+    throw new TypeError(
+      `@workmate/nuxt-auth: schema for ${provider}.${kind} must be a function that returns a Zod schema`,
+    );
+  }
+
+  const zodSchema = schema();
+
   try {
-    return z.toJSONSchema(schema) as Record<string, unknown>;
+    return z.toJSONSchema(zodSchema) as Record<string, unknown>;
   } catch (e: any) {
     throw new Error(
       `@workmate/nuxt-auth: schema for ${provider}.${kind} cannot be represented as JSON Schema: ${e?.message ?? e}`,
+      { cause: e },
     );
   }
 }

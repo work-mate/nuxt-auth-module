@@ -26,6 +26,13 @@ export interface AuthProviderInterface {
   validateRequestBody(body: Record<string, any>): boolean;
 }
 
+/**
+ * A function that returns a Zod schema.
+ * Nuxt 4.5+ deep-clones `nuxt.config`, and a Zod instance cannot be cloned,
+ * so a schema cannot be put directly in the config.
+ */
+export type AuthSchema = () => ZodType;
+
 export type AuthUser<TSchema extends ZodType = ZodObject<any>> =
   z.infer<TSchema>;
 

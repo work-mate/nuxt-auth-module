@@ -40,11 +40,11 @@ export default defineNuxtConfig({
           },
         },
         schemas: {
-          login: z.object({
+          login: () => z.object({
             email_address: z.email(),
             password: z.string().min(8),
           }),
-          user: userSchema,
+          user: () => userSchema,
         },
       },
       github: {
@@ -52,7 +52,7 @@ export default defineNuxtConfig({
         CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET || "",
         HASHING_SECRET: process.env.HASHING_SECRET || "secret",
         SCOPES: "user repo",
-        schemas: { user: userSchema },
+        schemas: { user: () => userSchema },
       },
       google: {
         CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "",
@@ -60,7 +60,7 @@ export default defineNuxtConfig({
         HASHING_SECRET: process.env.HASHING_SECRET || "secret",
         SCOPES:
           "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
-        schemas: { user: userSchema },
+        schemas: { user: () => userSchema },
       },
     },
   },

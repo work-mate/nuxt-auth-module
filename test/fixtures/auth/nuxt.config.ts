@@ -46,11 +46,11 @@ export default defineNuxtConfig({
           },
         },
         schemas: {
-          login: z.object({
+          login: () => z.object({
             email_address: z.email(),
             password: z.string().min(8),
           }).passthrough(),
-          user: userSchema,
+          user: () => userSchema,
         },
       },
     },
