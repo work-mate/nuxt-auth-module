@@ -1,30 +1,42 @@
-# [2.2.0](https://github.com/work-mate/nuxt-auth-module/compare/v2.1.0...v2.2.0) (2026-10-12)
-
+# [3.0.0](https://github.com/work-mate/nuxt-auth-module/compare/v2.1.0...v3.0.0) (2026-10-12)
 
 ### Features
 
-* update zod and docs ([e6ffea3](https://github.com/work-mate/nuxt-auth-module/commit/e6ffea371bf0c979f5df3f9bcbcf0c4e7bac8367))
+- update zod and docs ([e6ffea3](https://github.com/work-mate/nuxt-auth-module/commit/e6ffea371bf0c979f5df3f9bcbcf0c4e7bac8367))
+- support Nuxt 4.5 and later, which deep-clone `nuxt.config` ([e6ffea3](https://github.com/work-mate/nuxt-auth-module/commit/e6ffea371bf0c979f5df3f9bcbcf0c4e7bac8367))
+- `useAuthFetch` has the same arguments and return type as `useFetch` ([e6ffea3](https://github.com/work-mate/nuxt-auth-module/commit/e6ffea371bf0c979f5df3f9bcbcf0c4e7bac8367))
+- a schema that is not a function stops the build with a clear error ([e6ffea3](https://github.com/work-mate/nuxt-auth-module/commit/e6ffea371bf0c979f5df3f9bcbcf0c4e7bac8367))
+
+### BREAKING CHANGES
+
+This release has breaking changes, although its version number is a minor version. See the [migration guide](README.md#migration-v2--v3-breaking-changes-in-v300).
+
+- `schemas.login` and `schemas.user` must be functions that return a Zod schema, for example `login: () => z.object({ ... })`. A schema that is put directly in the config stops the build.
+- `zod` is a peer dependency (`zod@^4.2.0`). Install it in your app.
+- The `defaultProvider` option is removed. It had no effect.
+- With no type argument, `useAuthFetch` types `data` from the server route, not as `unknown`.
+
+### Dependencies
+
+- `h3` `^1.15.11`, `@nuxt/kit` `^4.6.1`, `ofetch` `^1.5.1`, `defu` `^6.1.7`, `jsonwebtoken` `^9.0.3`
 
 # [2.1.0](https://github.com/work-mate/nuxt-auth-module/compare/v2.0.1...v2.1.0) (2026-09-29)
 
-
 ### Features
 
-* include credentials on the ohmyfetch instance ([6865747](https://github.com/work-mate/nuxt-auth-module/commit/686574731db36fd7f14a16ecc550019c60127aad))
+- include credentials on the ohmyfetch instance ([6865747](https://github.com/work-mate/nuxt-auth-module/commit/686574731db36fd7f14a16ecc550019c60127aad))
 
 ## [2.0.1](https://github.com/work-mate/nuxt-auth-module/compare/v2.0.0...v2.0.1) (2026-05-25)
 
-
 ### Bug Fixes
 
-* trigger latest release to version 2 ([4dbe28e](https://github.com/work-mate/nuxt-auth-module/commit/4dbe28e1e14d96f02d7d181959fb4c5402abaaa9))
+- trigger latest release to version 2 ([4dbe28e](https://github.com/work-mate/nuxt-auth-module/commit/4dbe28e1e14d96f02d7d181959fb4c5402abaaa9))
 
 # [2.0.0](https://github.com/work-mate/nuxt-auth-module/compare/v1.6.0...v2.0.0) (2026-05-25)
 
-
 ### Bug Fixes
 
-* support feat! breaking change notation in semantic-release ([1098f6f](https://github.com/work-mate/nuxt-auth-module/commit/1098f6ff58f372ad5247f1e97ef1792536575812))
+- support feat! breaking change notation in semantic-release ([1098f6f](https://github.com/work-mate/nuxt-auth-module/commit/1098f6ff58f372ad5247f1e97ef1792536575812))
 
 ## [1.5.1](https://github.com/work-mate/nuxt-auth-module/compare/v1.5.0...v1.5.1) (2025-10-12)
 
