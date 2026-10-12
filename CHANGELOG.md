@@ -1,3 +1,10 @@
+## [3.0.1](https://github.com/work-mate/nuxt-auth-module/compare/v3.0.0...v3.0.1) (2026-10-12)
+
+
+### Bug Fixes
+
+* fix versioning ([31f69c0](https://github.com/work-mate/nuxt-auth-module/commit/31f69c03cb2bf8cb4de96a4eaf59d1874604836e))
+
 # [3.0.0](https://github.com/work-mate/nuxt-auth-module/compare/v2.2.0...v3.0.0) (2026-10-12)
 
 # [3.0.0](https://github.com/work-mate/nuxt-auth-module/compare/v2.1.0...v3.0.0) (2026-10-12)
