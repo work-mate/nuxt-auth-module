@@ -69,7 +69,7 @@ describe('local auth API routes', async () => {
     expect(res.status).toBeGreaterThanOrEqual(400)
   })
 
-  it('extra fields in login body are forwarded to the backend', async () => {
+  it('an extra field is rejected when the login schema is strict', async () => {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -77,8 +77,8 @@ describe('local auth API routes', async () => {
     })
     const data = await res.json()
 
-    expect(res.status).toBe(200)
-    expect(data.tokens).toBeDefined()
+    expect(res.status).toBe(400)
+    expect(data.message).toBe('Invalid request body')
   })
 
   it('schema-invalid email returns 400 with field errors', async () => {
@@ -178,5 +178,37 @@ describe('local auth API routes', async () => {
     })
 
     expect(res.status).toBeGreaterThanOrEqual(400)
+  })
+
+  it('a redirectUrl in the body is not validated as a credential and not forwarded', async () => {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider: 'local', ...VALID_CREDS, redirectUrl: '/dashboard' }),
+    })
+    const data = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(data.tokens?.accessToken).toBe('mock-access-token')
+
+    const echo = await fetch('/api/mock/last-signin')
+    const { keys } = await echo.json()
+    expect(keys).toEqual(['email_address', 'password'])
+  })
+
+  it('an upstream rejection keeps its own status and message', async () => {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        provider: 'local',
+        email_address: 'test@example.com',
+        password: 'wrongpassword1',
+      }),
+    })
+    const data = await res.json()
+
+    expect(res.status).toBe(401)
+    expect(JSON.stringify(data)).toContain('invalid credentials')
   })
 })

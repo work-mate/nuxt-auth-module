@@ -92,7 +92,9 @@ export class LocalAuthProvider implements AuthProviderInterface {
     const tokenKey = this.options.endpoints.signIn.tokenKey;
     const refreshTokenKey = this.options.endpoints.signIn.refreshTokenKey;
 
-    const { provider: _, ...body } = authData;
+    // redirectUrl is the module's own transport, never a credential for the
+    // backend.
+    const { provider: _, redirectUrl: _redirectUrl, ...body } = authData;
 
     return ofetch(url, {
       method,
