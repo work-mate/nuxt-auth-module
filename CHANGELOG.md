@@ -1,3 +1,10 @@
+## [3.0.2](https://github.com/work-mate/nuxt-auth-module/compare/v3.0.1...v3.0.2) (2026-11-06)
+
+
+### Bug Fixes
+
+* exclude redirect url from validation and resurface error ([db570e3](https://github.com/work-mate/nuxt-auth-module/commit/db570e344dcf460f15c48f6d025dc532292e280e))
+
 ## [3.0.1](https://github.com/work-mate/nuxt-auth-module/compare/v3.0.0...v3.0.1) (2026-10-12)
 
 
